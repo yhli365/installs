@@ -1,0 +1,125 @@
+﻿CentOS开发环境
+@author yhli365@126.com
+@version CentOS 6.3 x64
+
+--)配置主机名称为vm1
+#永久修改主机名,重启后生效
+[root@localhost ~] vi /etc/sysconfig/network
+HOSTNAME=vm1  #修改localhost.localdomain为vm1
+#永久修改主机名
+[root@localhost ~] vi /etc/hosts
+127.0.0.1 vm1 localhost  #修改localhost.localdomain为vm1
+#临时修改主机名
+[root@localhost ~] hostname vm1
+
+--)配置网络参数
+#虚拟机增加网卡2: Host-only Adapter
+#查看当前网卡配置
+[root@vm1 ~] cd /etc/sysconfig/network-scripts/
+
+--)配置SSH客服端连接: 192.168.56.101
+
+--)增加用户yhli/yhli
+root/123465
+[root@vm1 ~] groupadd -g 520 yhli
+[root@vm1 ~] useradd -g yhli -u 520 yhli
+[root@vm1 ~] id yhli
+uid=520(yhli) gid=520(yhli) groups=520(yhli)
+[root@vm1 ~] passwd yhli
+yhli
+[root@vm1 ~] cd /home/yhli
+[root@vm1 ~] vi /etc/sudoers
+## Allow root to run any commands anywhere
+root    ALL=(ALL)       ALL
+yhli    ALL=(ALL)       ALL
+
+--)关闭虚拟机,加载开发磁盘(ydev.vdi), 重启后配置fstab
+#检查是否已经挂载
+[root@vm1 ~]# df -h
+[root@vm1 ~]# fdisk -l
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1               1        3916    31455238+  83  Linux
+#手动挂载并检测文件系统格式
+[root@vm1 ~]# mkdir /disk
+[root@vm1 ~]# mount /dev/sdb1 /disk
+[root@vm1 ~]# df -T -h
+Filesystem    Type    Size  Used Avail Use% Mounted on
+/dev/mapper/VolGroup-lv_root
+              ext4    5.5G  3.1G  2.1G  60% /
+tmpfs        tmpfs    499M  100K  499M   1% /dev/shm
+/dev/sda1     ext4    485M   33M  427M   8% /boot
+/dev/sdb1     ext4     30G  1.7G   27G   6% /disk
+[root@vm1 ~]# umount /disk
+#加入fstab
+[root@vm1 ~]# vi /etc/fstab
+/dev/sdb1                    /disk                   ext4    defaults        0 0
+[root@vm1 ~]# mount -a
+
+*-)修改/usr/local本地目录位置
+#创建本地目录
+[root@vm1 ~]# scp -r /usr/local /disk
+#创建软连接
+[root@vm1 ~]# cd /usr/local
+[root@vm1 ~]# rm -rf /usr/local
+[root@vm1 ~]# ln -s /disk/local /usr/local
+
+*-)修改/disk权限和yhli用户目录软连接
+#检查/disk用户权限
+[root@vm1 ~]# ll /disk
+[root@vm1 ~]# chown -R yhli:yhli /disk/yhli
+#创建软连接
+[root@vm1 ~]# su - yhli
+[yhli@vm1 ~]# ln -s /disk/yhli/app app
+[yhli@vm1 ~]# ln -s /disk/yhli/data data
+[yhli@vm1 ~]# ln -s /disk/yhli/dev dev
+[yhli@vm1 ~]# ln -s /disk/yhli/install install
+#修改环境变量
+[yhli@vm1 ~]$ vi .bash_profile 
+if [ -f ~/app/.bashapp ]; then
+        . ~/app/.bashapp
+fi
+[yhli@vm1 ~]$ source ~/.bash_profile
+[yhli@vm1 ~]$ env
+
+--)CentOS使用光盘配置YUM源
+1)修改YUM配置文件
+[root@vm1 ~] cd /etc/yum.repos.d/
+[root@vm1 yum.repos.d] mkdir yybak
+[root@vm1 yum.repos.d] mv *.repo yybak/
+[root@vm1 yum.repos.d] cp yybak/CentOS-Media.repo CentOS-Media.repo
+[root@vm1 yum.repos.d] vi CentOS-Media.repo
+[c6-media]
+name=CentOS-$releasever - Media
+baseurl=file:///media/CentOS/
+        file:///media/cdrom/
+        file:///media/cdrecorder/
+gpgcheck=1
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+2)创建光盘挂载目录
+虚拟机光盘加载iso: CentOS-6.3-x86_64-bin-DVD1.iso
+[root@vm1 ~] mkdir /media/cdrom
+[root@vm1 ~] mount -t iso9660 /dev/cdrom /media/cdrom
+
+3)测试并安装gcc,g++
+[root@vm1 ~]# gcc -v
+-bash: gcc: command not found
+[root@vm1 ~]# rpm -ql gcc
+package gcc is not installed
+[root@vm1 ~]# yum info gcc
+
+[root@vm1 ~]# yum install gcc
+[root@vm1 ~]# yum install gcc-c++
+
+[root@vm1 ~]# gcc -v
+gcc version 4.4.6 20120305 (Red Hat 4.4.6-4) (GCC) 
+[root@vm1 ~]# g++ -v
+gcc version 4.4.6 20120305 (Red Hat 4.4.6-4) (GCC) 
+
+--)设置不启动图形界面
+[root@vm1 ~]# cp /etc/inittab /etc/inittab.bak
+[root@vm1 ~]# vi /etc/inittab
+id:3:initdefault
+[root@vm1 ~]# shutdown now
+

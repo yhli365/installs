@@ -1,0 +1,47 @@
+﻿http://www.centos.org/
+
+files:
+CentOS-6.3-x86_64-bin-DVD1.iso
+CentOS-6.3-x86_64-bin-DVD2.iso
+
+基于虚拟机(VirtualBox 4.2.8)安装
+https://www.virtualbox.org/
+
+-)新建虚拟机
+名称：centos6x64
+操作系统：Red Hat (64 bit)
+内存：1024M
+处理器：1
+硬件加速：VT-x/AMD-v,嵌套分页,PAE/NX
+SATA硬盘：centos6x64 8G
+显存大小: 12M
+网卡1: 网络地址转换(NAT) Intel PRO/1000 MT桌面(82540EM) MAC(08002785EE3D) 
+-)选择ISO文件加载: CentOS-6.3-x86_64-bin-DVD1.iso
+-)启动虚拟机, 按提示安装
+Media test: skip
+language: English
+keyboard: U.S.English
+timezone: Asia/Shanghai
+root pwd: 123465
+software: Desktop
+-)安装完成: reboot
+-)安装后配置系统
+非管理员帐号: yhli/yhli
+kdump因内存不够，不能启用
+
+*)登陆后测试
+连接网络eh0
+打开firefox, 可以上网
+打开Terminal, 执行lsb_release -a, 查看版本信息
+[root@localhost ~]# lsb_release -a
+LSB Version:    :core-4.0-amd64:core-4.0-noarch:graphics-4.0-amd64:graphics-4.0-noarch:printing-4.0-amd64:printing-4.0-noarch
+Distributor ID: CentOS
+Description:    CentOS release 6.3 (Final)
+Release:        6.3
+Codename:       Final
+[root@localhost ~]# 
+
+*)关闭虚拟机后，备份虚拟机文件，作为基准系统
+a)导出方式: centos6x64.ova
+b)复制vdi文件方式: centos6x64.vdi
+
