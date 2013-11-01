@@ -26,6 +26,7 @@ dir /home/yhli/data/redis/
 #save 60 10000
 
 pidfile /home/yhli/data/redis/redis.pid
+port 6379
 
 [yhli@vm1 redis]# mkdir -p /home/yhli/data/redis/
 
