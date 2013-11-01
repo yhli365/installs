@@ -1,0 +1,98 @@
+Redis
+@site http://redis.io/
+@version 2.4.17: redis-2.4.17.tar.gz
+@version 2.6.16: redis-2.6.16.tar.gz
+
+-----------------------------#install
+--)compile&install
+[yhli@vm1 ~]# cd /home/yhli/install
+[yhli@vm1 install]# tar -xzf redis-2.4.17.tar.gz
+[yhli@vm1 install]# cd redis-2.4.17
+[yhli@vm1 redis-2.4.17]# make
+[yhli@vm1 redis-2.4.17]# make PREFIX=/home/yhli/app/redis install
+[yhli@vm1 redis-2.4.17]# mkdir /home/yhli/app/redis/etc
+[yhli@vm1 redis-2.4.17]# cp redis.conf /home/yhli/app/redis/etc
+
+--)config
+[yhli@vm1 ~]# cd ~/app/redis
+[yhli@vm1 redis]# vi etc/redis.conf
+daemonize yes
+logfile /home/yhli/data/redis/redis.log
+dbfilename dump.rdb
+dir /home/yhli/data/redis/
+
+#save 900 1
+#save 300 10
+#save 60 10000
+
+pidfile /home/yhli/data/redis/redis.pid
+
+[yhli@vm1 redis]# mkdir -p /home/yhli/data/redis/
+
+--)system config
+#修改系统内存配置
+[root@vm1 ~]# vi /etc/sysctl.conf 
+vm.overcommit_memory=1
+[root@vm1 ~]# sysctl vm.overcommit_memory=1
+vm.overcommit_memory = 1
+#查看配置是否生效
+[root@vm1 ~]# cat /proc/sys/vm/overcommit_memory
+1
+[root@vm1 ~]#
+
+-----------------------------#commands
+#start redis-server
+[yhli@vm1 redis]# bin/redis-server etc/redis.conf 
+
+#stop redis-server
+[yhli@vm1 redis]# bin/redis-cli shutdown
+
+#monitor redis-server
+[yhli@vm1 redis]# bin/redis-cli info
+
+#check redis-server
+[yhli@vm1 redis]# ps -ef | grep redis 
+root     23752  7947  0 10:59 pts/0    00:00:00 bin/redis-server etc/redis.conf
+root     23783 23757  0 11:00 pts/3    00:00:00 grep redis
+
+#log
+[yhli@vm1 redis]# tailf /home/yhli/data/redis/redis.log
+
+#help
+[root@master ~]# bin/redis-cli help @generic|@string|@hash|@list|@set|@sorted_set
+
+#test
+[yhli@vm1 redis]# bin/redis-cli set name "hello world"
+OK
+[yhli@vm1 redis]# bin/redis-cli get name
+"hello world"
+[root@master ~]# 
+
+#benchmark
+[yhli@vm1 redis-2.6.16]$ bin/redis-benchmark -?
+
+-----------------------------#clients.java
+#maven repo
+https://github.com/xetorthio/jedis
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+    <version>2.1.0</version>
+</dependency>
+
+-----------------------------#other
+1、redis-benchmark
+redis基准信息，redis服务器性能检测 
+
+redis-benchmark -h localhost -p 6379 -c 100 -n 100000 
+100个并发连接，100000个请求，检测host为localhost 端口为6379的redis服务器性能 
+ 
+2、redis-cli
+redis-cli -h localhost -p 6379 monitor 
+Dump all the received requests in real time; 
+监控host为localhost，端口为6380，redis的连接及读写操作 
+ 
+redis-cli -h localhost -p 6379 info 
+Provide information and statistics about the server; 
+提供host为localhost，端口为6380，redis服务的统计信息 
+

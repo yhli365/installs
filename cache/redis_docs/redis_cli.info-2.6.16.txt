@@ -1,0 +1,75 @@
+[yhli@vm1 redis-2.6.16]$ bin/redis-cli info
+# Server
+redis_version:2.6.16
+redis_git_sha1:00000000
+redis_git_dirty:0
+redis_mode:standalone
+os:Linux 2.6.32-279.el6.x86_64 x86_64
+arch_bits:64
+multiplexing_api:epoll
+gcc_version:4.4.6
+process_id:3310
+run_id:921806e8d60e71dd7412128dfc5a672a6bb96523
+tcp_port:6379
+uptime_in_seconds:214
+uptime_in_days:0
+hz:10
+lru_clock:1920971
+
+# Clients
+connected_clients:1
+client_longest_output_list:0
+client_biggest_input_buf:0
+blocked_clients:0
+
+# Memory
+used_memory:857232
+used_memory_human:837.14K
+used_memory_rss:7553024
+used_memory_peak:798664
+used_memory_peak_human:779.95K
+used_memory_lua:31744
+mem_fragmentation_ratio:8.81
+mem_allocator:jemalloc-3.2.0
+
+# Persistence
+loading:0
+rdb_changes_since_last_save:1
+rdb_bgsave_in_progress:0
+rdb_last_save_time:1382358297
+rdb_last_bgsave_status:ok
+rdb_last_bgsave_time_sec:-1
+rdb_current_bgsave_time_sec:-1
+aof_enabled:0
+aof_rewrite_in_progress:0
+aof_rewrite_scheduled:0
+aof_last_rewrite_time_sec:-1
+aof_current_rewrite_time_sec:-1
+aof_last_bgrewrite_status:ok
+
+# Stats
+total_connections_received:4
+total_commands_processed:3
+instantaneous_ops_per_sec:0
+rejected_connections:0
+expired_keys:0
+evicted_keys:0
+keyspace_hits:1
+keyspace_misses:0
+pubsub_channels:0
+pubsub_patterns:0
+latest_fork_usec:0
+
+# Replication
+role:master
+connected_slaves:0
+
+# CPU
+used_cpu_sys:0.36
+used_cpu_user:0.00
+used_cpu_sys_children:0.00
+used_cpu_user_children:0.00
+
+# Keyspace
+db0:keys=1,expires=0,avg_ttl=0
+
