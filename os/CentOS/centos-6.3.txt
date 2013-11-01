@@ -1,4 +1,4 @@
-﻿http://www.centos.org/
+http://www.centos.org/
 
 files:
 CentOS-6.3-x86_64-bin-DVD1.iso
@@ -26,7 +26,7 @@ root pwd: 123465
 software: Desktop
 -)安装完成: reboot
 -)安装后配置系统
-非管理员帐号: yhli/yhli
+非管理员帐号: yysky/yysky
 kdump因内存不够，不能启用
 
 *)登陆后测试

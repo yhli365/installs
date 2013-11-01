@@ -1,4 +1,4 @@
-﻿CentOS开发环境
+CentOS开发环境
 @author yhli365@126.com
 @version CentOS 6.3 x64
 
@@ -15,12 +15,15 @@ HOSTNAME=vm1  #修改localhost.localdomain为vm1
 --)配置网络参数
 #虚拟机增加网卡2: Host-only Adapter
 #查看当前网卡配置
+[root@vm1 ~] ifconfig -a
 [root@vm1 ~] cd /etc/sysconfig/network-scripts/
 
 --)配置SSH客服端连接: 192.168.56.101
 
 --)增加用户yhli/yhli
 root/123465
+[root@vm1 ~] groupdel yhli
+[root@vm1 ~] userdel -r yhli
 [root@vm1 ~] groupadd -g 520 yhli
 [root@vm1 ~] useradd -g yhli -u 520 yhli
 [root@vm1 ~] id yhli
