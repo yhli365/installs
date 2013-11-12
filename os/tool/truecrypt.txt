@@ -1,0 +1,17 @@
+Redis
+@site http://www.truecrypt.org/
+@version truecrypt-7.1a-linux-console-x64.tar.gz
+
+-----------------------------#install.CentOS
+--)install
+[root@vm1 tool]# tar -xzf truecrypt-7.1a-linux-console-x64.tar.gz
+[root@vm1 tool]# chmod +x truecrypt-7.1a-setup-console-x64
+[root@vm1 tool]# ./truecrypt-7.1a-setup-console-x64
+Installing package...
+usr/bin/truecrypt
+usr/bin/truecrypt-uninstall.sh
+usr/share/truecrypt/doc/License.txt
+usr/share/truecrypt/doc/TrueCrypt User Guide.pdf
+--)确实是否安装libfuse
+[root@vm1 tool]# yum info fuse
+[root@vm1 tool]# yum list | grep  fuse
