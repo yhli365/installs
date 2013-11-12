@@ -1,0 +1,22 @@
+#Sonatype Nexus
+http://www.sonatype.org/nexus/
+
+@version
+nexus-2.6.4-02-bundle.tar.gz 20131023
+
+@required
+maven
+
+-----------------------------Install
+#Sonatype Nexus
+-)解压nexus-x.y.z-nn-bundle.tar.gz到$NEXUS_HOME(E:\apps\nexus-x.y.z-nn)
+-)升级: 查看网站Upgrading Nexus说明
+*)注意环境变量jdk版本(nexus-2.6.4需要jdk1.7), 单独配置nexus jdk版本
+vi $NEXUS_HOME\bin\jsw\conf\wrapper.conf
+wrapper.java.command=D:\devsoft\jdk1.7.0_06\bin\java
+$)以管理员身份打开cmd启动: $NEXUS_HOME/bin/nexus console
+*)web访问: http://127.0.0.1:8081/nexus
+*)管理员默认帐号: admin/admin123
+
+#Sonatype Nexus Repo
+E:\apps\sonatype-work
