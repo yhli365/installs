@@ -126,3 +126,14 @@ gcc version 4.4.6 20120305 (Red Hat 4.4.6-4) (GCC)
 id:3:initdefault
 [root@vm1 ~]# shutdown now
 
+--)关闭防火墙
+1)查看防火墙信息：
+[root@vm1 ~]# /etc/init.d/iptables status
+2)启动防火墙服务：
+[root@vm1 ~]# /etc/init.d/iptables start
+3)关闭防火墙服务：
+[root@vm1 ~]# /etc/init.d/iptables stop
+4)永久关闭
+[root@vm1 ~]# chkconfig --list | grep iptables
+[root@vm1 ~]# chkconfig --level 35 iptables off
+
