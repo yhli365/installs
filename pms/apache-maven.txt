@@ -1,0 +1,19 @@
+#Maven
+http://maven.apache.org/
+
+@version
+20131023 apache-maven-3.1.1-bin.tar.gz
+
+@optional
+nexus
+
+-----------------------------Install
+#Maven
+-)备份旧软件: 重命名D:\devsoft\apache-maven为D:\devsoft\apache-maven-x.y.z
+-)解压apache-maven-x.y.z-bin.tar.gz到D:\devsoft\apache-maven
+-)备份默认配置: $MAVEN_HOME/conf/settings.xml.bak
+-)查看最新备份配置conf\apache-maven-x.y.z,替换默认配置
+*)设置环境变量MAVEN_HOME=D:\devsoft\apache-maven
+*)打开cmd，进行版本确认: mvn -version
+*)IDE Eclipse中maven主目录设置为D:\devsoft\apache-maven
+
