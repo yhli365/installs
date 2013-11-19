@@ -1,0 +1,13 @@
+hbase
+@svn http://svn.apache.org/repos/asf/hbase/tags/0.92.1
+@version 0.92.1
+
+--------------------windows.eclipse
+#修改pom.xml
+<!-- yhli
+				<exec executable="sh">
+                  <arg line="${basedir}/src/saveVersion.sh ${project.version} ${generated.sources}/java"/>
+                </exec>
+-->
+
+#mvn eclipse:eclipse
