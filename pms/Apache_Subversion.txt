@@ -1,0 +1,119 @@
+Apache™ Subversion®
+@site http://subversion.apache.org/
+@version subversion-1.8.4.tar.gz
+
+-----------------------------#install.CentOS
+--)check the following build tools to compile Subversion: 
+* autoconf 2.59 or later (Unix only)
+* libtool 1.4 or later (Unix only)
+* a reasonable C compiler (gcc, Visual Studio, etc.)
+[root@vm1 tool]# autoconf -V
+[root@vm1 tool]# libtool --version
+[root@vm1 tool]# gcc -v
+[root@vm1 tool]# yum info autoconf
+[root@vm1 tool]# yum info libtool
+[root@vm1 tool]# 
+
+--)Subversion also depends on the following third-party libraries:
+* libapr and libapr-util (REQUIRED for client and server)
+* SQLite  (REQUIRED for client and server)
+* libz  (REQUIRED for client and server)
+
+[root@vm1 tool]# yum info sqlite
+[root@vm1 tool]# yum info httpd
+
+--)openssl
+[root@vm1 tool]# tar -xzf openssl-0.9.8.tar.gz 
+[root@vm1 tool]# cd openssl-0.9.8
+[root@vm1 openssl-0.9.8]# ./config
+[root@vm1 openssl-0.9.8]# make
+[root@vm1 openssl-0.9.8]# make install
+[root@vm1 tool]# /usr/local/ssl/bin/openssl version
+
+--)apr,apr-util
+[root@vm1 tool]# tar -xzf apr-1.4.8.tar.gz 
+[root@vm1 tool]# cd apr-1.4.8
+[root@vm1 apr-1.4.8]# ./configure 
+[root@vm1 apr-1.4.8]# make
+[root@vm1 apr-1.4.8]# make install
+[root@vm1 tool]# tar -xzf apr-util-1.5.2.tar.gz 
+[root@vm1 tool]# cd apr-util-1.5.2
+[root@vm1 apr-util-1.5.2]# ./configure --with-apr=/usr/local/apr
+[root@vm1 apr-util-1.5.2]# make
+[root@vm1 apr-util-1.5.2]# make install
+
+--)apache httpd
+[root@vm1 tool]# tar -xzf httpd-2.4.6.tar.gz 
+[root@vm1 tool]# cd httpd-2.4.6
+[root@vm1 httpd-2.4.6]# ./configure --prefix=/usr/local/apache2 --enable-so --enable-rewrite --enable-proxy --enable-proxy-ajp --enable-dav --enable-dav-fs --with-apr=/usr/local/apr/ --with-apr-util=/usr/local/apr/ --enable-ssl=static --with-ssl=/usr/local/ssl --enable-mods-shared=all
+[root@vm1 httpd-2.4.6]# make
+[root@vm1 httpd-2.4.6]# make install
+
+--)sqlite
+[root@vm1 tool]# tar -xzf sqlite-autoconf-3080100.tar.gz
+[root@vm1 tool]# cd sqlite-autoconf-3080100
+[root@vm1 sqlite-autoconf-3080100]# ./configure
+[root@vm1 sqlite-autoconf-3080100]# make
+[root@vm1 sqlite-autoconf-3080100]# make install
+[root@vm1 bin]# sqlite3 --version
+3.8.1 2013-10-17 12:57:35 c78be6d786c19073b3a6730dfe3fb1be54f5657a
+
+--)subversion
+[root@vm1 tool]# tar -xzf subversion-1.8.4.tar.gz
+[root@vm1 tool]# cd subversion-1.8.4
+[root@vm1 subversion-1.8.4]# ./configure --prefix=/usr/local/subversion --with-apxs=/usr/local/apache2/bin/apxs --with-apr=/usr/local/apr/ --with-apr-util=/usr/local/apr/ --with-sqlite=/usr/local --with-ssl --with-zlib --enable-maintainer-mode 
+[root@vm1 subversion-1.8.4]# make
+[root@vm1 subversion-1.8.4]# make install
+[root@vm1 subversion-1.8.4]# /usr/local/subversion/bin/svn --version
+
+--)create repository:test
+[root@vm1 yhli]# mkdir /yhli/yrepo/svnrepo
+[root@vm1 yhli]# cd /usr/local/subversion/bin 
+[root@vm1 yhli]# ./svnadmin create /yhli/yrepo/svnrepo/test
+[root@vm1 yhli]# ls –l /yhli/yrepo/svnrepo/test
+
+--)SVN config
+[root@vm1 yhli]# cd /yhli/yrepo/svnrepo
+[root@vm1 svnrepo]# cp -r test/conf .
+[root@vm1 svnrepo]# vi conf/authz
+[groups]
+developers=yhli,test
+[/]
+* = rw
+[root@vm1 svnrepo]# vi conf/passwd
+yhli = yhli
+[root@vm1 svnrepo]# vi conf/svnserve.conf
+password-db = /yhli/yrepo/svnrepo/conf/passwd
+authz-db = /yhli/yrepo/svnrepo/conf/authz
+[root@vm1 svnrepo]# cp conf/svnserve.conf test/conf/
+
+-*)SVN服务器端命令(如果只使用Https访问，则不需要启动SVN，启动Apache就可以了) 
+#启动SVN服务器端
+[root@vm1 ~]# /usr/local/subversion/bin/svnserve -d -r /yhli/yrepo/svnrepo/
+#使用TortoiseSVN访问svn://15.44.22.13/test进行测试
+#关闭SVN服务器端
+[root@vm1 ~]# ps -ef | grep svn
+[root@vm1 ~]# killall svnserve
+
+--)apache config
+[root@vm1 ~]# cp /usr/local/apache2/conf/httpd.conf /usr/local/apache2/conf/httpd.conf.orig
+[root@vm1 ~]# cp -r /usr/local/subversion/libexec/mod_*_svn.so /usr/local/apache2/modules/
+[root@vm1 ~]# vi /usr/local/apache2/conf/httpd.conf
+ServerName 15.44.22.13:80
+LoadModule dav_module modules/mod_dav.so
+LoadModule dav_fs_module modules/mod_dav_fs.so
+#yhli_svn(最下面添加)
+LoadModule dav_svn_module modules/mod_dav_svn.so
+LoadModule authz_svn_module modules/mod_authz_svn.so
+
+--)apache服务命令
+#启动
+[root@vm1 ~]# /usr/local/apache2/bin/apachectl start
+#关闭
+[root@vm1 ~]# /usr/local/apache2/bin/apachectl stop
+#测试页面http://15.44.22.13/
+
+
+
+http://ywbanm.iteye.com/blog/341562
+http://blog.sina.com.cn/s/blog_472b9eb20100ni00.html

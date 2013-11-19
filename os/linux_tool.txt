@@ -1,0 +1,11 @@
+#httpd
+http://httpd.apache.org/
+
+#apr,apr-util,apr-iconv
+http://apr.apache.org/
+
+#OpenSSL
+http://www.openssl.org/
+
+#SQLite
+http://www.sqlite.org/
