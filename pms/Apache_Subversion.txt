@@ -2,25 +2,32 @@ Apache™ Subversion®
 @site http://subversion.apache.org/
 @version subversion-1.8.4.tar.gz
 
+-----------------------------#使用.CentOS
+-*)使用truecrypt存储repo
+[root@vm1 ~]# su - yhli
+[yhli@vm1 ~]# truecrypt /yhli/vdisks/yrepo.tc /yhli/yrepo
+[yhli@vm1 ~]# truecrypt -d /yhli/vdisks/yrepo.tc
+
+--)apache(https://192.168.56.101/svn/)
+[root@vm1 ~]# /usr/local/apache2/bin/apachectl restart
+[root@vm1 ~]# /usr/local/apache2/bin/apachectl stop
+
 -----------------------------#install.CentOS
---)check the following build tools to compile Subversion: 
+假设安装服务器IP: 192.168.56.101
+--)Dependency Overview 
+#You'll need the following build tools to compile Subversion:
 * autoconf 2.59 or later (Unix only)
 * libtool 1.4 or later (Unix only)
 * a reasonable C compiler (gcc, Visual Studio, etc.)
 [root@vm1 tool]# autoconf -V
 [root@vm1 tool]# libtool --version
 [root@vm1 tool]# gcc -v
-[root@vm1 tool]# yum info autoconf
-[root@vm1 tool]# yum info libtool
-[root@vm1 tool]# 
-
---)Subversion also depends on the following third-party libraries:
+#Subversion also depends on the following third-party libraries:
 * libapr and libapr-util (REQUIRED for client and server)
 * SQLite  (REQUIRED for client and server)
 * libz  (REQUIRED for client and server)
-
 [root@vm1 tool]# yum info sqlite
-[root@vm1 tool]# yum info httpd
+[root@vm1 tool]# yum info libz
 
 --)openssl
 [root@vm1 tool]# tar -xzf openssl-0.9.8.tar.gz 
@@ -43,27 +50,55 @@ Apache™ Subversion®
 [root@vm1 apr-util-1.5.2]# make install
 
 --)apache httpd
+#安装http://lamp.linux.gov.cn/Apache/ApacheMenu/programs/configure.html
 [root@vm1 tool]# tar -xzf httpd-2.4.6.tar.gz 
 [root@vm1 tool]# cd httpd-2.4.6
-[root@vm1 httpd-2.4.6]# ./configure --prefix=/usr/local/apache2 --enable-so --enable-rewrite --enable-proxy --enable-proxy-ajp --enable-dav --enable-dav-fs --with-apr=/usr/local/apr/ --with-apr-util=/usr/local/apr/ --enable-ssl=static --with-ssl=/usr/local/ssl --enable-mods-shared=all
+[root@vm1 httpd-2.4.6]# ./configure \
+--prefix=/usr/local/apache2 \
+--with-apr=/usr/local/apr/bin/apr-1-config \
+--with-apr-util=/usr/local/apr/bin/apu-1-config \
+--with-ssl=/usr/local/ssl \
+--enable-ssl=static \
+--enable-mods-shared=all \
+--enable-so \
+--enable-rewrite \
+--enable-dav \
+--enable-dav-fs \
+--enable-proxy  \
+--enable-proxy-ajp
 [root@vm1 httpd-2.4.6]# make
 [root@vm1 httpd-2.4.6]# make install
-
---)sqlite
-[root@vm1 tool]# tar -xzf sqlite-autoconf-3080100.tar.gz
-[root@vm1 tool]# cd sqlite-autoconf-3080100
-[root@vm1 sqlite-autoconf-3080100]# ./configure
-[root@vm1 sqlite-autoconf-3080100]# make
-[root@vm1 sqlite-autoconf-3080100]# make install
-[root@vm1 bin]# sqlite3 --version
-3.8.1 2013-10-17 12:57:35 c78be6d786c19073b3a6730dfe3fb1be54f5657a
+#配置
+[root@vm1 ~]# cp /usr/local/apache2/conf/httpd.conf /usr/local/apache2/conf/httpd.conf.orig
+[root@vm1 ~]# vi /usr/local/apache2/http.conf
+ServerName 192.168.56.101:80
+LoadModule slotmem_shm_module modules/mod_slotmem_shm.so
+#启动
+[root@vm1 ~]# /usr/local/apache2/bin/apachectl start
+#关闭
+[root@vm1 ~]# /usr/local/apache2/bin/apachectl stop
+#日志
+[root@vm1 ~]# tail -n 200 /usr/local/apache2/logs/error_log
+[root@vm1 ~]# tail -n 200 /usr/local/apache2/logs/access_log
+#测试页面
+访问 http://192.168.56.101/
+出现It works!说明正常
 
 --)subversion
 [root@vm1 tool]# tar -xzf subversion-1.8.4.tar.gz
+[root@vm1 tool]# unzip sqlite-amalgamation-3080100.zip
+[root@vm1 tool]# mv sqlite-amalgamation-3080100 subversion-1.8.4/sqlite-amalgamation
 [root@vm1 tool]# cd subversion-1.8.4
-[root@vm1 subversion-1.8.4]# ./configure --prefix=/usr/local/subversion --with-apxs=/usr/local/apache2/bin/apxs --with-apr=/usr/local/apr/ --with-apr-util=/usr/local/apr/ --with-sqlite=/usr/local --with-ssl --with-zlib --enable-maintainer-mode 
+[root@vm1 subversion-1.8.4]# ./configure \
+--prefix=/usr/local/subversion \
+--with-apxs=/usr/local/apache2/bin/apxs \
+--with-apr=/usr/local/apr/bin/apr-1-config \
+--with-apr-util=/usr/local/apr/bin/apu-1-config \
+--with-openssl \
+--with-zlib
 [root@vm1 subversion-1.8.4]# make
 [root@vm1 subversion-1.8.4]# make install
+#确定svn有没有安装成功
 [root@vm1 subversion-1.8.4]# /usr/local/subversion/bin/svn --version
 
 --)create repository:test
@@ -72,7 +107,7 @@ Apache™ Subversion®
 [root@vm1 yhli]# ./svnadmin create /yhli/yrepo/svnrepo/test
 [root@vm1 yhli]# ls –l /yhli/yrepo/svnrepo/test
 
---)SVN config
+--)配置svn权限管理
 [root@vm1 yhli]# cd /yhli/yrepo/svnrepo
 [root@vm1 svnrepo]# cp -r test/conf .
 [root@vm1 svnrepo]# vi conf/authz
@@ -85,35 +120,74 @@ yhli = yhli
 [root@vm1 svnrepo]# vi conf/svnserve.conf
 password-db = /yhli/yrepo/svnrepo/conf/passwd
 authz-db = /yhli/yrepo/svnrepo/conf/authz
+#配置版本库test
 [root@vm1 svnrepo]# cp conf/svnserve.conf test/conf/
 
 -*)SVN服务器端命令(如果只使用Https访问，则不需要启动SVN，启动Apache就可以了) 
 #启动SVN服务器端
 [root@vm1 ~]# /usr/local/subversion/bin/svnserve -d -r /yhli/yrepo/svnrepo/
-#使用TortoiseSVN访问svn://15.44.22.13/test进行测试
+#使用TortoiseSVN访问svn://192.168.56.101/test进行测试
 #关闭SVN服务器端
 [root@vm1 ~]# ps -ef | grep svn
 [root@vm1 ~]# killall svnserve
 
---)apache config
-[root@vm1 ~]# cp /usr/local/apache2/conf/httpd.conf /usr/local/apache2/conf/httpd.conf.orig
+--)配置apache支持svn
+#添加用户，第一次设置用户时使用-c表示新建一个用户文件。回车后输入用户密码。
+[root@vm1 ~]# htpasswd -c /yhli/yrepo/svnrepo/htpasswd yhli
+[root@vm1 ~]# htpasswd /yhli/yrepo/svnrepo/htpasswd test
+#设置apache用户权限
+[root@vm1 ~]# id yhli
+[root@vm1 ~]# groupadd dev
+[root@vm1 ~]# useradd -g dev yhli
+[root@vm1 ~]# passwd yhli
+[root@vm1 ~]# vi /etc/sudoers
+yhli    ALL=(ALL)       ALL
+[root@vm1 ~]# chown -R yhli:dev /yhli/yrepo/svnrepo/htpasswd
+#配置apache
 [root@vm1 ~]# cp -r /usr/local/subversion/libexec/mod_*_svn.so /usr/local/apache2/modules/
 [root@vm1 ~]# vi /usr/local/apache2/conf/httpd.conf
-ServerName 15.44.22.13:80
 LoadModule dav_module modules/mod_dav.so
 LoadModule dav_fs_module modules/mod_dav_fs.so
+<IfModule unixd_module>
+User yhli
+Group dev
+</IfModule>
 #yhli_svn(最下面添加)
 LoadModule dav_svn_module modules/mod_dav_svn.so
 LoadModule authz_svn_module modules/mod_authz_svn.so
+<Location /svn>
+	DAV svn
+	#(此处配置你的版本库根目录) --注意这里不要是svnpath
+	SVNParentPath /yhli/yrepo/svnrepo
+	#（连接类型设置 基本验证）
+	AuthType Basic
+	#（此处字符串内容修改为提示对话框标题）
+	AuthName "Hello svnuser, welcome to here" 
+	#(此处修改为访问版本库用户的文件，用apache的htpasswd命令生成)
+	AuthUserFile /yhli/yrepo/svnrepo/htpasswd
+	#（此处修改为访问版本库权限的文件）
+	AuthzSVNAccessFile /yhli/yrepo/svnrepo/conf/auth.conf 
+	#（"Require valid-user"告诉apache在authfile中所有的用户都可以访问。如果没有它，则只能第一个用户可以访问新建库）
+	Require valid-user
+</Location>
+#重启apache
+[root@vm1 ~]# /usr/local/apache2/bin/apachectl restart
+#浏览器访问http://192.168.56.101/svn/test/，如果有东西显示就说明成功。
 
---)apache服务命令
-#启动
-[root@vm1 ~]# /usr/local/apache2/bin/apachectl start
-#关闭
-[root@vm1 ~]# /usr/local/apache2/bin/apachectl stop
-#测试页面http://15.44.22.13/
+--)配置apache支持SSL
+[root@vm1 ~]# cd /usr/local/apache2/conf/
+#制作证书
+[root@vm1 conf]# /usr/local/ssl/bin/openssl req -new -x509 -nodes -out server.crt -keyout server.key
+[root@vm1 conf]# ls
+server.crt  server.key
+#配置apache
+[root@vm1 conf]# vi httpd.conf
+Include conf/extra/httpd-ssl.conf
+LoadModule socache_shmcb_module modules/mod_socache_shmcb.so
+#重启apache
+[root@vm1 ~]# /usr/local/apache2/bin/apachectl restart
+#浏览器访问https://192.168.56.101/svn/test/，如果有东西显示就说明成功。
 
-
-
-http://ywbanm.iteye.com/blog/341562
-http://blog.sina.com.cn/s/blog_472b9eb20100ni00.html
+--)see
+http://www.cnblogs.com/fyfblog/archive/2011/06/12/2097138.html
+http://www.cnblogs.com/hemhem/archive/2010/12/06/2087490.html

@@ -18,23 +18,45 @@ HOSTNAME=vm1  #修改localhost.localdomain为vm1
 [root@vm1 ~] ifconfig -a
 [root@vm1 ~] cd /etc/sysconfig/network-scripts/
 
+-*)SSH相关配置（一般默认开启）
+#启动ssh
+[root@vm1 ~]# /sbin/service sshd start
+#设置开机启动
+[root@vm1 ~]# chkconfig --list | grep sshd 
+[root@vm1 ~]# chkconfig sshd on
+#配置sshd文件
+[root@vm1 ~]# cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
+[root@vm1 ~]# vi /etc/ssh/sshd_config
+#RSAAuthentication yes
+#PubkeyAuthentication yes
+#AuthorizedKeysFile      .ssh/authorized_keys
+#重新启动sshd服务
+[root@vm1 ~]# /sbin/service sshd restart
 --)配置SSH客服端连接: 192.168.56.101
 
---)增加用户yhli/yhli
+--)用户和组管理
 root/123465
-[root@vm1 ~] groupdel yhli
+#查看用户和组
+[root@vm1 ~] cat /etc/paaawd
+[root@vm1 ~] cat /etc/group
+#删除用户和组
 [root@vm1 ~] userdel -r yhli
-[root@vm1 ~] groupadd -g 520 yhli
-[root@vm1 ~] useradd -g yhli -u 520 yhli
+[root@vm1 ~] groupdel dev
+#增加用户和组
+[root@vm1 ~] groupadd -g 520 dev
+[root@vm1 ~] useradd -g dev -u 520 yhli
 [root@vm1 ~] id yhli
-uid=520(yhli) gid=520(yhli) groups=520(yhli)
+uid=520(yhli) gid=520(dev) groups=520(dev)
+#设置用户密码
 [root@vm1 ~] passwd yhli
 yhli
-[root@vm1 ~] cd /home/yhli
+#设置用户权限
 [root@vm1 ~] vi /etc/sudoers
 ## Allow root to run any commands anywhere
 root    ALL=(ALL)       ALL
 yhli    ALL=(ALL)       ALL
+#查看用户目录
+[root@vm1 ~] cd /home/yhli
 
 --)关闭虚拟机,加载开发磁盘(ydev.vdi), 重启后配置fstab
 #检查是否已经挂载
@@ -58,7 +80,7 @@ tmpfs        tmpfs    499M  100K  499M   1% /dev/shm
 /dev/sdb1                    /disk                   ext4    defaults        0 0
 [root@vm1 ~]# mount -a
 
-*-)修改/usr/local本地目录位置
+-*)修改/usr/local本地目录位置
 #创建本地目录
 [root@vm1 ~]# scp -r /usr/local /disk
 #创建软连接
@@ -66,16 +88,17 @@ tmpfs        tmpfs    499M  100K  499M   1% /dev/shm
 [root@vm1 ~]# rm -rf /usr/local
 [root@vm1 ~]# ln -s /disk/local /usr/local
 
-*-)修改/disk权限和yhli用户目录软连接
+-*)修改/disk权限和yhli用户目录软连接
 #检查/disk用户权限
 [root@vm1 ~]# ll /disk
-[root@vm1 ~]# chown -R yhli:yhli /disk/yhli
+[root@vm1 ~]# chown -R yhli:dev /disk/yhli
 #创建软连接
 [root@vm1 ~]# su - yhli
-[yhli@vm1 ~]# ln -s /disk/yhli/app app
-[yhli@vm1 ~]# ln -s /disk/yhli/data data
-[yhli@vm1 ~]# ln -s /disk/yhli/dev dev
-[yhli@vm1 ~]# ln -s /disk/yhli/install install
+[yhli@vm1 ~]# 
+ln -s /disk/yhli/app app
+ln -s /disk/yhli/data data
+ln -s /disk/yhli/dev dev
+ln -s /disk/yhli/install install
 #修改环境变量
 [yhli@vm1 ~]$ vi .bash_profile 
 if [ -f ~/app/.bashapp ]; then
@@ -87,9 +110,9 @@ fi
 --)CentOS使用光盘配置YUM源
 1)修改YUM配置文件
 [root@vm1 ~] cd /etc/yum.repos.d/
-[root@vm1 yum.repos.d] mkdir yybak
-[root@vm1 yum.repos.d] mv *.repo yybak/
-[root@vm1 yum.repos.d] cp yybak/CentOS-Media.repo CentOS-Media.repo
+[root@vm1 yum.repos.d] mkdir orig
+[root@vm1 yum.repos.d] mv *.repo orig/
+[root@vm1 yum.repos.d] cp orig/CentOS-Media.repo CentOS-Media.repo
 [root@vm1 yum.repos.d] vi CentOS-Media.repo
 [c6-media]
 name=CentOS-$releasever - Media
@@ -103,6 +126,7 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
 2)创建光盘挂载目录
 虚拟机光盘加载iso: CentOS-6.3-x86_64-bin-DVD1.iso
 [root@vm1 ~] mkdir /media/cdrom
+[root@vm1 ~] umount /media/cdrom
 [root@vm1 ~] mount -t iso9660 /dev/cdrom /media/cdrom
 
 3)测试并安装gcc,g++
@@ -121,7 +145,7 @@ gcc version 4.4.6 20120305 (Red Hat 4.4.6-4) (GCC)
 gcc version 4.4.6 20120305 (Red Hat 4.4.6-4) (GCC) 
 
 --)设置不启动图形界面
-[root@vm1 ~]# cp /etc/inittab /etc/inittab.bak
+[root@vm1 ~]# cp /etc/inittab /etc/inittab.orig
 [root@vm1 ~]# vi /etc/inittab
 id:3:initdefault
 [root@vm1 ~]# shutdown now
