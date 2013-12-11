@@ -1,0 +1,121 @@
+Install Hadoop on vm1
+@site http://hadoop.apache.org/
+@site http://www.cloudera.com/
+@version hadoop-0.20.2-cdh3u4.tar.gz
+
+-----------------------------#Install.CentOS
+单节点(192.168.56.101)开发集群
+
+--)配置服务器主机名称为vm1
+[root@localhost ~] vi /etc/sysconfig/network
+HOSTNAME=vm1
+[root@localhost ~] vi /etc/hosts
+192.168.56.101       vm1
+
+-*)配置客户机上hosts
+#[win7] C:\Windows\System32\drivers\etc\hosts
+#权限问题(首先你要用管理员身份打开文本编辑器, 方法是在编辑器的图标上右click, 然后选用administrator(管理员)身份打开, 在文本编辑器上打开windows 目录下的 system32/drivers/etc/hosts文件, 修改后储存就可以)
+192.168.56.101       vm1
+
+-*)创建hadoop用户yhli和组dev
+[root@vm1 ~]# id yhli
+[root@vm1 ~]# groupadd dev
+[root@vm1 ~]# useradd -g dev yhli
+[root@vm1 ~]# passwd yhli
+[root@vm1 ~]# vi /etc/sudoers
+yhli    ALL=(ALL)       ALL
+
+--)配置SSH无密码登陆
+#切换hadoop用户并配置无密码认证
+[root@vm1 ~]# su - yhli
+[yhli@vm1 ~]$ ssh-keygen -t rsa -P ""
+[yhli@vm1 ~]$ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+[yhli@vm1 ~]$ chmod 700 ~/.ssh
+[yhli@vm1 ~]$ chmod 600 ~/.ssh/authorized_keys
+#测试(第一次登陆需确认并输入密码)
+[yhli@vm1 ~]$ ssh vm1
+
+--)安装hadoop
+[yhli@vm1 ~]$ cd app
+[yhli@vm1 apps]$ tar -xzf hadoop-0.20.2-cdh3u4.tar.gz
+
+-*)安装lzo
+#yum: lzo lzo-devel
+[root@vm1 ~]$ yum info lzo lzo-devel
+[root@vm1 ~]$ yum install lzo
+[root@vm1 ~]$ yum install lzo-devel
+#rpm: lzo lzo-devel
+http://rpm.pbone.net/ (RedHat EL 6/x86_64)
+[root@vm1 ~]$ rpm -q lzo lzo-devel
+[root@vm1 ~]$ cd /disk/yhli/install/rpm
+[root@vm1 rpm]$ rpm -ivh lzo-2.06-1.el6.rfx.x86_64.rpm
+[root@vm1 rpm]$ rpm -ivh lzo-devel-2.06-1.el6.rfx.x86_64.rpm
+#hadoop-lzo compile
+[yhli@vm1 install]$ ant -version
+[yhli@vm1 install]$ unzip kevinweil-hadoop-lzo-6bb1b7f.zip
+[yhli@vm1 install]$ cd kevinweil-hadoop-lzo-6bb1b7f
+[yhli@vm1 kevinweil-hadoop-lzo-6bb1b7f]$ export CFLAGS=-m64
+[yhli@vm1 kevinweil-hadoop-lzo-6bb1b7f]$ export CXXFLAGS=-m64
+[yhli@vm1 kevinweil-hadoop-lzo-6bb1b7f]$ ant compile-native tar
+Buildfile: /home/hadoop/tool/lzo/kevinweil-hadoop-lzo-6bb1b7f/build.xml
+......
+      [tar] Building tar: /home/hadoop/tool/lzo/kevinweil-hadoop-lzo-6bb1b7f/build/hadoop-lzo-0.4.15.tar.gz
+BUILD SUCCESSFUL
+#hadoop-lzo deploy(hadoop-lzo-0.4.15.tar.gz)
+[yhli@vm1 build]$ cp hadoop-lzo-0.4.15.jar ~/app/hadoop-0.20.2-cdh3u4/lib/
+[yhli@vm1 build]$ cp -r native ~/app/hadoop-0.20.2-cdh3u4/lib/
+
+--)配置hadoop
+上传hadoop-0.20.2-cdh3u4/vm1/所有文件到~/app/hadoop-0.20.2-cdh3u4/conf/
+
+-----------------------------#Admin
+--)集群管理命令
+#格式化分布式文件系统(首次使用)
+[yhli@vm1 ~]$ bin/hadoop namenode -format
+
+#启动dfs和mapred
+[yhli@vm1 ~]$ bin/start-all.sh 
+#关闭dfs和mapred
+[yhli@vm1 ~]$ bin/stop-all.sh
+
+#网络慢时，可以先启动dfs，中间等待一会确保datanode正常启动后，再启动mapred
+[yhli@vm1 ~]$ bin/start-dfs.sh
+[yhli@vm1 ~]$ bin/start-mapred.sh
+[yhli@vm1 ~]$ bin/stop-dfs.sh
+[yhli@vm1 ~]$ bin/stop-mapred.sh
+
+#查看集群状态
+bin/hadoop dfsadmin -report
+bin/hadoop dfsadmin -safemode get
+bin/hadoop fsck /
+
+#查看java进程
+[yhli@vm1 ~]$ jps
+4917 JobTracker
+5167 Jps
+4846 SecondaryNameNode
+4463 NameNode
+5090 TaskTracker
+4669 DataNode
+
+--)访问WEB管理界面
+#Hadoop DFS
+http://vm1:50070/
+#Hadoop MapReduce Job
+http://vm1:50030/
+
+--)hadoop集群demo测试
+[yhli@vm1 ~]$ cd ~/app/hadoop-*/
+bin/hadoop fs -put conf input
+bin/hadoop jar hadoop-examples-*.jar grep input output 'dfs[a-z.]+'
+bin/hadoop fs -cat output/*
+bin/hadoop fs -get output output 
+cat output/*
+bin/hadoop fs -rmr output
+
+--)问题: 节点之间不能通信的问题
+#java.net.NoRouteToHostException: No route to host
+#解决方案：关闭iptables，sudo 
+[root@vm1 ~]# /etc/init.d/iptables stop
+[root@vm1 ~]# chkconfig --level 35 iptables off
+
