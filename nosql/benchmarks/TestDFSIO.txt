@@ -1,0 +1,10 @@
+TestDFSIO
+---------------------------------------
+#写测试
+hadoop jar $HADOOP_HOME/hadoop-test-*.jar TestDFSIO -write -nrFiles 2 -fileSize 10MB
+
+#读测试
+hadoop jar $HADOOP_HOME/hadoop-test-*.jar TestDFSIO -read -nrFiles 2 -fileSize 10MB
+
+#清除测试数据
+hadoop jar $HADOOP_HOME/hadoop-test-*.jar TestDFSIO -clean
