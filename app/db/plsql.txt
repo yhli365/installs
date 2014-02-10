@@ -1,0 +1,15 @@
+#安装
+unzip instantclient_11_2.rar
+unzip PLSQL Developer 8.rar
+
+#设置环境变量
+ORACLE_HOME=D:\ytool\db\instantclient_11_2
+ORACLE_INSTANCE_HOME=%ORACLE_HOME%
+TNS_ADMIN=%ORACLE_HOME%
+NLS_LANG=AMERICAN_AMERICA.AL32UTF8
+
+#配置plsql连接
+runvista
+runco
+192.168.1.248/orcl
+

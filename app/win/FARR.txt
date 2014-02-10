@@ -1,0 +1,69 @@
+FARR config(v2.213)
+--------------------------------
+License
+http://www.donationcoder.com/Software/Mouser/findrun/index.html
+#Get Free License Key
+yhli365/s**1***** yhli365@126.com
+
+-----20121005
+License Type: Non-donator License.
+For user "yhli365" / yhli365@126.com:
+--------------------------------------------------------------------------
+*r1;rzLafg7KYsEvHA39VEGd0Iz+YN2W8OG8fzmkOavqB5G09AGsgMmwoML
+p0HoUGOmpcgTkxnhfNLBG89EQfcu+adYEZqMuhVI7IDu+4t6rFC5bLV+SeWs
+W9nZOfhfYsF5i7Upn/8kt2hv+Cst+SQb4c4haaCy+sgM2+cyGjxMM/LM=;kx
+x5/cjRyWc=;TTe0yocaCCOPh/KKdnXtrb/0VxxIiMW8NQhg/4T9xZEuyeWRe
+dHhz2aNXJGWFQsJSRaGDLKK34+DB8QxW5jU2+Ydh62eQtj6cpjHOHSPi5O3g
+BDfd6+8hv38Cs94ZvIColhtLUu4/L4X6Ibv4TcUluKbQBAj7gqHx2Tp989Ym
+qe5HpXUeLM4yLeonht79wNtK5w3Q8502H03sJVZ3b9TRetA6/83M5S0FSMU3
+EjeUA5fNkLovibaxRYj0KqnQXy8RwxOEcNYXnTkRxnRdgVfqMJGVEhYhAI2s
+j2SBtApH5vjsf5GvdEuhVxKz14Zs+tSgNdOcyTCypntgj9MQpXncrVeD6T0f
+JWBxpp/ZMtGa7vEQZaFfzSkryYgovX3eUsTo0Tkf5M/aVozUXf62903wd6er
+JOy7HPwqdwAhzofqD369Q1h8+uNrp3xa+cdi9sXwBNIhVxgnWmVVgkvs4AxS
+yIIFYOtC/JaiCSS4vrLs9ykkaXawPjT8g==
+
+--------------------------------
+*)Settings->General
+Start automatically when Windows starts => Y
+Play sound on display => N
+Check for updates on program startup => N
+
+*)Settings->Display Options
+Auto-shrink window to fit results => Y
+Result Display Size => 9/30/50
+
+*)Settings->Window Options
+Force FARR window on top => Y
+
+*)Settings->Folder Browsing
+Show matching folders by default => N
+
+*)Settings->Advanced Visuals
+Skin File => RoueOlive-SLIM.skn
+Use custom result background color => Y/clGradienActiveCaption
+Use custom search background color => Y/clSkyBlue
+Tray Icon Image => HamRadio's Round F - vista
+Custom WIndow Titlebar => FARR %version.major% | YHLI
+
+*)Settings->Font Overrides
+Overrid default font settings with custom settings below => Y
+Set EditBox Font => Arial Rounded MT;粗体;四号
+EditBox Height => 28
+Set Samll-Icon Result Font => 微软雅黑;常规;五号
+Result Height => 26
+SlideLine Height => 14
+Set Large# => Arial;粗体;28
+Set Plugin Memo Font => 微软雅黑;常规;小四
+
+*)Lists->Hotkeys
+Toggle FARR(Alt+Space) => Y
+{others} => N
+
+*)Lists->Search Folders
+D:\ytool=exe;chm;bat;lnk
+D:\yapp=exe;chm;bat;lnk [exclude)D:\yapp\mvnrepo]
+E:\yapp=exe;chm;bat;lnk [exclude)E:\yapp\sonatype-work;E:\yapp\svnrepo]
+
+*)Lists->Launch History
+Delete All
+
