@@ -37,7 +37,7 @@ yhli    ALL=(ALL)       ALL
 
 --)安装hadoop
 [yhli@vm1 ~]$ cd app
-[yhli@vm1 apps]$ tar -xzf hadoop-0.20.2-cdh3u4.tar.gz
+[yhli@vm1 app]$ tar -xzf hadoop-0.20.2-cdh3u4.tar.gz
 
 -*)安装lzo
 #yum: lzo lzo-devel
@@ -67,22 +67,33 @@ BUILD SUCCESSFUL
 
 --)配置hadoop
 上传hadoop-0.20.2-cdh3u4/vm1/所有文件到~/app/hadoop-0.20.2-cdh3u4/conf/
+#环境变量
+[yhli@vm1 ~]$ vi ~/app/.bashapp
+export HADOOP_HOME=$APP_HOME/hadoop-0.20.2-cdh3u4
+export PATH=$HADOOP_HOME/bin:...
+
+--)数据存储目录
+[yhli@vm1 ~]$ rm -rf /home/yhli/data/hadoop-0.20.2-cdh3u4
+[yhli@vm1 ~]$ mkdir -p /home/yhli/data/hadoop-0.20.2-cdh3u4
 
 -----------------------------#Admin
 --)集群管理命令
 #格式化分布式文件系统(首次使用)
-[yhli@vm1 ~]$ bin/hadoop namenode -format
+[yhli@vm1 ~]$ hadoop namenode -format
 
 #启动dfs和mapred
-[yhli@vm1 ~]$ bin/start-all.sh 
+[yhli@vm1 ~]$ start-all.sh 
 #关闭dfs和mapred
-[yhli@vm1 ~]$ bin/stop-all.sh
+[yhli@vm1 ~]$ stop-all.sh
 
 #网络慢时，可以先启动dfs，中间等待一会确保datanode正常启动后，再启动mapred
-[yhli@vm1 ~]$ bin/start-dfs.sh
-[yhli@vm1 ~]$ bin/start-mapred.sh
-[yhli@vm1 ~]$ bin/stop-dfs.sh
-[yhli@vm1 ~]$ bin/stop-mapred.sh
+[yhli@vm1 ~]$ start-dfs.sh
+[yhli@vm1 ~]$ start-mapred.sh
+[yhli@vm1 ~]$ stop-dfs.sh
+[yhli@vm1 ~]$ stop-mapred.sh
+
+--)子节点单独操作
+[yhli@vm1 ~]$ hadoop-daemon.sh start|stop datanode|tasktracker
 
 #查看集群状态
 bin/hadoop dfsadmin -report
