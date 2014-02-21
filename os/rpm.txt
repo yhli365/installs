@@ -1,0 +1,5 @@
+Linux rpm软件包下载
+
+http://rpm.pbone.net/
+http://www.rpmfind.net/
+http://www.sourceforge.net/

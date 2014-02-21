@@ -1,5 +1,3 @@
-#RPM
-http://rpm.pbone.net/
 
 #httpd
 http://httpd.apache.org/
