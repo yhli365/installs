@@ -1,0 +1,88 @@
+Storm
+http://storm-project.net/
+@version storm-0.8.2.zip
+@os centos6
+@site https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster
+
+-----------------------------Install
+--)1.Set up a Zookeeper cluster
+[yhli@vm1 zookeeper-3.4.5]$ rm -rf /home/yhli/data/zookeeper-3.4.5
+[yhli@vm1 zookeeper-3.4.5]$ vi conf/zoo.cfg 
+dataDir=/home/yhli/data/zookeeper-3.4.5
+server.1=vm1:2888:3888
+
+[yhli@vm1 zookeeper-3.4.5]$ bin/zkServer.sh start
+[yhli@vm1 zookeeper-3.4.5]$ bin/zkServer.sh stop
+[yhli@vm1 zookeeper-3.4.5]$ bin/zkCli.sh 
+
+--)2.Install dependencies on Nimbus and worker machines
+1)ZeroMQ 2.1.7 http://zeromq.org/
+[yhli@vm1 ~]$ rpm -q zeromq
+[yhli@vm1 ~]$ rpm -q libtool autoconf automake
+[yhli@vm1 ~]$ sudo yum -y install libtool autoconf automake
+[yhli@vm1 ~]$ rpm -q libuuid-devel e2fsprogs
+[yhli@vm1 ~]$ sudo yum -y install libuuid-devel e2fsprogs
+
+[yhli@vm1 install]$ tar -xzf zeromq-2.1.7.tar.gz
+[yhli@vm1 install]$ cd zeromq-2.1.7
+[yhli@vm1 zeromq-2.1.7]$ mkdir build; cd build
+[yhli@vm1 build]$ ../configure
+[yhli@vm1 build]$ make
+[yhli@vm1 build]$ sudo make install
+[yhli@vm1 build]$ sudo ldconfig
+
+2)JZMQ https://github.com/nathanmarz/jzmq
+[yhli@vm1 ~]$ rpm -q jzmq
+
+[yhli@vm1 install]$ unzip jzmq-master.zip
+[yhli@vm1 install]$ cd jzmq-master
+[yhli@vm1 jzmq-master]$ echo $JAVA_HOME
+/home/yhli/app/jdk1.6.0_33
+[yhli@vm1 jzmq-master]$ ./autogen.sh
+[yhli@vm1 jzmq-master]$ ./configure
+[yhli@vm1 jzmq-master]$ make
+[yhli@vm1 jzmq-master]$ sudo make install
+
+[yhli@vm1 jzmq-master]$ ll /usr/local/lib | grep mq
+[yhli@vm1 jzmq-master]$ ll /usr/local/share/java | grep mq
+
+3)Java 6
+[yhli@vm1 ~]$ java -version
+
+4)Python 2.6.6
+[yhli@vm1 ~]$ rpm -q python
+
+5)unzip
+[yhli@vm1 ~]$ rpm -q unzip
+
+--)3.Download and extract a Storm release to Nimbus and worker machines
+[yhli@vm1 install]$ unzip storm-0.8.2.zip -d ~/app
+
+--)4.Fill in mandatory configurations into storm.yaml
+[yhli@vm1 install]$ cd ~/app/storm-0.8.2
+[yhli@vm1 storm-0.8.2]$ cp conf/storm.yaml conf/storm.yaml.orig
+[yhli@vm1 storm-0.8.2]$ vi conf/storm.yaml
+
+--)5.Launch daemons under supervision using "storm" script and a supervisor of your choice
+#Zookeeper
+[yhli@vm1 ~]$ ~/app/zookeeper-3.4.5/bin/zkServer.sh start
+
+#Nimbus
+[yhli@vm1 ~]$ ~/app/storm-0.8.2/bin/storm nimbus &
+#Supervisor
+[yhli@vm1 ~]$ ~/app/storm-0.8.2/bin/storm supervisor &
+#UI
+[yhli@vm1 ~]$ ~/app/storm-0.8.2/bin/storm ui &
+
+#web
+http://vm1:8080/
+
+--)storm-starter
+mvn -f m2-pom.xml package
+[yhli@vm1 ~]$ cd ~/dev/storm
+[yhli@vm1 storm]$ ~/app/storm-0.8.2/bin/storm jar storm-starter-*-jar-with-dependencies.jar storm.starter.ExclamationTopology exclamationTopology
+[yhli@vm1 storm]$ ~/app/storm-0.8.2/bin/storm kill exclamationTopology
+
+[yhli@vm1 storm]$ ~/app/storm-0.8.2/bin/storm jar storm-starter-*-jar-with-dependencies.jar storm.starter.WordCountTopology WordCountTopology
+[yhli@vm1 storm]$ ~/app/storm-0.8.2/bin/storm kill WordCountTopology
+
