@@ -1,0 +1,25 @@
+zookeeper
+@site http://zookeeper.apache.org/
+@version zookeeper-3.4.5.tar.gz
+
+-----------------------------install
+[hadoop@vm1 install]$ tar -xzvf zookeeper-3.4.5.tar.gz 
+[hadoop@vm1 install]$ mv zookeeper-3.4.5 ../app
+[hadoop@vm1 install]$ cd ../app/zookeeper-3.4.5
+[hadoop@vm1 zookeeper-3.4.5]$ cp conf/zoo_sample.cfg conf/zoo.cfg
+[hadoop@vm1 zookeeper-3.4.5]$ vi conf/zoo.cfg
+dataDir=/home/hadoop/data/zookeeper-3.4.5
+server.1=vm1:2888:3888
+
+-----------------------------cmds
+[hadoop@vm1 zookeeper-3.4.5]$ bin/zkServer.sh start
+[hadoop@vm1 zookeeper-3.4.5]$ bin/zkServer.sh stop
+
+[hadoop@vm1 zookeeper-3.4.5]$ bin/zkCli.sh 
+[zk: localhost:2181(CONNECTED) 0] ls /
+[zookeeper]
+[zk: localhost:2181(CONNECTED) 1] quit
+Quitting...
+
+[hadoop@vm1 zookeeper-3.4.5]$ tail -200f zookeeper.out
+
