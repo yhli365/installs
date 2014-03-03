@@ -2,6 +2,7 @@ Install HBase on vm1
 @site http://hbase.apache.org/
 @site http://www.cloudera.com/
 @version hbase-0.92.1.tar.gz
+@depends hadoop-0.20.2-cdh3u4.tar.gz
 
 -----------------------------#Install.CentOS
 单节点(192.168.56.101)开发集群
