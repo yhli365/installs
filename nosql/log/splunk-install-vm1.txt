@@ -1,0 +1,33 @@
+Install Splunk on vm1
+@site http://www.splunk.com/ yysky365@126.com
+@version splunk-6.0.2-196940-linux-2.6-x86_64.rpm
+ 
+http://docs.splunk.com/Documentation/Splunk
+
+-----------------------------#Install.CentOS
+$SPLUNK_HOME=/usr/local/opt/splunk
+--)安装splunk
+[root@vm1 ~]# cd /disk/rpm/
+[root@vm1 rpm]$ rpm -i --prefix=/usr/local/opt splunk-6.0.2-196940-linux-2.6-x86_64.rpm
+complete
+[root@vm1 rpm]$ rpm -q splunk
+splunk-6.0.2-196940.x86_64
+
+--)卸载splunk
+[root@vm1 ~]$ rpm -e splunk
+[root@vm1 ~]$ rm -rf /usr/local/opt/splunk
+
+--)数据存储目录
+/usr/local/opt/splunk/var/
+
+-----------------------------#Admin
+--)启动
+[root@vm1 ~]$ cd /usr/local/opt/splunk
+[yhli@vm1 splunk]$ bin/splunk start
+--)关闭
+[yhli@vm1 splunk]$ bin/splunk stop
+
+--)访问WEB管理界面
+#splunk web(admin/123456)
+http://vm1:8000
+
