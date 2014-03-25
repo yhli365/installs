@@ -1,0 +1,62 @@
+Install Hive on vm1
+@version apache-hive-0.13.0-bin.tar.gz
+@depends hadoop-0.20.2-cdh3u4.tar.gz
+
+@site http://hive.apache.org/
+@site http://www.cloudera.com/
+
+-----------------------------#Install.CentOS
+单节点(192.168.56.101)开发集群
+
+--)安装配置hadoop
+参考hadoop-install-vm1.txt
+
+--)安装hive
+[yhli@vm1 ~]$ cd ~/install
+[yhli@vm1 install]$ tar -xzf apache-hive-0.13.0-bin.tar.gz -C ~/app/
+[yhli@vm1 install]$ cd ~/app
+
+--)配置hive
+上传hive-0.13.0/vm1/所有文件到~/app/apache-hive-0.13.0-bin/conf/
+#环境变量
+[yhli@vm1 ~]$ vi ~/app/.bashapp
+export HADOOP_HOME=$APP_HOME/hadoop-0.20.2-cdh3u4
+export HIVE_HOME=$APP_HOME/apache-hive-0.13.0-bin
+export PATH=$HIVE_HOME/bin:$PATH
+
+[yhli@vm1 ~]$ source ~/app/.bashapp
+
+#数据存储目录
+确保hadoop已经启动
+hadoop fs -mkdir       /tmp
+hadoop fs -mkdir       /user/hive/warehouse
+hadoop fs -chmod g+w   /tmp
+hadoop fs -chmod g+w   /user/hive/warehouse
+
+#命令行工具
+[yhli@vm1 hive]$ hive --help
+[yhli@vm1 hive]$ hive --service cli --help
+[yhli@vm1 hive]$ hive -H
+
+--)Hive CLI
+https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Cli
+[yhli@vm1 hive]$ hive
+hive> show tables;
+hive> show functions;
+hive> select * from dummy;
+hive> quit;
+
+[yhli@vm1 hive]$ echo 'X' > /tmp/dummy.txt
+[yhli@vm1 hive]$ hive -e "CREATE TABLE dummy (value STRING); \
+	LOAD DATA LOCAL INPATH '/tmp/dummy.txt' OVERWRITE INTO TABLE dummy"
+[yhli@vm1 hive]$ hive -S -e 'select * from dummy'
+
+--)Beeline CLI for HiveServer2
+[yhli@vm1 hive]$ beeline
+Beeline version 0.13.0 by Apache Hive
+beeline> !connect jdbc:hive2:// scott tiger org.apache.hive.jdbc.HiveDriver
+0: jdbc:hive2://> help;
+0: jdbc:hive2://> show tables;
+0: jdbc:hive2://> select * from dummy;
+0: jdbc:hive2://> !quit
+

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+
+<property>
+  <name>hive.tmp.dir</name>
+  <value>/home/yhli/data/hive</value>
+</property>
+
+<property>
+  <name>hive.querylog.location</name>
+  <value>${hive.tmp.dir}</value>
+  <description>
+    Location of Hive run time structured log file
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.scratchdir</name>
+  <value>${hive.tmp.dir}/hive-${user.name}</value>
+  <description>Scratch space for Hive jobs</description>
+</property>
+
+<property>
+  <name>hive.exec.local.scratchdir</name>
+  <value>${hive.tmp.dir}</value>
+  <description>Local scratch space for Hive jobs</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <value>jdbc:derby:;databaseName=${hive.tmp.dir}/metastore_db;create=true</value>
+  <description>JDBC connect string for a JDBC metastore</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionDriverName</name>
+  <value>org.apache.derby.jdbc.EmbeddedDriver</value>
+  <description>Driver class name for a JDBC metastore</description>
+</property>
+
+</configuration>

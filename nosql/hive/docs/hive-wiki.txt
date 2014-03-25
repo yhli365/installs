@@ -1,0 +1,13 @@
+Hive Wiki
+https://cwiki.apache.org/confluence/display/Hive/Home
+
+#Getting Started
+https://cwiki.apache.org/confluence/display/Hive/GettingStarted
+
+#Hive Tutorial
+https://cwiki.apache.org/confluence/display/Hive/Tutorial
+
+#HiveQL LanguageManual
+https://cwiki.apache.org/confluence/display/Hive/LanguageManual
+
+

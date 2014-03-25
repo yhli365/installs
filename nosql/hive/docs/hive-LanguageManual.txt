@@ -1,0 +1,4 @@
+Hive LanguageManual
+@site https://cwiki.apache.org/confluence/display/Hive/LanguageManual
+@version hive-0.13.0
+

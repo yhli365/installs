@@ -1,0 +1,70 @@
+#通过复制已有虚拟机VDI文件来创建新的虚拟机
+@version VirtualBox_4.2.8
+
+cmd.exe
+cmd>cd C:\Program Files\Oracle\VirtualBox
+
+-*)修改VDI虚拟机UUID
+cmd>VBoxManage internalcommands sethduuid "E:\vbox\osbak\centos6x64.vdi"
+
+--)复制Virtual Box虚拟机
+cmd>VBoxManage clonehd E:\vbox\osbak\centos6x64.vdi E:\vbox\centos\ys1.vdi
+
+-*)扩展虚拟介质大小到40G
+cmd>VBoxManage modifyhd E:\vbox\centos\ys1.vdi --resize 40000
+
+--)新建虚拟机
+名称: ys1
+类型: Linux
+版本: Red Hat (64 bit)
+内存: 1024 MB
+虚拟硬盘: 使用已有的虚拟硬盘文件(E:\vbox\centos\ys1.vdi)
+#创建后设置虚拟机
+系统->处理器# 启用PAE/NX
+系统->硬件加速# 启用VT-x/AMD-v; 启用嵌套分页
+网络->网卡1# 连接方式: 桥接网卡
+
+--)启动虚拟机
+--)克隆系统后网卡eth0变成eth1的解决办法
+[root@localhost ~] ifconfig -a
+[root@localhost ~] vi /etc/udev/rules.d/70-persistent-net.rules
+将eth0行删掉
+eth1行改为NAME="eth0"
+[root@localhost ~] vi /etc/sysconfig/network-scripts/ifcfg-eth0
+HWADDR=改为上述文件中ATTR{address}=中MAC地址
+[root@localhost ~] reboot
+
+--)初始配置网络和主机名称
+[root@localhost ~] vi /etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE="eth0"
+BOOTPROTO="static"
+HWADDR="08:00:27:1a:e0:a6"
+NM_CONTROLLED="yes"
+ONBOOT="yes"
+TYPE="Ethernet"
+IPADDR="192.168.186.1"
+NETMASK="255.255.0.0"
+[root@localhost ~] vi /etc/sysconfig/network
+NETWORKING=yes
+HOSTNAME=ys1
+[root@localhost ~] vi /etc/hosts
+192.168.186.1 ys1
+[root@localhost ~] /etc/init.d/network restart
+
+--)初始配置用户和用户组
+[root@ys1 ~] id hadoop
+[root@ys1 ~] groupadd -g 530 hadoop
+[root@ys1 ~] useradd -g hadoop -u 530 hadoop
+[root@ys1 ~] passwd hadoop
+[root@ys1 ~] vi /etc/sudoers
+hadoop    ALL=(ALL)       ALL
+
+--)关闭防火墙
+[root@ys1 ~]# chkconfig --list | grep iptables
+[root@ys1 ~]# chkconfig --level 35 iptables off
+[root@ys1 ~]# /etc/init.d/iptables stop
+
+--)宿主机访问虚拟机配置
+#如果不在同一网络中，则在网络设置里添加IP：192.168.186.200/255.255.0.0
+cmd>ping 192.168.186.1
+#SSH配置
