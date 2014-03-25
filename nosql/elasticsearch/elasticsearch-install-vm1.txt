@@ -1,41 +1,141 @@
-Install HBase on vm1
-@site http://www.elasticsearch.org/
+Install Elasticsearch on vm1
 @version elasticsearch-1.0.1.tar.gz
+
+@site http://www.elasticsearch.org/overview/elkdownloads/
+@site https://github.com/elasticsearch/elasticsearch-servicewrapper
 
 -----------------------------#Install.CentOS
 单节点(192.168.56.101)开发集群
 
---)安装配置hadoop
-参考hadoop-install-vm1.txt
+--)解压安装
+[yhli@vm1 ~]$ tar -xzf ~/install/elasticsearch-1.0.1.tar.gz -C ~/app
+[yhli@vm1 ~]$ cd ~/app/elasticsearch-1.0.1
+[yhli@vm1 elasticsearch-1.0.1]$ more README.textile 
 
---)安装hbase
-[yhli@vm1 ~]$ cd app
-[yhli@vm1 app]$ tar -xzf hbase-0.92.1.tar.gz
+--)配置
+[yhli@vm1 elasticsearch-1.0.1]$ vi config/elasticsearch.yml
 
---)配置hbase
-上传hbase-0.92.1/vm1/所有文件到~/app/hbase-0.92.1/conf/
-#环境变量
-[yhli@vm1 ~]$ vi ~/app/.bashapp
-export HBASE_HOME=$APP_HOME/hbase-0.92.1
-export PATH=$HBASE_HOME/bin:...
+--)启动
+[yhli@vm1 elasticsearch-1.0.1]$ bin/elasticsearch -d
 
---)数据存储目录
-[yhli@vm1 ~]$ rm -rf /home/yhli/data/hbase-0.92.1
-[yhli@vm1 ~]$ mkdir -p /home/yhli/data/hbase-0.92.1
+--)关闭
+[yhli@vm1 elasticsearch-1.0.1]$ jps
+2527 Jps
+2439 Elasticsearch
+[yhli@vm1 elasticsearch-1.0.1]$ kill 2439
 
------------------------------#Admin
---)启动Hadoop(dfs,mapred)
---)启动HBase
-[yhli@vm1 ~]$ start-hbase.sh
---)关闭HBase
-[yhli@vm1 ~]$ stop-hbase.sh
+--)验证
+[yhli@vm1 elasticsearch-1.0.1]$ bin/elasticsearch -v
+Version: 1.0.1, Build: 5c03844/2014-02-25T15:52:53Z, JVM: 1.6.0_33
+[yhli@vm1 elasticsearch-1.0.1]$ curl -X GET http://vm1:9200/
+{
+  "status" : 200,
+  "name" : "Citizen V",
+  "version" : {
+    "number" : "1.0.1",
+    "build_hash" : "5c03844e1978e5cc924dab2a423dc63ce881c42b",
+    "build_timestamp" : "2014-02-25T15:52:53Z",
+    "build_snapshot" : false,
+    "lucene_version" : "4.6"
+  },
+  "tagline" : "You Know, for Search"
+}
 
---)子节点单独操作
-[yhli@vm1 ~]$ hbase-daemon.sh start|stop regionserver|zookeeper|master
---)master单独操作
-[yhli@vm1 ~]$ hbase-daemons.sh start|stop regionserver|zookeeper
+--)front ends
+elasticsearch-head: A web front end for an Elasticsearch cluster.
+Hammer: Web front-end for elasticsearch
 
---)访问WEB管理界面
-#HBase
-http://vm1:60010/
+http://vm1:9200/_plugin/head
+http://vm1:9200/_plugin/hammer
+
+-----------------------------#DEMO
+@README.textile
+#Indexing
+curl -XPUT 'http://vm1:9200/twitter/user/kimchy' -d '{ "name" : "Shay Banon" }'
+
+curl -XPUT 'http://vm1:9200/twitter/tweet/1' -d '
+{ 
+    "user": "kimchy", 
+    "postDate": "2009-11-15T13:12:00", 
+    "message": "Trying out Elasticsearch, so far so good?" 
+}'
+
+curl -XPUT 'http://vm1:9200/twitter/tweet/2' -d '
+{ 
+    "user": "kimchy", 
+    "postDate": "2009-11-15T14:12:12", 
+    "message": "Another tweet, will it be indexed?" 
+}'
+
+#GETting
+curl -XGET 'http://vm1:9200/twitter/user/kimchy?pretty=true'
+curl -XGET 'http://vm1:9200/twitter/tweet/1?pretty=true'
+curl -XGET 'http://vm1:9200/twitter/tweet/2?pretty=true'
+
+#Searching
+curl -XGET 'http://vm1:9200/twitter/tweet/_search?q=user:kimchy&pretty=true'
+
+curl -XGET 'http://vm1:9200/twitter/tweet/_search?pretty=true' -d '
+{ 
+    "query" : { 
+        "text" : { "user": "kimchy" }
+    } 
+}'
+
+curl -XGET 'http://vm1:9200/twitter/_search?pretty=true' -d '
+{ 
+    "query" : { 
+        "matchAll" : {} 
+    } 
+}'
+
+curl -XGET 'http://vm1:9200/twitter/_search?pretty=true' -d '
+{ 
+    "query" : { 
+        "range" : { 
+            "postDate" : { "from" : "2009-11-15T13:00:00", "to" : "2009-11-15T14:00:00" } 
+        } 
+    } 
+}'
+
+#Multi Tenant - Indices and Types
+curl -XPUT 'http://vm1:9200/kimchy/info/1' -d '{ "name" : "Shay Banon" }'
+
+curl -XPUT 'http://vm1:9200/kimchy/tweet/1' -d '
+{ 
+    "user": "kimchy", 
+    "postDate": "2009-11-15T13:12:00", 
+    "message": "Trying out Elasticsearch, so far so good?" 
+}'
+
+curl -XPUT 'http://vm1:9200/kimchy/tweet/2' -d '
+{ 
+    "user": "kimchy", 
+    "postDate": "2009-11-15T14:12:12", 
+    "message": "Another tweet, will it be indexed?" 
+}'
+
+#shards
+curl -XPUT http://vm1:9200/another_user/ -d '
+{ 
+    "index" : { 
+        "numberOfShards" : 1, 
+        "numberOfReplicas" : 1 
+    } 
+}'
+
+curl -XGET 'http://vm1:9200/kimchy,another_user/_search?pretty=true' -d '
+{ 
+    "query" : { 
+        "matchAll" : {} 
+    } 
+}'
+
+curl -XGET 'http://vm1:9200/_search?pretty=true' -d '
+{ 
+    "query" : { 
+        "matchAll" : {} 
+    } 
+}'
+
 
