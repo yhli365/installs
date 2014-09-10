@@ -1,0 +1,95 @@
+http://www.centos.org/
+
+files:
+CentOS-6.5-x86_64-bin-DVD1.iso
+
+基于虚拟机(VirtualBox 4.3.12)安装
+https://www.virtualbox.org/
+
+--)虚拟机全局设定
+默认位置: D:\vbox
+
+--)新建虚拟机
+名称: centos65x
+操作系统: Red Hat (64 bit)
+内存：1024M
+处理器：1
+硬件加速：VT-x/AMD-v,嵌套分页,PAE/NX
+SATA硬盘：VDI 动态分配 centos65x 50G
+显存大小: 12M
+网卡1: 网络地址转换(NAT) Intel PRO/1000 MT桌面(82540EM) MAC(0800275D0722) 
+
+--)设置->存储->选择ISO文件加载: CentOS-6.5-x86_64-bin-DVD1.iso
+
+--)启动虚拟机, 按提示安装
+Media test: skip
+language: English
+keyboard: U.S.English
+选择Basic Storage Devices
+Hostname: ys0
+timezone: Asia/Shanghai
+root pwd: 123465
+software: Basic Server
+
+--)安装完成: reboot
+
+--)重启后登陆
+
+--)关闭防火墙
+1)查看防火墙信息：
+[root@vm1 ~]# /etc/init.d/iptables status
+2)启动防火墙服务：
+[root@vm1 ~]# /etc/init.d/iptables start
+3)关闭防火墙服务：
+[root@vm1 ~]# /etc/init.d/iptables stop
+4)永久关闭
+[root@vm1 ~]# chkconfig --list | grep iptables
+[root@vm1 ~]# chkconfig --level 35 iptables off
+
+--)设置网络
+#更改网络配置: 连接方式: Host-only
+[root@ys0 ~] ifconfig -a
+[root@ys0 ~] vi /etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE="eth0"
+BOOTPROTO="static"
+ONBOOT="yes"
+TYPE="Ethernet"
+IPADDR="192.168.56.200"
+NETMASK="255.255.0.0"
+[root@localhost ~] /etc/init.d/network restart
+
+[root@ys0 ~] vi /etc/hosts
+192.168.56.200	yumserver
+192.168.56.200	ys0
+192.168.56.201	ys1
+192.168.56.202	ys2
+
+#Window客户机测试
+C:\Windows\System32\drivers\etc\hosts
+192.168.56.200	ys0
+192.168.56.201	ys1
+192.168.56.202	ys2
+
+ping 192.168.56.200
+ping ys0
+
+--)SSH客户端测试
+
+-*)查看版本信息
+[root@ys0 ~]# uname -a
+Linux ys0 2.6.32-431.el6.x86_64 #1 SMP Fri Nov 22 03:15:09 UTC 2013 x86_64 x86_64 x86_64 GNU/Linux
+[root@ys0 ~]# lsb_release -a
+LSB Version:    :base-4.0-amd64:base-4.0-noarch:core-4.0-amd64:core-4.0-noarch:graphics-4.0-amd64:graphics-4.0-noarch:printing-4.0-amd64:printing-4.0-noarch
+Distributor ID: CentOS
+Description:    CentOS release 6.5 (Final)
+Release:        6.5
+Codename:       Final
+[root@ys0 ~]# 
+
+--)搭建YUM仓库
+
+--)安装gcc
+
+*)备份并作为基准系统
+关闭虚拟机, 复制vdi文件: centos65x.vdi
+

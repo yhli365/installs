@@ -1,0 +1,88 @@
+centos-YumServer.txt
+=================================================
+搭建YUM服务器(以CentOS-6.5为例)
+
+---------------------------
+--)搭建本地CentOS仓库
+#虚拟机光盘加载iso: CentOS-6.5-x86_64-bin-DVD1.iso
+[root@ys0 ~]# mkdir /media/cdrom
+[root@ys0 ~]# ll /dev | grep cdrom
+[root@ys0 ~]# mount -t iso9660 -o loop /dev/cdrom /media/cdrom
+[root@ys0 ~]# umount /media/cdrom
+
+[root@ys0 ~]# ls -l /media/cdrom
+[root@ys0 ~]# cat /media/cdrom/RELEASE-NOTES-en-US.html | grep title
+   <title>CentOS 6.5 Release Notes</title>
+[root@ys0 ~]# 
+
+--)搭建服务端CentOS仓库
+#上传CentOS-6.5-x86_64-bin-DVD1.iso
+[root@ys0 ~]# mount -t iso9660 -o loop /disk/CentOS-6.5-x86_64-bin-DVD1.iso  /media/cdrom/
+
+
+#安装并启动vsftpd服务
+[root@ys0 ~]# rpm -q vsftpd
+package vsftpd is not installed
+[root@ys0 ~]# ll /media/cdrom/Packages | grep vsftpd
+[root@ys0 ~]# rpm -ivh /media/cdrom/Packages/vsftpd-*.rpm
+[root@ys0 ~]# rpm -q vsftpd
+vsftpd-2.2.2-11.el6_4.1.x86_64
+[root@ys0 ~]# rpm -ql vsftpd
+[root@ys0 ~]# service vsftpd restart
+Shutting down vsftpd:                                      [FAILED]
+Starting vsftpd for vsftpd:                                [  OK  ]
+[root@ys0 ~]# chkconfig vsftpd on
+[root@ys0 ~]# chkconfig --list |grep vsftpd
+vsftpd          0:off   1:off   2:on    3:on    4:on    5:on    6:off
+[root@ys0 ~]# ll /var/ftp/pub/
+total 0
+[root@ys0 ~]#
+
+#建立yum仓库目录
+[root@ys0 ~]# mkdir -p /var/ftp/pub/centos6.5
+[root@ys0 ~]# mount --bind /media/cdrom /var/ftp/pub/centos6.5
+[root@ys0 ~]# ll /var/ftp/pub/centos6.5
+
+--)客户端修改yum源地址的配置文件
+[root@ys0 ~]# cd /etc/yum.repos.d/
+[root@ys0 yum.repos.d]# mkdir orig
+[root@ys0 yum.repos.d]# mv *.repo orig
+[root@ys0 yum.repos.d]# cp orig/CentOS-Base.repo centos-yhli.repo
+[root@ys0 yum.repos.d]# vi centos-yhli.repo
+[c6-media]
+name=CentOS-$releasever-$basearch - Media
+baseurl=file:///media/cdrom/
+gpgcheck=1
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+[c6-my]
+name=CentOS-$releasever-$basearch - MY
+baseurl=ftp://yumserver/pub/myrepo/$releasever/$basearch
+gpgcheck=1
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+
+--------------------------------tmp
+CentOS搭建内网yum仓库
+http://www.linuxidc.com/Linux/2014-03/97904.htm
+
+Centos6.5通过http方式搭建Yum源服务器
+http://www.21ops.com/linux/26465.html
+
+Centos6.4建立本地yum源
+http://jingyan.baidu.com/article/e9fb46e1aed8207521f7662c.html
+
+CentOS yum 源的配置与使用
+http://www.cnblogs.com/mchina/archive/2013/01/04/2842275.html
+
+Linux NFS服务器的安装与配置
+http://www.cnblogs.com/mchina/archive/2013/01/03/2840040.html
+
+vsftp不支持软链接，可以用mount来支持不同的目录结构
+http://blog.sina.com.cn/s/blog_6fb80e5b0101clu7.html
+
+[转载]yum中$releasever、 $basearch等变量含义
+http://blog.sina.com.cn/s/blog_69b59e3b0101lu12.html
+
