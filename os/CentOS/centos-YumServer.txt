@@ -15,11 +15,20 @@ centos-YumServer.txt
    <title>CentOS 6.5 Release Notes</title>
 [root@ys0 ~]# 
 
+#客户端修改yum源地址的配置文件
+[root@ys0 ~]# cd /etc/yum.repos.d/
+[root@ys0 yum.repos.d]# mkdir orig
+[root@ys0 yum.repos.d]# mv *.repo orig
+[root@ys0 yum.repos.d]# cp orig/CentOS-Base.repo centos-yhli.repo
+[root@ys0 ~]# vi /etc/yum.repos.d/centos-yhli.repo
+[c6-media]
+name=CentOS-$releasever-$basearch - Media
+baseurl=file:///media/cdrom/
+gpgcheck=1
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
 --)搭建服务端CentOS仓库
-#上传CentOS-6.5-x86_64-bin-DVD1.iso
-[root@ys0 ~]# mount -t iso9660 -o loop /disk/CentOS-6.5-x86_64-bin-DVD1.iso  /media/cdrom/
-
-
 #安装并启动vsftpd服务
 [root@ys0 ~]# rpm -q vsftpd
 package vsftpd is not installed
@@ -39,22 +48,11 @@ total 0
 [root@ys0 ~]#
 
 #建立yum仓库目录
+#上传CentOS-6.5-x86_64-bin-DVD1.iso
+[root@ys0 ~]# mount -t iso9660 -o loop /disk/CentOS-6.5-x86_64-bin-DVD1.iso  /media/cdrom/
 [root@ys0 ~]# mkdir -p /var/ftp/pub/centos6.5
 [root@ys0 ~]# mount --bind /media/cdrom /var/ftp/pub/centos6.5
 [root@ys0 ~]# ll /var/ftp/pub/centos6.5
-
---)客户端修改yum源地址的配置文件
-[root@ys0 ~]# cd /etc/yum.repos.d/
-[root@ys0 yum.repos.d]# mkdir orig
-[root@ys0 yum.repos.d]# mv *.repo orig
-[root@ys0 yum.repos.d]# cp orig/CentOS-Base.repo centos-yhli.repo
-[root@ys0 yum.repos.d]# vi centos-yhli.repo
-[c6-media]
-name=CentOS-$releasever-$basearch - Media
-baseurl=file:///media/cdrom/
-gpgcheck=1
-enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
 
 [c6-my]
 name=CentOS-$releasever-$basearch - MY

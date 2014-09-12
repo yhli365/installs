@@ -1,23 +1,26 @@
-Install Hadoop on vm1
+Install Hadoop on ys0
 @site http://hadoop.apache.org/
 @site http://www.cloudera.com/
 @version hadoop-0.20.2-cdh3u4.tar.gz
 
 -----------------------------#Install.CentOS
-单节点(192.168.56.101)开发集群
-
---)配置服务器主机名称为vm1
+--)配置服务器主机名称
 [root@localhost ~] vi /etc/sysconfig/network
-HOSTNAME=vm1
+HOSTNAME=ys0
 [root@localhost ~] vi /etc/hosts
-192.168.56.101       vm1
+192.168.56.200       yumserver
+192.168.56.200       ys0
+192.168.56.201       ys1
+192.168.56.202       ys2
 
 -*)配置客户机上hosts
 #[win7] C:\Windows\System32\drivers\etc\hosts
 #权限问题(首先你要用管理员身份打开文本编辑器, 方法是在编辑器的图标上右click, 然后选用administrator(管理员)身份打开, 在文本编辑器上打开windows 目录下的 system32/drivers/etc/hosts文件, 修改后储存就可以)
-192.168.56.101       vm1
+192.168.56.200       ys0
+192.168.56.201       ys1
+192.168.56.202       ys2
 
--*)创建hadoop用户yhli和组dev
+--)创建hadoop用户yhli和组dev
 [root@vm1 ~]# id yhli
 [root@vm1 ~]# groupadd dev
 [root@vm1 ~]# useradd -g dev yhli

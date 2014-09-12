@@ -7,7 +7,7 @@ CentOS-6.5-x86_64-bin-DVD1.iso
 https://www.virtualbox.org/
 
 --)虚拟机全局设定
-默认位置: D:\vbox
+默认位置: D:\yvms
 
 --)新建虚拟机
 名称: centos65x
@@ -37,19 +37,19 @@ software: Basic Server
 
 --)关闭防火墙
 1)查看防火墙信息：
-[root@vm1 ~]# /etc/init.d/iptables status
+[root@ys0 ~]# /etc/init.d/iptables status
 2)启动防火墙服务：
-[root@vm1 ~]# /etc/init.d/iptables start
+[root@ys0 ~]# /etc/init.d/iptables start
 3)关闭防火墙服务：
-[root@vm1 ~]# /etc/init.d/iptables stop
+[root@ys0 ~]# /etc/init.d/iptables stop
 4)永久关闭
-[root@vm1 ~]# chkconfig --list | grep iptables
-[root@vm1 ~]# chkconfig --level 35 iptables off
+[root@ys0 ~]# chkconfig --list | grep iptables
+[root@ys0 ~]# chkconfig --level 35 iptables off
 
 --)设置网络
 #更改网络配置: 连接方式: Host-only
-[root@ys0 ~] ifconfig -a
-[root@ys0 ~] vi /etc/sysconfig/network-scripts/ifcfg-eth0
+[root@ys0 ~]# ifconfig -a
+[root@ys0 ~]# vi /etc/sysconfig/network-scripts/ifcfg-eth0
 DEVICE="eth0"
 BOOTPROTO="static"
 ONBOOT="yes"
@@ -58,11 +58,11 @@ IPADDR="192.168.56.200"
 NETMASK="255.255.0.0"
 [root@localhost ~] /etc/init.d/network restart
 
-[root@ys0 ~] vi /etc/hosts
-192.168.56.200	yumserver
+[root@ys0 ~]# vi /etc/hosts
 192.168.56.200	ys0
 192.168.56.201	ys1
 192.168.56.202	ys2
+192.168.56.200	yumserver
 
 #Window客户机测试
 C:\Windows\System32\drivers\etc\hosts
@@ -86,10 +86,74 @@ Release:        6.5
 Codename:       Final
 [root@ys0 ~]# 
 
+--)用户和组管理
+#查看用户和组
+[root@ys0 ~]# cat /etc/passwd
+[root@ys0 ~]# cat /etc/group
+#删除用户和组
+[root@ys0 ~]# userdel -r yhli
+[root@ys0 ~]# groupdel dev
+#增加用户和组
+[root@ys0 ~]# groupadd -g 520 dev
+[root@ys0 ~]# useradd -g dev -u 520 yhli
+[root@ys0 ~]# id yhli
+uid=520(yhli) gid=520(dev) groups=520(dev)
+#设置用户密码
+[root@ys0 ~]# passwd yhli
+yhli
+#设置用户权限
+[root@ys0 ~]# vi /etc/sudoers
+## Allow root to run any commands anywhere
+root    ALL=(ALL)       ALL
+yhli    ALL=(ALL)       ALL
+#查看用户目录
+[root@ys0 ~]# ll -a /home/yhli
+
+#数据目录
+[root@ys0 ~]# mkdir /disk
+[root@ys0 ~]# chown -R yhli:dev /disk
+
+--)配置SSH无密码登陆
+#配置root用户无密码登陆其他机器
+[root@ys0 ~]# ll ~/.ssh
+[root@ys0 ~]# ssh-keygen -t rsa -P ""
+[root@ys0 ~]# cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+#测试(第一次登陆需确认并输入密码)
+[root@ys0 ~]# ssh ys0
+
+#复制ssh配置对方机器(ys1:192.168.56.201)
+[root@ys0 ~]$ ssh-copy-id -i root@192.168.56.201
+或者等同于下述命令
+[root@ys0 ~]# scp ~/.ssh/authorized_keys root@192.168.56.201:/root/.ssh
+[root@ys1 ~]# ssh root@192.168.56.201
+[root@ys1 ~]# chmod 600 /root/.ssh/authorized_keys     
+#测试
+[root@ys0 ~]# ssh root@192.168.56.201
+
+#配置yhli用户无密码登陆其他机器
+[root@ys0 ~]# cp -r ~/.ssh /home/yhli/
+[root@ys0 ~]# chown -R yhli:dev /home/yhli/.ssh
+[root@ys0 ~]$ ssh-copy-id -i yhli@192.168.56.201
+#测试
+[root@ys0 ~]# su - yhli
+[yhli@ys0 ~]# ssh ys0
+[yhli@ys0 ~]# ssh root@192.168.56.201
+[yhli@ys0 ~]# ssh yhli@192.168.56.201
+
+#注意事项
+[root@ys0 ~]$ chmod 700 ~/.ssh
+[root@ys0 ~]$ chmod 600 ~/.ssh/authorized_keys
+
 --)搭建YUM仓库
 
---)安装gcc
+--)安装RPM包
+[root@ys0 ~]# rpm -q gcc gcc-c++
+gcc-4.4.7-4.el6.x86_64
+gcc-c++-4.4.7-4.el6.x86_64
+
+[root@ys0 ~]# yum install gcc
+[root@ys0 ~]# yum install gcc-c++
 
 *)备份并作为基准系统
-关闭虚拟机, 复制vdi文件: centos65x.vdi
+关闭虚拟机, 复制vdi文件: centos65x.vdi -> centos65x_std.vdi
 

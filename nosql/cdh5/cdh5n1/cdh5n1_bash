@@ -1,0 +1,19 @@
+# cdh5n1_bash
+# yhli365@qq.com
+
+APP_DIR=/home/yhli/app
+export CDH_DIR=/home/yhli/cdh
+export CDH_CONF_DIR=/disk/cdh5n1/conf
+
+export JAVA_HOME=$APP_DIR/jdk1.7.0_67
+export ANT_HOME=$APP_DIR/apache-ant-1.8.4
+
+export HADOOP_HOME=$CDH_DIR/hadoop-2.3.0-cdh5.1.0
+export HBASE_HOME=$CDH_DIR/hbase-0.98.1-cdh5.1.0
+export HIVE_HOME=$CDH_DIR/apache-hive-0.13.0-bin
+export PIG_HOME=$CDH_DIR/pig-0.10.0
+
+export PATH=$JAVA_HOME/bin:$ANT_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HBASE_HOME/bin:$HIVE_HOME/bin:$PIG_HOME/bin:$PATH
+
+export HADOOP_CONF_DIR=$CDH_CONF_DIR/hadoop
+
