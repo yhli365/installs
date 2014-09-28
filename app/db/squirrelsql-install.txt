@@ -1,0 +1,4 @@
+SQuirreL SQL Client
+@site http://www.squirrelsql.org/
+@version 3.5.3 on win7
+

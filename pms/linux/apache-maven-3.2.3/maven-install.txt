@@ -1,0 +1,9 @@
+
+[yhli@ys0 ~]$ tar -xzf /disk/yhli/install/apache-maven-3.2.3-bin.tar.gz -C /disk/yhli/app
+[yhli@ys0 ~]$ vi /disk/yhli/app/apache-maven-3.2.3/conf/settings.xml
+<localRepository>/disk/yhli/repo/m2</localRepository>
+[yhli@ys0 ~]$ sudo mkdir -p /disk/yhli/repo/m2
+[yhli@ys0 ~]$ sudo chown -R yhli:dev /disk/yhli/repo/m2
+[yhli@ys0 ~]$ vi /disk/yhli/app/bash_mvn
+[yhli@ys0 ~]$ source /disk/yhli/app/bash_mvn
+[yhli@ys0 ~]# mvn -version

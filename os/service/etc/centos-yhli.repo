@@ -1,0 +1,16 @@
+# centos-yhli.repo
+#
+
+[c6-media]
+name=CentOS-$releasever-$basearch - Media
+baseurl=file:///media/cdrom/
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+[myrepo]
+name=CentOS-$releasever-$basearch - MyRepo
+baseurl=ftp://yumserver/pub/yum/$releasever/myrepo
+enabled=1
+gpgcheck=0
+

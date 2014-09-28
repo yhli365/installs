@@ -1,0 +1,49 @@
+YCSB
+https://github.com/brianfrankcooper/YCSB
+
+@version ycsb-0.1.4.tar.gz hbase-0.92.1
+
+--)Install
+[yhli@ys0 ~]$ tar -xzf /disk/yhli/install/ycsb-0.1.4.tar.gz -C /disk/yhli/cloud/
+[yhli@ys0 ~]$ cd /disk/yhli/cloud/ycsb-0.1.4
+[yhli@ys0 ycsb-0.1.4]$ bin/ycsb
+[yhli@ys0 ycsb-0.1.4]$ mkdir test
+
+--)Basic
+#加载数据
+[yhli@ys0 ycsb-0.1.4]$ bin/ycsb load basic -P workloads/workloada -s > test/load.dat
+[yhli@ys0 ycsb-0.1.4]$ more test/load.dat
+#执行事物
+[yhli@ys0 ycsb-0.1.4]$ bin/ycsb run basic -P workloads/workloada -s > test/transactions.dat
+[yhli@ys0 ycsb-0.1.4]$ more test/transactions.dat
+
+--)HBase
+#配置测试环境：
+[yhli@ys0 ycsb-0.1.4]$ mkdir hbase-binding/bak
+[yhli@ys0 ycsb-0.1.4]$ cp -r hbase-binding/conf/hbase-site.xml hbase-binding/bak/hbase-site.xml.orig
+[yhli@ys0 ycsb-0.1.4]$ cp -r hbase-binding/lib/hbase-binding-0.1.4.jar hbase-binding/bak/hbase-binding-0.1.4.jar.orig
+1)将hbase中的jar包拷贝到hbase-binding/lib文件夹下
+[yhli@ys0 ycsb-0.1.4]$ cp -r ~/cdh/hbase/lib/*.* hbase-binding/lib/
+[yhli@ys0 ycsb-0.1.4]$ cp -r ~/cdh/hbase/hbase-*.jar hbase-binding/lib/
+[yhli@ys0 ycsb-0.1.4]$ cp -r ~/cdh/hadoop/lib/guava-r09-jarjar.jar hbase-binding/lib/
+[yhli@ys0 ycsb-0.1.4]$ ll hbase-binding/lib/
+2)将hbase中的/conf/hbase-site.xml拷贝到/hbase-binding/conf下
+[yhli@ys0 ycsb-0.1.4]$ cp -r ~/cdh/data/conf/hbase/hbase-site.xml hbase-binding/conf/
+[yhli@ys0 ycsb-0.1.4]$ ll hbase-binding/conf/
+3)在hbase中创建指定的表：usertable
+hbase> create 'usertable','f1'
+hbase> create 'usertable','f1','f2','f3', {SPLITS => ['user2', 'user4', 'user6', 'user8']}
+hbase> flush 'usertable'
+hbase> count 'usertable'
+hbase> scan 'usertable', {COLUMNS => ['f1'], LIMIT => 10}
+hbase> scan 'usertable', {COLUMNS => ['f1'], LIMIT => 10, STARTROW => 'user200'}
+hbase> disable 'usertable'
+hbase> drop 'usertable'
+
+#测试
+[yhli@ys0 ycsb-0.1.4]$ rm -rf test/hbase*.data
+[yhli@ys0 ycsb-0.1.4]$ bin/ycsb load hbase -P workloads/workloada -p threads=3 -p columnfamily=f1 -p recordcount=10000 -s > test/hbase_loada.dat
+[yhli@ys0 ycsb-0.1.4]$ tail -100 test/hbase_loada.dat
+[yhli@ys0 ycsb-0.1.4]$ bin/ycsb run hbase -P workloads/workloada -threads 3 -p measurementtype=timeseries -p columnfamily=f1 -p timeseries.granularity=2000 > test/hbase_transa.dat
+[yhli@ys0 ycsb-0.1.4]$ tail -100 test/hbase_transa.dat
+

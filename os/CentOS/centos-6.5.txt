@@ -56,7 +56,9 @@ ONBOOT="yes"
 TYPE="Ethernet"
 IPADDR="192.168.56.200"
 NETMASK="255.255.0.0"
-[root@localhost ~] /etc/init.d/network restart
+NM_CONTROLLED="yes"
+UUID=0ded04eb-84d2-4517-bf40-75fbd0f145fb
+[root@ys0 ~] /etc/init.d/network restart
 
 [root@ys0 ~]# vi /etc/hosts
 192.168.56.200	ys0
@@ -65,6 +67,8 @@ NETMASK="255.255.0.0"
 192.168.56.200	yumserver
 
 #Window客户机测试
+#C:\Windows\System32\drivers\etc\hosts
+#win7权限问题(首先你要用管理员身份打开文本编辑器, 方法是在编辑器的图标上右click, 然后选用administrator(管理员)身份打开, 在文本编辑器上打开windows 目录下的 system32/drivers/etc/hosts文件, 修改后储存就可以)
 C:\Windows\System32\drivers\etc\hosts
 192.168.56.200	ys0
 192.168.56.201	ys1
@@ -73,9 +77,23 @@ C:\Windows\System32\drivers\etc\hosts
 ping 192.168.56.200
 ping ys0
 
---)SSH客户端测试
+#增加上网网卡2配置: 连接方式: NAT
+[root@ys0 ~] ifconfig eth1 down
+[root@ys0 network-scripts]# vi ifcfg-eth1 
+DEVICE="eth1"
+BOOTPROTO="dhcp"
+HWADDR="08:00:27:bc:b3:d3"
+NM_CONTROLLED="yes"
+ONBOOT="no"
+TYPE="Ethernet"
+UUID="c925bf86-e0ba-4b52-9e61-0c2ea5bbc934"
+[root@ys0 ~] ifdown eth1
+[root@ys0 ~] ifup eth1
+[root@ys0 ~] ifconfig -a
+[root@ys0 ~] ping www.baidu.com
 
--*)查看版本信息
+--)SSH客户端测试
+#查看版本信息
 [root@ys0 ~]# uname -a
 Linux ys0 2.6.32-431.el6.x86_64 #1 SMP Fri Nov 22 03:15:09 UTC 2013 x86_64 x86_64 x86_64 GNU/Linux
 [root@ys0 ~]# lsb_release -a
@@ -84,15 +102,75 @@ Distributor ID: CentOS
 Description:    CentOS release 6.5 (Final)
 Release:        6.5
 Codename:       Final
-[root@ys0 ~]# 
+[root@ys0 ~]#
+
+--)安装RPM包
+#搭建本地YUM仓库
+#安装
+[root@ys0 ~]# rpm -q gcc gcc-c++
+gcc-4.4.7-4.el6.x86_64
+gcc-c++-4.4.7-4.el6.x86_64
+
+[root@ys0 ~]# yum install gcc
+[root@ys0 ~]# yum install gcc-c++
+
+--)数据存储位置
+#创建数据目录
+[root@ys0 ~]# mkdir /disk
+
+--)挂载独立数据磁盘(可选)
+#新建虚拟磁盘
+[root@ys0 ~]# poweroff
+选择虚拟机->设置->存储：添加SATA虚拟硬盘
+动态分配 50G
+D:\yvms\vbox\ydisk1.vdi
+
+#启动虚拟机后,分区、格式化与挂载
+[root@ys0 ~]# fdisk -l
+[root@ys0 ~]# fdisk /dev/sdb 
+输入m查看帮助
+输入n新增分区,输入p新建主分区,输入数字1新增一个主分区,回车键,回车键
+输入w写入并退出
+
+#格式化虚拟硬盘分区
+[root@ys0 ~]# mkfs.ext4 /dev/sdb1
+--如果是centos5.x，支持ext4步骤如下
+	#把虚拟硬盘分区格式化为ext4之前，需要先查看系统是否加载ext4模块
+	[root@ys0 ~]# lsmod | grep ext4
+	ext4                  374902  2 
+	jbd2                   93427  1 ext4
+	mbcache                 8193  1 ext4
+	上面说明已经加载成功了。
+	#如果没有加载，手动加载(centos5.x中有ext4模块,只是需要手动加载)
+	[root@ys0 ~]# cd /lib/modules/2.6.18-194.el5/kernel/fs/ext4/   
+	如果不出意外，将看到ext4.ko文件，加载ext4模块
+	[root@ys0 ext4]# modprobe ext4  
+	#格式化之前需要安装e4fsprogs，如果没有安装可以通过下面的命令安装：
+	[root@ys0 ~]# rpm -q e4fsprogs
+	[root@ys0 ~]# yum -y install e4fsprogs
+
+#挂载虚拟分区
+[root@ys0 ~]# mount -t ext4 /dev/sdb1 /disk
+[root@ys0 ~]# df -h
+Filesystem                  Size  Used Avail Use% Mounted on
+/dev/mapper/vg_ys0-lv_root   47G  3.6G   41G   8% /
+tmpfs                       499M     0  499M   0% /dev/shm
+/dev/sda1                   485M   34M  426M   8% /boot
+/dev/sdb1                    50G  180M   47G   1% /disk
+[root@ys0 ~]# umount /disk
+#加入fstab
+[root@ys0 ~]# vi /etc/fstab
+/dev/sdb1                    /disk                   ext4    defaults        0 0
+[root@ys0 ~]# mount -a
 
 --)用户和组管理
 #查看用户和组
 [root@ys0 ~]# cat /etc/passwd
 [root@ys0 ~]# cat /etc/group
 #删除用户和组
-[root@ys0 ~]# userdel -r yhli
+[root@ys0 ~]# userdel yhli
 [root@ys0 ~]# groupdel dev
+[root@ys0 ~]# rm -rf /var/mail/yhli
 #增加用户和组
 [root@ys0 ~]# groupadd -g 520 dev
 [root@ys0 ~]# useradd -g dev -u 520 yhli
@@ -109,10 +187,6 @@ yhli    ALL=(ALL)       ALL
 #查看用户目录
 [root@ys0 ~]# ll -a /home/yhli
 
-#数据目录
-[root@ys0 ~]# mkdir /disk
-[root@ys0 ~]# chown -R yhli:dev /disk
-
 --)配置SSH无密码登陆
 #配置root用户无密码登陆其他机器
 [root@ys0 ~]# ll ~/.ssh
@@ -121,39 +195,31 @@ yhli    ALL=(ALL)       ALL
 #测试(第一次登陆需确认并输入密码)
 [root@ys0 ~]# ssh ys0
 
-#复制ssh配置对方机器(ys1:192.168.56.201)
-[root@ys0 ~]$ ssh-copy-id -i root@192.168.56.201
+#复制ssh配置对方机器(ys1)
+[root@ys0 ~]# ssh-copy-id -i root@ys1
 或者等同于下述命令
-[root@ys0 ~]# scp ~/.ssh/authorized_keys root@192.168.56.201:/root/.ssh
-[root@ys1 ~]# ssh root@192.168.56.201
+[root@ys0 ~]# scp ~/.ssh/authorized_keys root@ys1:/root/.ssh
+[root@ys1 ~]# ssh root@ys1
 [root@ys1 ~]# chmod 600 /root/.ssh/authorized_keys     
 #测试
-[root@ys0 ~]# ssh root@192.168.56.201
+[root@ys0 ~]# ssh root@ys1
 
-#配置yhli用户无密码登陆其他机器
+#配置yhli用户无密码登陆
+[root@ys0 ~]# rm -rf /home/yhli/.ssh
 [root@ys0 ~]# cp -r ~/.ssh /home/yhli/
 [root@ys0 ~]# chown -R yhli:dev /home/yhli/.ssh
-[root@ys0 ~]$ ssh-copy-id -i yhli@192.168.56.201
-#测试
+[root@ys0 ~]# ssh yhli@ys0
 [root@ys0 ~]# su - yhli
 [yhli@ys0 ~]# ssh ys0
-[yhli@ys0 ~]# ssh root@192.168.56.201
-[yhli@ys0 ~]# ssh yhli@192.168.56.201
+
+#配置yhli用户无密码登陆其他机器
+[yhli@ys0 ~]$ ssh-copy-id -i yhli@ys1
+[yhli@ys0 ~]$ ssh yhli@ys1
 
 #注意事项
 [root@ys0 ~]$ chmod 700 ~/.ssh
 [root@ys0 ~]$ chmod 600 ~/.ssh/authorized_keys
 
---)搭建YUM仓库
-
---)安装RPM包
-[root@ys0 ~]# rpm -q gcc gcc-c++
-gcc-4.4.7-4.el6.x86_64
-gcc-c++-4.4.7-4.el6.x86_64
-
-[root@ys0 ~]# yum install gcc
-[root@ys0 ~]# yum install gcc-c++
-
-*)备份并作为基准系统
+--)备份并作为基准系统
 关闭虚拟机, 复制vdi文件: centos65x.vdi -> centos65x_std.vdi
 

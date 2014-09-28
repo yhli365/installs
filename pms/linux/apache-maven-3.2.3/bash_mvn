@@ -1,0 +1,10 @@
+# mvn_bash
+# yhli365@qq.com
+
+APP_DIR=/disk/yhli/app
+
+export JAVA_HOME=$APP_DIR/jdk1.7.0_67
+export M2_HOME=$APP_DIR/apache-maven-3.2.3
+
+export PATH=$JAVA_HOME/bin:$M2_HOME/bin:$PATH
+

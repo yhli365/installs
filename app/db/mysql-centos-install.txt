@@ -1,0 +1,55 @@
+Mysql
+@version 5.1.61 on CentOS 6.3
+
+--#安装
+[root@ys0 ~]# yum install mysql
+[root@ys0 ~]# yum install mysql-server
+[root@ys0 ~]# rpm -q mysql mysql-server
+mysql-5.1.61-4.el6.x86_64
+mysql-server-5.1.61-4.el6.x86_64
+[root@ys0 ~]# rpm -qpl /media/cdrom/Packages/mysql-connector-java*.rpm
+[root@ys0 ~]# rpm2cpio /media/cdrom/Packages/mysql-connector-java*.rpm | cpio -ivdm ./usr/share/java/
+[root@ys0 ~]# cp -r ./usr/share/java/* /usr/share/java/
+[root@ys0 ~]# ll /usr/share/java/ | grep mysql-connector-java
+
+--#配置
+[root@ys0 ~]# cp /etc/my.cnf /etc/my.cnf.orig
+[root@ys0 ~]# ll /etc/ | grep my
+[root@ys0 ~]# vi /etc/my.cnf
+[mysqld]增加一行:
+character-set-server = utf8
+
+--#启动
+[root@ys0 ~]# chkconfig mysqld on
+[root@ys0 ~]# chkconfig --list mysqld
+mysqld 0:off 1:off 2:on 3:on 4:on 5:on 6:off
+[root@ys0 ~]# /etc/rc.d/init.d/mysqld status
+[root@ys0 ~]# service mysqld start
+[root@ys0 ~]# service mysqld stop
+
+--#修改root密码（默认密码为空）
+[root@ys0 ~]# /usr/bin/mysqladmin -u root password 'pwroot'
+#用root用户登录MySQL服务器
+[root@ys0 ~]# mysql -u root -p
+mysql> select version(),current_date;
++-----------+--------------+
+| version() | current_date |
++-----------+--------------+
+| 5.1.61    | 2014-09-24   |
++-----------+--------------+
+1 row in set (0.00 sec)
+mysql> show databases;
+mysql> select user,host,password from mysql.user;
+mysql> set password for root@localhost=password('pwroot');
+mysql> create user 'yhli' identified by 'pwyhli';
+mysql> grant all privileges on test.* to 'yhli'@'%' with grant option;
+mysql> grant all privileges on test.* to 'yhli'@'ys0' identified by 'pwyhli' with grant option;
+mysql> flush privileges;
+mysql> exit;
+#用yhli用户登录MySQL服务器
+[root@ys0 ~]# mysql -u yhli -p -h ys0
+mysql> show databases;
+[root@ys0 ~]# mysql -u yhli -p -h localhost
+Enter password: 
+ERROR 1045 (28000): Access denied for user 'yhli'@'localhost' (using password: YES)
+[root@ys0 ~]# 
