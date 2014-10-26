@@ -6,12 +6,12 @@
 <configuration>
 	<property>
 		<name>dfs.name.dir</name>
-		<value>${hadoop.tmp.dir}/dfs/name,${hadoop.tmp.dir}/dfs/name2</value>
+		<value>${hadoop.tmp.dir}/dfs/name</value>
 	</property>
 
 	<property>
 		<name>dfs.data.dir</name>
-		<value>${hadoop.tmp.dir}/dfs/data,${hadoop.tmp.dir}/dfs/data2</value>
+		<value>${hadoop.tmp.dir}/dfs/data</value>
 	</property>
 
 	<property>
@@ -42,7 +42,6 @@
 	<property>
 		<name>dfs.block.size</name>
 		<value>16777216</value><!--16777216(16M);67108864(64M);134217728(128M);268435456(256M) -->
-		<description>The default block size for new files.</description>
 	</property>
 
 	<property>
@@ -58,41 +57,6 @@
 	<property>
 		<name>dfs.support.append</name>
 		<value>true</value>
-	</property>
-
-	<property>
-		<name>dfs.secondary.http.address</name>
-		<value>0.0.0.0:50090</value>
-	</property>
-
-	<property>
-		<name>dfs.datanode.address</name>
-		<value>0.0.0.0:50010</value>
-	</property>
-
-	<property>
-		<name>dfs.datanode.http.address</name>
-		<value>0.0.0.0:50075</value>
-	</property>
-
-	<property>
-		<name>dfs.datanode.ipc.address</name>
-		<value>0.0.0.0:50020</value>
-	</property>
-
-	<property>
-		<name>dfs.http.address</name>
-		<value>0.0.0.0:50070</value>
-	</property>
-
-	<property>
-		<name>dfs.datanode.https.address</name>
-		<value>0.0.0.0:50475</value>
-	</property>
-
-	<property>
-		<name>dfs.https.address</name>
-		<value>0.0.0.0:50470</value>
 	</property>
 
 </configuration>

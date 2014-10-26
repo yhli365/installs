@@ -1,0 +1,118 @@
+Oozie
+@version oozie-2.3.2-cdh3u6 on hadoop-0.20.2-cdh3u4,
+
+--)examples-------------------------------------------------
+#)prepare
+[yhli@ys0 ~]$ cd $OOZIE_HOME
+[yhli@ys0 oozie]$ tar -xzf oozie-examples.tar.gz
+[yhli@ys0 oozie]$ hadoop dfs -rmr examples232
+[yhli@ys0 oozie]$ hadoop dfs -put examples examples232
+[yhli@ys0 oozie]$ vi job.properties
+nameNode=hdfs://ys0:9000
+jobTracker=ys0:9001
+queueName=default
+examplesRoot=examples232
+
+#)java-main
+[yhli@ys0 oozie]$ vi examples/apps/java-main/job.properties
+[yhli@ys0 oozie]$ bin/oozie validate examples/apps/java-main/workflow.xml
+[yhli@ys0 oozie]$ bin/oozie job -oozie http://localhost:11000/oozie -config examples/apps/java-main/job.properties -run
+job: 0000000-141015140503623-oozie-yhli-W
+[yhli@ys0 oozie]$ bin/oozie job -info 0000000-141015140503623-oozie-yhli-W
+[yhli@ys0 oozie]$ bin/oozie job -log 0000000-141015140503623-oozie-yhli-W
+[yhli@ys0 oozie]$ bin/oozie job -definition 0000000-141015140503623-oozie-yhli-W
+
+#)map-reduce
+[yhli@ys0 oozie]$ vi examples/apps/map-reduce/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/map-reduce/job.properties -run
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/map-reduce/part-*
+
+#)hadoop-el
+[yhli@ys0 oozie]$ vi examples/apps/hadoop-el/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/hadoop-el/job.properties -run
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/hadoop-el/part-*
+
+#)streaming
+[yhli@ys0 oozie]$ vi examples/apps/streaming/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/streaming/job.properties -run
+
+#)sqoop
+[yhli@ys0 oozie]$ vi examples/apps/sqoop/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/sqoop/job.properties -run
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/sqoop/part-*
+
+#)sqoop-freeform
+[yhli@ys0 oozie]$ vi examples/apps/sqoop-freeform/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/sqoop-freeform/job.properties -run
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/sqoop-freeform/part-*
+
+#)hive
+[yhli@ys0 oozie]$ mkdir -p examples/input-data/table
+[yhli@ys0 oozie]$ echo -e "2\n3\n8" > examples/input-data/table/data.txt
+[yhli@ys0 oozie]$ hadoop dfs -rmr examples232/input-data/table/*
+[yhli@ys0 oozie]$ hadoop dfs -mkdir examples232/input-data/table
+[yhli@ys0 oozie]$ hadoop dfs -put examples/input-data/table/* examples232/input-data/table
+[yhli@ys0 oozie]$ vi examples/apps/hive/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/hive/job.properties -run
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/hive/*
+
+#)pig
+[yhli@ys0 oozie]$ vi examples/apps/pig/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/pig/job.properties -run
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/pig/part-*
+
+#)subwf
+[yhli@ys0 oozie]$ vi examples/apps/subwf/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/subwf/job.properties -run
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/subwf/part-*
+
+#)ssh
+[yhli@ys0 oozie]$ vi examples/apps/ssh/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/ssh/job.properties -run
+
+#)custom-main
+[yhli@ys0 oozie]$ vi examples/apps/custom-main/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/custom-main/job.properties -run
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/custom-main/mr-node/part-*
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/custom-main/pig-node/part-*
+
+#)demo
+[yhli@ys0 oozie]$ vi examples/apps/demo/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/demo/job.properties -run
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/demo/pig-node/part-*
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/demo/streaming-node/part-*
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/demo/final-data/part-*
+
+#)no-op
+[yhli@ys0 oozie]$ vi examples/apps/no-op/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/no-op/job.properties -run
+
+#)cron
+[yhli@ys0 oozie]$ vi examples/apps/cron/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/cron/job.properties -run -Dstart=2014-10-17T07:20Z -Dend=2014-10-17T08:10Z
+
+#)aggregator
+[yhli@ys0 oozie]$ vi examples/apps/aggregator/job.properties
+[yhli@ys0 oozie]$ bin/oozie job -config examples/apps/aggregator/job.properties -run -Dstart=2014-10-17T08:00Z -Dend=2014-10-17T18:00Z
+[yhli@ys0 oozie]$ hadoop dfs -ls examples232/input-data/rawLogs/*/*/*/*/*/*.txt
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/input-data/rawLogs/*/*/*/*/*/*.txt
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/aggregator/*
+
+-------------------------------------------------
+#)LocalOozieExample
+[yhli@ys0 oozie]$ 
+TMPPATH=""
+for f in $OOZIE_HOME/lib/*.jar; do TMPPATH=${TMPPATH}:$f; done
+for f in $HADOOP_HOME/*.jar; do TMPPATH=${TMPPATH}:$f; done
+for f in $HADOOP_HOME/lib/*.jar; do TMPPATH=${TMPPATH}:$f; done
+for f in $OOZIE_HOME/oozie-server/webapps/oozie/WEB-INF/lib/*.jar; do TMPPATH=${TMPPATH}:$f; done
+TMPPATH=$OOZIE_HOME/examples/apps/map-reduce/lib/oozie-examples-2.3.2-cdh3u6.jar:${TMPPATH}
+echo $TMPPATH
+[yhli@ys0 oozie]$ java -classpath $TMPPATH \
+-Doozie.home.dir=$OOZIE_HOME \
+org.apache.oozie.example.LocalOozieExample \
+hdfs://ys0:9000/user/yhli/examples232/apps/map-reduce/workflow.xml \
+examples/apps/map-reduce/job.properties
+[yhli@ys0 oozie]$ hadoop dfs -cat examples232/output-data/map-reduce/part-*
+
+

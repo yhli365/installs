@@ -8,6 +8,7 @@
 # The java implementation to use.  Required.
 # export JAVA_HOME=/usr/lib/j2sdk1.6-sun
 export JAVA_HOME=/home/yhli/cdh/jdk
+export CDH_DATA_DIR=/home/yhli/cdh/data
 
 # Extra Java CLASSPATH elements.  Optional.
 # export HADOOP_CLASSPATH="<extra_entries>:$HADOOP_CLASSPATH"

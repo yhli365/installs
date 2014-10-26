@@ -3,17 +3,17 @@
 <configuration>
   <property>
     <name>hbase.rootdir</name>
-    <value>hdfs://vm1:9000/hbase</value>
+    <value>hdfs://ys0:9000/hbase</value>
   </property>
   
   <property>
     <name>hbase.tmp.dir</name>
-    <value>/home/yhli/data/hbase-0.92.1</value>
+    <value>/home/yhli/cdh/data/hbase</value>
   </property>
   
   <property>
     <name>hbase.zookeeper.quorum</name>
-    <value>vm1</value>
+    <value>ys0</value>
   </property>
   
     <property>

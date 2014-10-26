@@ -6,7 +6,7 @@
 <configuration>
 	<property>
 		<name>mapred.job.tracker</name>
-		<value>vm1:9001</value>
+		<value>ys0:9001</value>
 	</property>
 
 	<property>
@@ -66,13 +66,7 @@
 
 	<property>
 		<name>mapred.jobtracker.taskScheduler</name>
-		<!--<value>org.apache.hadoop.mapred.JobQueueTaskScheduler</value> -->
 		<value>org.apache.hadoop.mapred.FairScheduler</value>
-	</property>
-
-	<property>
-		<name>mapred.jobtracker.taskScheduler.maxRunningTasksPerJob</name>
-		<value></value>
 	</property>
 
 </configuration>

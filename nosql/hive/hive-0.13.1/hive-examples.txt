@@ -1,0 +1,15 @@
+Hive
+@version apache-hive-0.13.1 on hadoop-0.20.2-cdh3u4
+
+#)prepare
+[yhli@ys0 ~]$ cd $HIVE_HOME
+[yhli@ys0 hive]$ bin/hive
+hive>
+
+#)Basic
+CREATE TABLE pokes (foo INT, bar STRING);
+SHOW TABLES;
+LOAD DATA LOCAL INPATH 'examples/files/kv1.txt' OVERWRITE INTO TABLE pokes;
+SELECT * FROM pokes;
+SELECT * FROM pokes t where t.foo > 400 limit 10;
+
