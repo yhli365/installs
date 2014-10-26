@@ -18,6 +18,7 @@ Hive
 [yhli@ys0 ~]$ cp -r /usr/share/java/mysql-connector-java-*.jar $HIVE_HOME/lib/
 [yhli@ys0 ~]$ ll $HIVE_HOME/lib/ | grep mysql-connector-java
 [yhli@ys0 ~]$ sudo service mysqld status
+<<<<<<< HEAD
 [yhli@ys0 ~]$ sudo mysql -u root -proot
 mysql> 
 show databases;
@@ -111,4 +112,56 @@ beeline> !connect jdbc:hive2://ys0:10000 scott tiger org.apache.hive.jdbc.HiveDr
 0: jdbc:hive2://> use testdb;
 0: jdbc:hive2://> select * from dummy;
 0: jdbc:hive2://> !quit
+=======
+[yhli@ys0 ~]$ sudo mysql -u root -p
+mysql> 
+show databases;
+create database hivedb;
+CREATE USER 'hive';
+grant all privileges on hivedb.* to 'hive'@'%' identified by 'hive' with grant option;
+grant all privileges on hivedb.* to 'hive'@'ys0' identified by 'hive' with grant option;
+grant all privileges on hivedb.* to 'hive'@'localhost' identified by 'hive' with grant option;
+flush privileges;
+select user,host,password from mysql.user;
+show grants for 'hive'@'ys0';
+mysql> exit;
+[yhli@ys0 ~]$ vi $HIVE_HOME/conf/hive-site.xml
+javax.jdo.option.ConnectionURL = jdbc:mysql://ys0/hivedb?createDatabaseIfNotExist=true
+javax.jdo.option.ConnectionDriverName = com.mysql.jdbc.Driver
+javax.jdo.option.ConnectionUserName = hive
+javax.jdo.option.ConnectionPassword = hive
+[yhli@ys0 ~]$ cd $HIVE_HOME
+[yhli@ys0 hive]$ bin/schematool -dbType mysql -initSchema
+[yhli@ys0 hive]$ bin/schematool -dbType mysql -info
+[yhli@ys0 ~]$ sudo mysql -u hive -p -h ys0 hivedb
+mysql> show tables;
+mysql> exit;
+
+#)fixed: Could not load shims in class org.apache.hadoop.log.metrics.EventCounter(@teston hadoop-0.20.2-cdh3u4)
+[yhli@ys0 conf]$ vi hive-log4j.properties
+[yhli@ys0 conf]$ vi hive-exec-log4j.properties
+#log4j.appender.EventCounter=org.apache.hadoop.hive.shims.HiveEventCounter
+log4j.appender.EventCounter=org.apache.hadoop.metrics.jvm.EventCounter
+[yhli@ys0 conf]$ jar uvf $HIVE_HOME/lib/hive-exec-0.13.1.jar hive-log4j.properties hive-exec-log4j.properties
+[yhli@ys0 conf]$ mkdir tmp
+[yhli@ys0 conf]$ cd tmp
+[yhli@ys0 tmp]$ jar xvf $HIVE_HOME/lib/hive-exec-0.13.1.jar hive-log4j.properties hive-exec-log4j.properties
+
+--)command-------------------------------------------------
+#)prepare
+hadoop: hdfs,mapred
+
+#)service
+[yhli@ys0 ~]$ cd $HIVE_HOME
+[yhli@ys0 hive]$ bin/hive --version
+[yhli@ys0 hive]$ bin/hive --help
+[yhli@ys0 hive]$ bin/hive --service cli --help
+[yhli@ys0 hive]$ bin/hive --service metastore --help
+[yhli@ys0 hive]$ bin/hive --service hiveserver2 --help
+
+[yhli@ys0 hive]$ bin/hive
+[yhli@ys0 hive]$ bin/beeline
+[yhli@ys0 hive]$ bin/hive --service metastore &
+[yhli@ys0 hive]$ bin/hive --service hiveserver2 &
+>>>>>>> branch 'master' of https://github.com/yhli365/installs.git
 
