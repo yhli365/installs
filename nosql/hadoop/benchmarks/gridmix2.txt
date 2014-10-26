@@ -1,0 +1,89 @@
+
+Hadoop Gridmix是针对hadoop系统的基准测试程序。它具备评测大规模数据处理系统所需的各个功能模块，包括：产生数据，生成并提交作业，统计作业完成时间等。
+
+---------------------------------------function
+#编译
+[yhli@vm1 ~]$ ant -version
+[yhli@vm1 ~]$ cd $HADOOP_HOME/src/benchmarks/gridmix2
+[yhli@vm1 gridmix2]$ ant
+[yhli@vm1 gridmix2]$ cp build/gridmix.jar .
+
+#配置环境变量
+[yhli@vm1 gridmix2]$ cp gridmix-env-2 gridmix-env-2.orig
+[yhli@vm1 gridmix2]$ vi gridmix-env-2
+export HADOOP_VERSION=0.20.2-cdh3u4
+export HADOOP_HOME=/home/yhli/app/hadoop-0.20.2-cdh3u4
+export HADOOP_CONF_DIR=${HADOOP_HOME}/conf
+export USE_REAL_DATASET=FALSE
+
+export APP_JAR=${HADOOP_HOME}/hadoop-test-${HADOOP_VERSION}.jar
+export EXAMPLE_JAR=${HADOOP_HOME}/hadoop-examples-${HADOOP_VERSION}.jar
+export STREAMING_JAR=${HADOOP_HOME}/contrib/streaming/hadoop-streaming-${HADOOP_VERSION}.jar
+
+#配置作业参数
+[yhli@vm1 gridmix2]$ cp gridmix_config.xml gridmix_config.xml.orig
+[yhli@vm1 gridmix2]$ vi gridmix_config.xml
+
+#生成测试数据
+[yhli@vm1 gridmix2]$ cp generateGridmix2data.sh generateGridmix2data.sh.orig
+[yhli@vm1 gridmix2]$ vi generateGridmix2data.sh
+[yhli@vm1 gridmix2]$ chmod +x generateGridmix2data.sh
+[yhli@vm1 gridmix2]$ ./generateGridmix2data.sh
+
+#查看测试数据
+[yhli@vm1 gridmix2]$ hadoop fs -ls /gridmix/data
+[yhli@vm1 gridmix2]$ hadoop fs -dus /gridmix/data
+
+#执行测试
+[yhli@vm1 gridmix2]$ chmod +x rungridmix_2
+[yhli@vm1 gridmix2]$ ./rungridmix_2
+
+#记录运行时间
+[yhli@vm1 gridmix2]$ cat _start.out
+[yhli@vm1 gridmix2]$ cat _end.out
+
+#查看每类job运行情况
+http://vm1:50030/jobtracker.jsp
+
+#清理测试数据
+[yhli@vm1 gridmix2]$ hadoop fs -rmr /gridmix/data
+
+---------------------------------------product
+#编译
+[hadoop@m0 ~]$ ant -version
+[hadoop@m0 ~]$ cd $HADOOP_HOME/src/benchmarks/gridmix2
+[hadoop@m0 gridmix2]$ ant
+[hadoop@m0 gridmix2]$ cp build/gridmix.jar .
+
+#配置环境变量
+[hadoop@m0 gridmix2]$ vi gridmix-env-2
+export HADOOP_VERSION=0.20.2-cdh3u4
+export HADOOP_HOME=/home/hadoop/hadoop-0.20.2-cdh3u4
+export HADOOP_CONF_DIR=${HADOOP_HOME}/conf
+export USE_REAL_DATASET=TRUE
+
+export APP_JAR=${HADOOP_HOME}/hadoop-test-${HADOOP_VERSION}.jar
+export EXAMPLE_JAR=${HADOOP_HOME}/hadoop-examples-${HADOOP_VERSION}.jar
+export STREAMING_JAR=${HADOOP_HOME}/contrib/streaming/hadoop-streaming-${HADOOP_VERSION}.jar
+
+#生成测试数据
+[hadoop@m0 gridmix2]$ chmod +x generateGridmix2data.sh
+[hadoop@m0 gridmix2]$ ./generateGridmix2data.sh
+
+#查看测试数据
+[hadoop@m0 gridmix2]$ hadoop fs -ls /gridmix/data
+[hadoop@m0 gridmix2]$ hadoop fs -dus /gridmix/data
+
+#执行测试
+[hadoop@m0 gridmix2]$ chmod +x rungridmix_2
+[hadoop@m0 gridmix2]$ ./rungridmix_2
+
+#记录运行时间
+[hadoop@m0 gridmix2]$ cat _start.out
+[hadoop@m0 gridmix2]$ cat _end.out
+
+#查看每类job运行情况
+http://m0:50030/jobtracker.jsp
+
+#清理测试数据
+[hadoop@m0 gridmix2]$ hadoop fs -rmr /gridmix
