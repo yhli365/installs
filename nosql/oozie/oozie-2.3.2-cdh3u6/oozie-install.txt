@@ -59,7 +59,6 @@ oozie.service.StoreService.jdbc.url = jdbc:mysql://ys0:3306/ooziedb?createDataba
 oozie.service.StoreService.jdbc.username = oozie
 oozie.service.StoreService.jdbc.password = oozie
 [yhli@ys0 oozie]$ bin/oozie-run.sh
-<<<<<<< HEAD
 [yhli@ys0 oozie]$ sudo mysql -u oozie -poozie -h ys0 ooziedb
 mysql> show tables;
 mysql> exit;
@@ -147,101 +146,3 @@ width: 80,
 
 header: "Started",
 width: 130,
-=======
-[yhli@ys0 oozie]$ sudo mysql -u oozie -p -h ys0 ooziedb
-mysql> show tables;
-mysql> exit;
-
---)command-------------------------------------------------
-[yhli@ys0 oozie]$ bin/oozie help
-[yhli@ys0 oozie]$ bin/oozie version
-[yhli@ys0 oozie]$ bin/oozie admin -version
-
-[yhli@ys0 oozie]$ bin/oozied.sh start
-[yhli@ys0 oozie]$ bin/oozied.sh stop
-[yhli@ys0 oozie]$ bin/oozied.sh run
-
-[yhli@ys0 oozie]$ bin/oozie admin -oozie http://ys0:11000/oozie -status
-[yhli@ys0 oozie]$ bin/oozie jobs -localtime
-[yhli@ys0 oozie]$ bin/oozie jobs -jobtype 'coordinator' -localtime
-[yhli@ys0 oozie]$ bin/oozie jobs -jobtype 'wf' -localtime
-[yhli@ys0 oozie]$ bin/oozie job -kill 0000008-141015140503623-oozie-yhli-W
-
---)improve-------------------------------------------------
-#)oozie web-console 时间本地化
-[yhli@ys0 oozie]$ cp $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js.orig
-[yhli@ys0 oozie]$ vi $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js
-1、增加函数getLocalTime
-#30
-function getLocalTime(time){
-	if (!time) {
-	    return "";
-	}
-    var y="yyyy-MM-dd hh:mm:ss";
-	var x=new Date();
-    x.setTime(Date.parse(time));  
-    var z = {M:x.getMonth()+1,d:x.getDate(),h:x.getHours(),m:x.getMinutes(),s:x.getSeconds()};
-    y = y.replace(/(M+|d+|h+|m+|s+)/g,function(v) {return ((v.length>1?"0":"")+eval('z.'+v.slice(-1))).slice(-2)});
-    return y.replace(/(y+)/g,function(v) {return x.getFullYear().toString().slice(-v.length)});
-}
-2、将所有涉及时间显示的地方调用getLocalTime，如：startTime
-#206
-var jobActionStatus = new Ext.data.JsonStore({
-fields: ['id', 'name', 'type', {name:'startTime',convert:getLocalTime}, 'retries', 'consoleUrl', {name:'endTime',convert:getLocalTime}, 'externalId', 'status', 'trackerUri', 'workflowId', 'errorCode', 'errorMessage', 'conf', 'transition', 'externalStatus'],
-
-#574
-var jobActionStatus = new Ext.data.JsonStore({
-fields: ['id', 'name', 'type', 'createdConf', 'runConf', 'actionNumber', {name:'createdTime',convert:getLocalTime}, 'externalId', {name:'lastModifiedTime',convert:getLocalTime}, {name:'nominalTime',convert:getLocalTime}, 'status', 'missingDependencies', 'externalStatus', 'trackerUri', 'consoleUrl', 'errorCode', 'errorMessage', 'actions'],
-
-#944
-var coord_jobs_store = new Ext.data.JsonStore({
-fields: ['coordJobId', 'coordJobName',   'status', 'frequency', 'timeUnit', {name:'startTime',convert:getLocalTime}, {name:'nextMaterializedTime',convert:getLocalTime}],
-
-#960
-var jobs_store = new Ext.data.JsonStore({
-fields: ['appPath', 'appName', 'id', 'conf', 'status', {name:'createdTime',convert:getLocalTime}, {name:'startTime',convert:getLocalTime}, {name:'lastModTime',convert:getLocalTime}, {name:'endTime',convert:getLocalTime}, 'user', 'group', 'run', 'actions'],
-
-3、刷新web页面并验证
-
-#)oozie web-console 调整列宽度
-[yhli@ys0 oozie]$ vi $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js
-#1238
-var jobs_grid = new Ext.grid.GridPanel({
-header: "Job Id",
-width: 250,
-
-header: "Name",
-width: 120,
-
-header: "Status",
-width: 80,
-
-header: "Run",
-width: 50,
-
-header: "Started",
-width: 130,
-
-#1366
-var coordJobArea = new Ext.grid.GridPanel({
-header: "Job Id",
-width: 250,
-
-header: "Name",
-width: 120,
-
-header: "Status",
-width: 80,
-
-header: "Started",
-width: 130,
-		
---)myoozie
-#)ssh-date
-[yhli@ys0 oozie]$ vi myoozie/apps/ssh-date/job.properties
-[yhli@ys0 oozie]$ hadoop fs -rmr myoozie/apps/ssh-date
-[yhli@ys0 oozie]$ hadoop fs -put myoozie/apps/ssh-date myoozie/apps/ssh-date
-[yhli@ys0 oozie]$ bin/oozie job -config myoozie/apps/ssh-date/job.properties -run
-[yhli@ys0 oozie]$ cat /tmp/date.txt
->>>>>>> branch 'master' of https://github.com/yhli365/installs.git
-
