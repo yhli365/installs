@@ -1,0 +1,233 @@
+Sqoop
+@version sqoop-1.4.5 on hadoop-0.20.2-cdh3u4,
+
+[yhli@ys0 sqoop]$ cd $SQOOP_HOME
+
+--)Mysql
+#)建立测试数据库
+[yhli@ys0 sqoop]$ sudo service mysqld status
+[yhli@ys0 sqoop]$ sudo mysql -u root -proot
+show databases;
+create database hadoopdb;
+create user 'hadoop';
+grant all privileges on hadoopdb.* to 'hadoop'@'%' identified by 'hadoop' with grant option;
+grant all privileges on hadoopdb.* to 'hadoop'@'ys0' identified by 'hadoop' with grant option;
+grant all privileges on hadoopdb.* to 'hadoop'@'localhost' identified by 'hadoop' with grant option;
+flush privileges;
+select user,host,password from mysql.user;
+show grants for 'hadoop'@'%';
+mysql> exit;
+[yhli@ys0 sqoop]$ sudo mysql -u hadoop -phadoop hadoopdb
+mysql> show tables;
+drop table if exists widgets;
+create table widgets(
+id INT NOT NULL PRIMARY KEY,
+name varchar(64) not null,
+price decimal(10,2),
+version int,
+design_date date,
+design_comment varchar(100));
+insert into widgets values(1,'sprocket',0.25,1,'2010-02-10','Connects two gizmos');
+insert into widgets values(2,'gizmo',4.00,4,'2009-11-30',NULL);
+insert into widgets values(3,'gadget',99.99,13,'1983-08-13','Our flagship product');
+select * from widgets limit 10;
+mysql> quit;
+
+#)测试数据库连接(前提：导入mysql jdbc的jar包)
+[yhli@ys0 sqoop]$ bin/sqoop list-databases --connect jdbc:mysql://ys0 --username hadoop --password hadoop
+[yhli@ys0 sqoop]$ bin/sqoop list-tables --connect jdbc:mysql://ys0/hadoopdbdb --username hadoop --password hadoop
+
+--)Hadoop
+#)codegen
+[yhli@ys0 sqoop]$ bin/sqoop codegen \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--outdir ~/cdh/data/sqoop/code \
+--bindir ~/cdh/data/sqoop/compile \
+--table widgets \
+--class-name test.hadoop.Widget
+
+#)mysql–>hdfs
+[yhli@ys0 sqoop]$ bin/sqoop import \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--table widgets \
+--target-dir /test/sqoop/widgets/m1 \
+-m 1 \
+--verbose
+
+[yhli@ys0 sqoop]$ bin/sqoop import \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--table widgets \
+--target-dir /test/sqoop/widgets/direct \
+--direct \
+--verbose
+
+[yhli@ys0 sqoop]$ bin/sqoop import \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--table widgets \
+--target-dir /test/sqoop/widgets/m3 \
+-m 3 \
+--verbose
+
+[yhli@ys0 sqoop]$ bin/sqoop import \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--outdir ~/cdh/data/sqoop/code \
+--bindir ~/cdh/data/sqoop/compile \
+--table widgets \
+--target-dir /test/sqoop/widgets/seq \
+--as-sequencefile
+--compression-codec com.hadoop.compression.lzo.LzoCodec \
+-m 3 \
+--verbose
+
+[yhli@ys0 sqoop]$ bin/sqoop import \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--outdir ~/cdh/data/sqoop/code \
+--bindir ~/cdh/data/sqoop/compile \
+--table widgets \
+--target-dir /test/sqoop/widgets/avro \
+--as-avrodatafile
+-m 3 \
+--verbose
+
+#)hdfs–>mysql
+[yhli@ys0 sqoop]$ sudo mysql -u hadoop -phadoop hadoop -e "drop table if exists widgets2;create table widgets2 as select * from widgets where 1!=1;"
+[yhli@ys0 sqoop]$ sudo mysql -u hadoop -phadoop hadoop -e "select * from widgets2 limit 10;"
+
+[yhli@ys0 sqoop]$ bin/sqoop export \
+--connect jdbc:mysql://ys0/hadoopdbdb \
+--username hadoop --password hadoop \
+--export-dir /test/sqoop/widgets/m3 \
+--table widgets2
+-m 3 \
+--verbose
+
+[yhli@ys0 sqoop]$ bin/sqoop export \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--export-dir /test/sqoop/widgets/direct \
+--table widgets2 \
+--direct \
+--verbose
+
+[yhli@ys0 sqoop]$ bin/sqoop export \
+-libjars /home/yhli/cdh/data/sqoop/compile/widgets.jar \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--export-dir /test/sqoop/widgets/seq \
+--table widgets2 \
+-m 3 \
+--verbose
+
+[yhli@ys0 sqoop]$ bin/sqoop export \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--export-dir /test/sqoop/widgets/avro \
+--table widgets2 \
+-m 3 \
+--verbose
+
+--)Hive
+#)mysql–>hive(数据)
+[yhli@ys0 sqoop]$ sqoop create-hive-table \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--table widgets \
+--hive-table sqoop_widgets1 \
+--fields-terminated-by ',' \
+--verbose
+[yhli@ys0 sqoop]$ $HIVE_HOME/bin/hive
+hive> load data inpath '/test/sqoop/widgets/m3/part-m-*' OVERWRITE into table sqoop_widgets1;
+hive> select * from sqoop_widgets1 limit 10;
+
+[yhli@ys0 sqoop]$ hadoop fs -rmr /test/sqoop/widgets/avro/{_SUCCESS,_logs}
+[yhli@ys0 sqoop]$ hadoop fs -ls /test/sqoop/widgets/avro
+[yhli@ys0 sqoop]$ hadoop fs -put ~/cdh/data/sqoop/code/widgets.avsc /test/sqoop/code/widgets.avsc
+[yhli@ys0 sqoop]$ $HIVE_HOME/bin/hive
+hive> drop table if exists sqoop_widgets1_avro;
+hive> CREATE EXTERNAL TABLE sqoop_widgets1_avro
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS 
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES (
+'avro.schema.url'='hdfs:///test/sqoop/code/widgets.avsc');
+hive> describe sqoop_widgets1_avro;
+hive> ALTER TABLE sqoop_widgets1_avro set location 'hdfs:///test/sqoop/widgets/avro';
+hive> select * from sqoop_widgets1_avro limit 10;
+
+#)mysql–>hive(表模式和数据)
+[yhli@ys0 sqoop]$ bin/sqoop import \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--table widgets \
+--target-dir /test/sqoop/widgets/hive \
+--hive-import \
+--hive-table sqoop_widgets2 \
+-m 3 \
+--verbose
+[yhli@ys0 sqoop]$ $HIVE_HOME/bin/hive -e "select * from sqoop_widgets2 limit 10"
+
+#)hive–>mysql
+hive(hdfs)->mysql
+
+--)HBase
+#)mysql–>hbase(数据)
+[yhli@ys0 sqoop]$ hbase shell
+hbase> list
+hbase> disable 'sqoop_widgets1'
+hbase> drop 'sqoop_widgets1'
+hbase> create 'sqoop_widgets1','f1','f2','f3', {SPLITS => ['1', '3']}
+hbase> scan 'sqoop_widgets1' ,{LIMIT => 10}
+
+[yhli@ys0 sqoop]$ bin/sqoop import \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--table widgets \
+--target-dir /test/sqoop/widgets/hbase \
+--hbase-table sqoop_widgets1 \
+--hbase-row-key id \
+--column-family f1 \
+-m 3 \
+--verbose
+
+#)mysql–>hbase(表模式和数据)
+[yhli@ys0 sqoop]$ bin/sqoop import \
+--connect jdbc:mysql://ys0/hadoopdb \
+--username hadoop \
+--password hadoop \
+--table widgets \
+--target-dir /test/sqoop/widgets/hbase \
+--hbase-create-table \
+--hbase-table sqoop_widgets2 \
+--hbase-row-key id \
+--column-family f1 \
+-m 3 \
+--verbose
+
+[yhli@ys0 sqoop]$ hbase shell
+hbase> scan 'sqoop_widgets2' ,{LIMIT => 10}
+
+#)hbase–>mysql
+关于将Hbase的数据导入到mysql里，Sqoop并不是直接支持的，一般采用如下3种方法：
+第一种：将Hbase数据扁平化成HDFS文件，然后再由Sqoop导入。
+第二种：将Hbase数据导入Hive表中，然后再导入mysql。
+第三种：直接使用Hbase的Java API读取表数据，直接向mysql导入，不需要使用Sqoop。
+

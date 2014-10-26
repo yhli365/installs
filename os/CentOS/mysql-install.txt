@@ -1,0 +1,78 @@
+Mysql
+@version 5.1.61 on CentOS 6.3
+
+#)安装
+[root@ys0 ~]# yum install mysql
+[root@ys0 ~]# yum install mysql-server
+[root@ys0 ~]# rpm -q mysql mysql-server
+mysql-5.1.61-4.el6.x86_64
+mysql-server-5.1.61-4.el6.x86_64
+[root@ys0 ~]# rpm -qpl /media/cdrom/Packages/mysql-connector-java*.rpm
+[root@ys0 ~]# rpm2cpio /media/cdrom/Packages/mysql-connector-java*.rpm | cpio -ivdm ./usr/share/java/
+[root@ys0 ~]# cp -r ./usr/share/java/* /usr/share/java/
+[root@ys0 ~]# ll /usr/share/java/ | grep mysql-connector-java
+
+#)配置
+[root@ys0 ~]# cp /etc/my.cnf /etc/my.cnf.orig
+[root@ys0 ~]# ll /etc/ | grep my
+[root@ys0 ~]# vi /etc/my.cnf
+[mysqld]增加一行:
+character-set-server = utf8
+
+#)启动
+[root@ys0 ~]# chkconfig mysqld on
+[root@ys0 ~]# chkconfig --list mysqld
+mysqld 0:off 1:off 2:on 3:on 4:on 5:on 6:off
+[root@ys0 ~]# /etc/rc.d/init.d/mysqld status
+[root@ys0 ~]# service mysqld start
+[root@ys0 ~]# service mysqld stop
+
+#)修改root密码（默认密码为空）
+[root@ys0 ~]# /usr/bin/mysqladmin -u root password 'root'
+
+#)用root用户登录MySQL服务器
+[root@ys0 ~]# mysql -u root -p
+mysql> select version(),current_date;
++-----------+--------------+
+| version() | current_date |
++-----------+--------------+
+| 5.1.61    | 2014-09-24   |
++-----------+--------------+
+1 row in set (0.00 sec)
+mysql> select user,host,password from mysql.user;
+mysql> set password for root@localhost=password('root');
+mysql> flush privileges;
+mysql> exit;
+
+#)创建用户权限
+[root@ys0 ~]# mysql -u root -proot
+mysql> 
+create database yhlidb;
+create user 'yhli';
+grant all privileges on yhlidb.* to 'yhli'@'%' identified by 'yhli' with grant option;
+grant all privileges on yhlidb.* to 'yhli'@'ys0' identified by 'yhli' with grant option;
+grant all privileges on yhlidb.* to 'yhli'@'localhost' identified by 'yhli' with grant option;
+flush privileges;
+
+show databases;
+select user,host,password from mysql.user;
+show grants for 'yhli'@'%';
+
+revoke all privileges on yhlidb.* from 'yhli'@'%';
+revoke all privileges on yhlidb.* from 'yhli'@'ys0';
+revoke all privileges on yhlidb.* from 'yhli'@'localhost';
+flush privileges;
+
+drop database yhlidb;
+drop user 'yhli'@'%';
+drop user 'yhli'@'ys0';
+drop user 'yhli'@'localhost';
+
+mysql> exit;
+
+#用yhli用户登录MySQL服务器
+[yhli@ys0 ~]# sudo mysql -u yhli -p
+mysql> show databases;
+[yhli@ys0 ~]# sudo mysql -u yhli -pyhli yhlidb
+mysql> show tables;
+[yhli@ys0 ~]# sudo mysql -h ys0 -u yhli -pyhli yhlidb

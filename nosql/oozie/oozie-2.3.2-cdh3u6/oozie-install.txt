@@ -1,0 +1,149 @@
+Oozie
+@version oozie-2.3.2-cdh3u6
+
+--)install-------------------------------------------------
+#)安装
+[yhli@ys0 ~]$ tar -xzf /disk/yhli/install/oozie-2.3.2-cdh3u6.tar.gz -C /disk/yhli/cloud/
+
+#)conf
+根据需要修改相关配置
+
+#)oozie.war
+[yhli@ys0 oozie]$ mkdir libext
+上传ext-2.2.zip到libext目录
+上传mysql-connector-java-5.1.32.jar到libext目录
+[yhli@ys0 oozie]$ ll libext/*
+-rw-r--r--. 1 yhli dev 6800612 Oct 15 11:32 libext/ext-2.2.zip
+-rw-r--r--. 1 yhli dev  969020 Oct 15 11:32 libext/mysql-connector-java-5.1.32.jar
+[yhli@ys0 oozie]$ bin/oozie-setup.sh --help
+[yhli@ys0 oozie]$ echo $HADOOP_HOME
+[yhli@ys0 oozie]$ bin/oozie-setup.sh -hadoop 0.20.2 $HADOOP_HOME -extjs libext/ext-2.2.zip -jars libext
+
+#)整合Oozie和Hadoop
+假设Hadoop平台使用的用户为yhli，用户组为dev，这里配置Hadoop代理用户也使用该用户，部署Oozie的主机名为ys0。修改Hadoop的配置文件core-site.xml，增加如下配置内容：
+<!-- OOZIE -->
+<property>
+     <name>hadoop.proxyuser.yhli.hosts</name>
+     <value>ys0</value>
+</property>
+<property>
+     <name>hadoop.proxyuser.yhli.groups</name>
+     <value>dev</value>
+</property>
+
+#)Oozie Share Lib Installation
+[yhli@ys0 oozie]$ tar -xzf oozie-sharelib-2.3.2-cdh3u6.tar.gz
+[yhli@ys0 oozie]$ hadoop dfs -rmr share
+[yhli@ys0 oozie]$ hadoop dfs -put share share
+[yhli@ys0 oozie]$ vi conf/oozie-site.xml
+oozie.service.WorkflowAppService.system.libpath = /user/${user.name}/share/lib
+
+-#)db:mysql
+[yhli@ys0 ~]$ sudo service mysqld status
+[yhli@ys0 ~]$ sudo mysql -u root -p
+mysql> 
+show databases;
+create database ooziedb;
+create user 'oozie';
+grant all privileges on ooziedb.* to 'oozie'@'%' identified by 'oozie' with grant option;
+grant all privileges on ooziedb.* to 'oozie'@'ys0' identified by 'oozie' with grant option;
+grant all privileges on ooziedb.* to 'oozie'@'localhost' identified by 'oozie' with grant option;
+flush privileges;
+select user,host,password from mysql.user;
+show grants for 'oozie'@'ys0';
+mysql> exit;
+[yhli@ys0 oozie]$ vi conf/oozie-site.xml
+oozie.service.StoreService.create.db.schema = true
+oozie.service.StoreService.jdbc.driver = com.mysql.jdbc.Driver
+oozie.service.StoreService.jdbc.url = jdbc:mysql://ys0:3306/ooziedb?createDatabaseIfNotExist=true
+oozie.service.StoreService.jdbc.username = oozie
+oozie.service.StoreService.jdbc.password = oozie
+[yhli@ys0 oozie]$ bin/oozie-run.sh
+[yhli@ys0 oozie]$ sudo mysql -u oozie -poozie -h ys0 ooziedb
+mysql> show tables;
+mysql> exit;
+
+--)command-------------------------------------------------
+[yhli@ys0 oozie]$ bin/oozie help
+[yhli@ys0 oozie]$ bin/oozie version
+[yhli@ys0 oozie]$ bin/oozie admin -version
+
+[yhli@ys0 oozie]$ bin/oozied.sh start
+[yhli@ys0 oozie]$ bin/oozied.sh stop
+[yhli@ys0 oozie]$ bin/oozied.sh run
+
+[yhli@ys0 oozie]$ bin/oozie admin -oozie http://ys0:11000/oozie -status
+[yhli@ys0 oozie]$ bin/oozie jobs -localtime
+[yhli@ys0 oozie]$ bin/oozie jobs -jobtype 'coordinator' -localtime
+[yhli@ys0 oozie]$ bin/oozie jobs -jobtype 'wf' -localtime
+[yhli@ys0 oozie]$ bin/oozie job -kill 0000008-141015140503623-oozie-yhli-W
+
+--)improve-------------------------------------------------
+#)oozie web-console 时间本地化
+[yhli@ys0 oozie]$ cp $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js.orig
+[yhli@ys0 oozie]$ vi $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js
+1、增加函数getLocalTime
+#30
+function getLocalTime(time){
+	if (!time) {
+	    return "";
+	}
+    var y="yyyy-MM-dd hh:mm:ss";
+	var x=new Date();
+    x.setTime(Date.parse(time));  
+    var z = {M:x.getMonth()+1,d:x.getDate(),h:x.getHours(),m:x.getMinutes(),s:x.getSeconds()};
+    y = y.replace(/(M+|d+|h+|m+|s+)/g,function(v) {return ((v.length>1?"0":"")+eval('z.'+v.slice(-1))).slice(-2)});
+    return y.replace(/(y+)/g,function(v) {return x.getFullYear().toString().slice(-v.length)});
+}
+2、将所有涉及时间显示的地方调用getLocalTime，如：startTime
+#206
+var jobActionStatus = new Ext.data.JsonStore({
+fields: ['id', 'name', 'type', {name:'startTime',convert:getLocalTime}, 'retries', 'consoleUrl', {name:'endTime',convert:getLocalTime}, 'externalId', 'status', 'trackerUri', 'workflowId', 'errorCode', 'errorMessage', 'conf', 'transition', 'externalStatus'],
+
+#574
+var jobActionStatus = new Ext.data.JsonStore({
+fields: ['id', 'name', 'type', 'createdConf', 'runConf', 'actionNumber', {name:'createdTime',convert:getLocalTime}, 'externalId', {name:'lastModifiedTime',convert:getLocalTime}, {name:'nominalTime',convert:getLocalTime}, 'status', 'missingDependencies', 'externalStatus', 'trackerUri', 'consoleUrl', 'errorCode', 'errorMessage', 'actions'],
+
+#944
+var coord_jobs_store = new Ext.data.JsonStore({
+fields: ['coordJobId', 'coordJobName',   'status', 'frequency', 'timeUnit', {name:'startTime',convert:getLocalTime}, {name:'nextMaterializedTime',convert:getLocalTime}],
+
+#960
+var jobs_store = new Ext.data.JsonStore({
+fields: ['appPath', 'appName', 'id', 'conf', 'status', {name:'createdTime',convert:getLocalTime}, {name:'startTime',convert:getLocalTime}, {name:'lastModTime',convert:getLocalTime}, {name:'endTime',convert:getLocalTime}, 'user', 'group', 'run', 'actions'],
+
+3、刷新web页面并验证
+
+#)oozie web-console 调整列宽度
+[yhli@ys0 oozie]$ vi $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js
+#1238
+var jobs_grid = new Ext.grid.GridPanel({
+header: "Job Id",
+width: 250,
+
+header: "Name",
+width: 120,
+
+header: "Status",
+width: 80,
+
+header: "Run",
+width: 50,
+
+header: "Started",
+width: 130,
+
+#1366
+var coordJobArea = new Ext.grid.GridPanel({
+header: "Job Id",
+width: 250,
+
+header: "Name",
+width: 120,
+
+header: "Status",
+width: 80,
+
+header: "Started",
+width: 130,
+

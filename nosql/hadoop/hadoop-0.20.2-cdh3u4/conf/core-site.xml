@@ -7,17 +7,17 @@
 
 	<property>
 		<name>hadoop.tmp.dir</name>
-		<value>/home/yhli/data/hadoop-0.20.2-cdh3u4</value>
+		<value>/home/yhli/cdh/data/hadoop</value>
 	</property>
 
 	<property>
 		<name>fs.default.name</name>
-		<value>hdfs://vm1:9000</value>
+		<value>hdfs://ys0:9000</value>
 	</property>
 
 	<property>
 		<name>fs.trash.interval</name>
-		<value>2880</value>
+		<value>0</value>
 	</property>
 
 	<property>
@@ -27,12 +27,22 @@
 
 	<property>
 		<name>io.compression.codecs</name>
-		<value>org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.BZip2Codec,com.hadoop.compression.lzo.LzoCodec</value>
+		<value>org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.BZip2Codec,org.apache.hadoop.io.compress.DeflateCodec,org.apache.hadoop.io.compress.SnappyCodec,com.hadoop.compression.lzo.LzopCodec,com.hadoop.compression.lzo.LzoCodec</value>
 	</property>
 
 	<property>
 		<name>io.compression.codec.lzo.class</name>
 		<value>com.hadoop.compression.lzo.LzoCodec</value>
+	</property>
+
+	<!-- OOZIE -->
+	<property>
+		<name>hadoop.proxyuser.yhli.hosts</name>
+		<value>ys0</value>
+	</property>
+	<property>
+		<name>hadoop.proxyuser.yhli.groups</name>
+		<value>dev</value>
 	</property>
 
 </configuration>

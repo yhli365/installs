@@ -1,0 +1,34 @@
+Hadoop 1
+@version hadoop-0.20.2-cdh3u4
+
+#)prepare
+[yhli@ys0 ~]$ echo $HADOOP_HOME
+[yhli@ys0 ~]$ mkdir -p ~/dev/hadoop
+[yhli@ys0 ~]$ cd ~/dev/hadoop
+[yhli@ys0 hadoop]$ 
+
+#)WordCount(java)
+mkdir input
+echo "this is word count example" > input/wordcount1.txt
+echo "using hadoop" >> input/wordcount1.txt
+echo "hadoop example" > input/wordcount2.txt
+echo "using HDFS, MapReduce" >> input/wordcount2.txt
+hadoop dfs -rmr /test/hadoop/input/wordcount*
+hadoop dfs -mkdir /test/hadoop/input
+hadoop dfs -put input/wordcount* /test/hadoop/input
+hadoop dfs -ls /test/hadoop/input/wordcount*
+hadoop dfs -cat /test/hadoop/input/wordcount1.txt
+hadoop dfs -cat /test/hadoop/input/wordcount2.txt
+hadoop dfs -rmr /test/hadoop/output/wordcount
+hadoop jar $HADOOP_HOME/hadoop-examples-*.jar wordcount /test/hadoop/input/wordcount* /test/hadoop/output/wordcount
+hadoop dfs -cat /test/hadoop/output/wordcount/part-*
+
+#)grep
+hadoop fs -put $HADOOP_HOME/conf /test/hadoop/input/grep
+hadoop fs -rmr /test/hadoop/output/grep
+hadoop jar $HADOOP_HOME/hadoop-examples-*.jar grep /test/hadoop/input/grep /test/hadoop/output/grep 'dfs[a-z.]+'
+hadoop fs -cat /test/hadoop/output/grep/*
+hadoop fs -get /test/hadoop/output/grep output 
+cat output/part-*
+rm -rf output
+

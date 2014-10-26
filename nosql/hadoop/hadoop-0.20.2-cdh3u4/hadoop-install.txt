@@ -1,0 +1,123 @@
+Hadoop
+@site http://hadoop.apache.org/
+@site http://www.cloudera.com/
+@version hadoop-0.20.2-cdh3u4.tar.gz
+
+--)install-------------------------------------------------
+#)CentOS配置服务器名称
+[root@localhost ~] vi /etc/sysconfig/network
+HOSTNAME=ys0
+[root@localhost ~] vi /etc/hosts
+192.168.56.200  ys0
+192.168.56.201  ys1
+192.168.56.202  ys2
+192.168.56.200  yumserver
+
+#)配置客户机上hosts文件[C:\Windows\System32\drivers\etc\hosts],win7需要管理员权限
+192.168.56.200       ys0
+192.168.56.201       ys1
+192.168.56.202       ys2
+
+#)创建hadoop用户yhli和组dev
+[root@ys0 ~]# id yhli
+[root@ys0 ~]# groupadd dev
+[root@ys0 ~]# useradd -g dev yhli
+[root@ys0 ~]# passwd yhli
+[root@ys0 ~]# vi /etc/sudoers
+yhli    ALL=(ALL)       ALL
+
+#)配置用户SSH无密码登陆
+[root@ys0 ~]# su - yhli
+[yhli@ys0 ~]$ ssh-keygen -t rsa -P ""
+[yhli@ys0 ~]$ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+[yhli@ys0 ~]$ chmod 700 ~/.ssh
+[yhli@ys0 ~]$ chmod 600 ~/.ssh/authorized_keys
+#测试(第一次登陆需确认并输入密码)
+[yhli@ys0 ~]$ ssh ys0
+
+#)安装jdk
+[yhli@ys0 ~]$ mkdir -p /disk/yhli/app/
+[yhli@ys0 ~]$ tar -xzf /disk/yhli/install/jdk-6u33-linux-x64.tar.gz -C /disk/yhli/app/
+
+#)安装hadoop
+[yhli@ys0 ~]$ mkdir -p /disk/yhli/cloud/
+[yhli@ys0 ~]$ tar -xzf /disk/yhli/install/hadoop-0.20.2-cdh3u4.tar.gz -C /disk/yhli/cloud/
+
+-#)编译与安装lzo
+#rpm(lzo lzo-devel)
+[yhli@ys0 ~]$ sudo yum info lzo lzo-devel
+[yhli@ys0 ~]$ sudo yum install lzo
+[yhli@ys0 ~]$ sudo yum install lzo-devel
+[yhli@ys0 ~]$ sudo rpm -q lzo lzo-devel
+lzo-2.06-1.el6.rfx.x86_64
+lzo-devel-2.06-1.el6.rfx.x86_64
+[yhli@ys0 ~]$ 
+#compile hadoop-lzo 
+[yhli@ys0 install]$ ant -version
+[yhli@ys0 install]$ unzip kevinweil-hadoop-lzo-6bb1b7f.zip
+[yhli@ys0 install]$ cd kevinweil-hadoop-lzo-6bb1b7f
+[yhli@ys0 kevinweil-hadoop-lzo-6bb1b7f]$ export CFLAGS=-m64
+[yhli@ys0 kevinweil-hadoop-lzo-6bb1b7f]$ export CXXFLAGS=-m64
+[yhli@ys0 kevinweil-hadoop-lzo-6bb1b7f]$ ant compile-native tar
+Buildfile: /disk/yhli/install/kevinweil-hadoop-lzo-6bb1b7f/build.xml
+......
+      [tar] Building tar: /disk/yhli/install/kevinweil-hadoop-lzo-6bb1b7f/build/hadoop-lzo-0.4.15.tar.gz
+BUILD SUCCESSFUL
+[yhli@ys0 kevinweil-hadoop-lzo-6bb1b7f]$ mv build/hadoop-lzo-0.4.15.tar.gz /disk/yhli/install/
+#deploy hadoop-lzo(hadoop-lzo-0.4.15.tar.gz)
+[yhli@ys0 install]$ tar -xzf hadoop-lzo-0.4.15.tar.gz
+[yhli@ys0 install]$ cp hadoop-lzo-0.4.15/hadoop-lzo-0.4.15.jar ~/cdh/hadoop/lib/
+[yhli@ys0 install]$ cp -r hadoop-lzo-0.4.15/lib/native/* ~/cdh/hadoop/lib/native/
+[yhli@ys0 install]$ ll ~/cdh/hadoop/lib/ | grep lzo
+[yhli@ys0 install]$ ll ~/cdh/hadoop/lib/native/*
+
+#)conf
+根据需要修改相关配置
+
+#)系统初始化
+[yhli@ys0 ~]$ rm -rf ~/cdh/data/hadoop/*
+[yhli@ys0 ~]$ hadoop namenode -format
+
+--)command-------------------------------------------------
+#)service
+#网络慢时，可以先启动dfs，中间等待一会确保datanode正常启动后，再启动mapred
+[yhli@ys0 ~]$ start-dfs.sh
+[yhli@ys0 ~]$ start-mapred.sh
+
+[yhli@ys0 ~]$ stop-mapred.sh
+[yhli@ys0 ~]$ stop-dfs.sh
+
+[yhli@ys0 ~]$ hadoop-daemon.sh start namenode | datanode | secondarynamenode
+[yhli@ys0 ~]$ hadoop-daemon.sh start jobtracker | tasktracker
+
+#)tool
+[yhli@ys0 ~]$ hadoop version
+[yhli@ys0 ~]$ hadoop fsck /
+[yhli@ys0 ~]$ hadoop dfs
+[yhli@ys0 ~]$ hadoop job -list
+[yhli@ys0 ~]$ hadoop queue -list
+[yhli@ys0 ~]$ hadoop dfsadmin -report
+[yhli@ys0 ~]$ hadoop dfsadmin -safemode get | enter | leave | wait
+[yhli@ys0 ~]$ hadoop classpath
+
+#)web
+NameNode - http://ys0:50070/
+JobTracker - http://ys0:50030/
+SecondaryNameNode - http://ys0:50090/
+
+#)process
+[yhli@ys0 ~]$ jps -l
+3917 org.apache.hadoop.hdfs.server.namenode.NameNode
+4343 org.apache.hadoop.mapred.TaskTracker
+4447 sun.tools.jps.Jps
+4141 org.apache.hadoop.hdfs.server.namenode.SecondaryNameNode
+4026 org.apache.hadoop.hdfs.server.datanode.DataNode
+4230 org.apache.hadoop.mapred.JobTracker
+
+--)问题-------------------------------------------------
+#)节点之间不能通信的问题
+#java.net.NoRouteToHostException: No route to host
+#解决方案：关闭iptables
+[root@ys0 ~]# /etc/init.d/iptables stop
+[root@ys0 ~]# chkconfig --level 35 iptables off
+

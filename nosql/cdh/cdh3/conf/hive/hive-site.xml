@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+	<property>
+		<name>hive.tmp.dir</name>
+		<value>/home/yhli/cdh/data/hive</value>
+	</property>
+
+	<property>
+		<name>hive.querylog.location</name>
+		<value>${hive.tmp.dir}</value>
+	</property>
+
+	<property>
+		<name>hive.exec.scratchdir</name>
+		<value>${hive.tmp.dir}/hive-${user.name}</value>
+	</property>
+
+	<property>
+		<name>hive.exec.local.scratchdir</name>
+		<value>${hive.tmp.dir}</value>
+	</property>
+
+	<property>
+		<name>javax.jdo.option.ConnectionURL</name>
+		<value>jdbc:mysql://ys0/hive_v0131_cdh3?createDatabaseIfNotExist=true</value>
+	</property>
+
+	<property>
+		<name>javax.jdo.option.ConnectionDriverName</name>
+		<value>com.mysql.jdbc.Driver</value>
+	</property>
+
+	<property>
+		<name>javax.jdo.option.ConnectionUserName</name>
+		<value>hive</value>
+	</property>
+
+	<property>
+		<name>javax.jdo.option.ConnectionPassword</name>
+		<value>hive</value>
+	</property>
+
+	<property>
+		<name>hive.metastore.warehouse.dir</name>
+		<value>/user/hive/warehouse</value>
+	</property>
+</configuration>
