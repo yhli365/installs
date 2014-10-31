@@ -38,7 +38,17 @@ Oozie
 [yhli@ys0 oozie]$ vi conf/oozie-site.xml
 oozie.service.WorkflowAppService.system.libpath = /user/${user.name}/share/lib
 
--#)db:mysql
+-#)db.schema:derby
+[yhli@ys0 ~]$ vi $OOZIE_CONFIG/oozie-site.xml
+oozie.service.StoreService.create.db.schema = true
+oozie.service.StoreService.jdbc.driver = org.apache.derby.jdbc.EmbeddedDriver
+oozie.service.StoreService.jdbc.url = jdbc:derby:${oozie.data.dir}/${oozie.db.schema.name}-db;create=true
+oozie.service.StoreService.jdbc.username = oozie
+oozie.service.StoreService.jdbc.password = oozie
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie-run.sh
+[yhli@ys0 ~]$ rm -rf $OOZIE_DATA/oozie-db
+
+-#)db.schema:mysql
 [yhli@ys0 ~]$ sudo service mysqld status
 [yhli@ys0 ~]$ sudo mysql -u root -p
 mysql> 
@@ -52,36 +62,40 @@ flush privileges;
 select user,host,password from mysql.user;
 show grants for 'oozie'@'ys0';
 mysql> exit;
-[yhli@ys0 oozie]$ vi conf/oozie-site.xml
+[yhli@ys0 oozie]$ vi $OOZIE_CONFIG/oozie-site.xml
 oozie.service.StoreService.create.db.schema = true
 oozie.service.StoreService.jdbc.driver = com.mysql.jdbc.Driver
 oozie.service.StoreService.jdbc.url = jdbc:mysql://ys0:3306/ooziedb?createDatabaseIfNotExist=true
 oozie.service.StoreService.jdbc.username = oozie
 oozie.service.StoreService.jdbc.password = oozie
-[yhli@ys0 oozie]$ bin/oozie-run.sh
-[yhli@ys0 oozie]$ sudo mysql -u oozie -poozie -h ys0 ooziedb
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie-run.sh
+[yhli@ys0 ~]$ sudo mysql -u oozie -poozie -h ys0 ooziedb
 mysql> show tables;
 mysql> exit;
 
 --)command-------------------------------------------------
-[yhli@ys0 oozie]$ bin/oozie help
-[yhli@ys0 oozie]$ bin/oozie version
-[yhli@ys0 oozie]$ bin/oozie admin -version
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie help
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie version
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie admin -version
 
-[yhli@ys0 oozie]$ bin/oozied.sh start
-[yhli@ys0 oozie]$ bin/oozied.sh stop
-[yhli@ys0 oozie]$ bin/oozied.sh run
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozied.sh start
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozied.sh stop
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozied.sh run
 
-[yhli@ys0 oozie]$ bin/oozie admin -oozie http://ys0:11000/oozie -status
-[yhli@ys0 oozie]$ bin/oozie jobs -localtime
-[yhli@ys0 oozie]$ bin/oozie jobs -jobtype 'coordinator' -localtime
-[yhli@ys0 oozie]$ bin/oozie jobs -jobtype 'wf' -localtime
-[yhli@ys0 oozie]$ bin/oozie job -kill 0000008-141015140503623-oozie-yhli-W
+[yhli@ys0 ~]$ tail -100f $OOZIE_LOG/oozie.log
+[yhli@ys0 ~]$ tail -100f $OOZIE_LOG/oozie-ops.log
+[yhli@ys0 ~]$ tail -100f $OOZIE_LOG/catalina.out
+
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie admin -oozie http://ys0:11000/oozie -status
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie jobs -localtime
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie jobs -jobtype 'coordinator' -localtime
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie jobs -jobtype 'wf' -localtime
+[yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie job -kill 0000008-141015140503623-oozie-yhli-W
 
 --)improve-------------------------------------------------
 #)oozie web-console 时间本地化
-[yhli@ys0 oozie]$ cp $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js.orig
-[yhli@ys0 oozie]$ vi $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js
+[yhli@ys0 ~]$ cp $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js.orig
+[yhli@ys0 ~]$ vi $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js
 1、增加函数getLocalTime
 #30
 function getLocalTime(time){
@@ -115,7 +129,7 @@ fields: ['appPath', 'appName', 'id', 'conf', 'status', {name:'createdTime',conve
 3、刷新web页面并验证
 
 #)oozie web-console 调整列宽度
-[yhli@ys0 oozie]$ vi $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js
+[yhli@ys0 ~]$ vi $OOZIE_HOME/oozie-server/webapps/oozie/oozie-console.js
 #1238
 var jobs_grid = new Ext.grid.GridPanel({
 header: "Job Id",

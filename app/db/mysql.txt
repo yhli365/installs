@@ -1,0 +1,5 @@
+
+--)分区
+--#查看当前数据库是否支持分区
+show variables like '%partition%';
+

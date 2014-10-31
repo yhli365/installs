@@ -19,3 +19,8 @@ Sqoop
 [yhli@ys0 ~]$ $SQOOP_HOME/bin/sqoop version
 [yhli@ys0 ~]$ $SQOOP_HOME/bin/sqoop help
 [yhli@ys0 ~]$ $SQOOP_HOME/bin/sqoop import --help
+
+
+--)bugs----------------------------------------------------
+#)SQOOP-93
+Export should be able to read SequenceFile format created by Hive
