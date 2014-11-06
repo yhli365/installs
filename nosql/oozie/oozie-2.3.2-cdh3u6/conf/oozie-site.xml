@@ -20,7 +20,6 @@
     Refer to the oozie-default.xml file for the complete list of
     Oozie configuration properties and their default values.
 -->
-
     <property>
         <name>oozie.service.ActionService.executor.ext.classes</name>
         <value>
@@ -138,7 +137,7 @@
 
     <property>
         <name>oozie.service.StoreService.jdbc.url</name>
-        <value>jdbc:mysql://ys0:3306/ooziedb?createDatabaseIfNotExist=true</value>
+        <value>jdbc:mysql://ys0:3306/ooziedb_cdh3?createDatabaseIfNotExist=true</value>
         <description>
             JDBC URL.
         </description>

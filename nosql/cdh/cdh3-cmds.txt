@@ -34,7 +34,6 @@ cp -r ~/cdh/hbase/conf/* ~/cdh/data/conf/hbase
 
 #)hive
 上传软件特定配置文件到~/cdh/data/conf/hive
-上传集群特定配置文件到~/cdh/data/conf/hive
 
 #)sqoop
 上传软件特定配置文件到~/cdh/data/conf/sqoop
@@ -43,5 +42,8 @@ cp -r ~/cdh/hbase/conf/* ~/cdh/data/conf/hbase
 #)oozie
 cp -r ~/cdh/oozie/conf/* ~/cdh/data/conf/oozie
 上传软件特定配置文件到~/cdh/data/conf/oozie
-上传集群特定配置文件到~/cdh/data/conf/oozie
+
+--)chmod
+chmod +x ~/cdh/data/conf/*/*.sh
+
 

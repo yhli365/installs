@@ -53,11 +53,11 @@ oozie.service.StoreService.jdbc.password = oozie
 [yhli@ys0 ~]$ sudo mysql -u root -p
 mysql> 
 show databases;
-create database ooziedb;
+create database ooziedb_cdh3;
 create user 'oozie';
-grant all privileges on ooziedb.* to 'oozie'@'%' identified by 'oozie' with grant option;
-grant all privileges on ooziedb.* to 'oozie'@'ys0' identified by 'oozie' with grant option;
-grant all privileges on ooziedb.* to 'oozie'@'localhost' identified by 'oozie' with grant option;
+grant all privileges on ooziedb_cdh3.* to 'oozie'@'%' identified by 'oozie' with grant option;
+grant all privileges on ooziedb_cdh3.* to 'oozie'@'ys0' identified by 'oozie' with grant option;
+grant all privileges on ooziedb_cdh3.* to 'oozie'@'localhost' identified by 'oozie' with grant option;
 flush privileges;
 select user,host,password from mysql.user;
 show grants for 'oozie'@'ys0';
@@ -65,11 +65,11 @@ mysql> exit;
 [yhli@ys0 oozie]$ vi $OOZIE_CONFIG/oozie-site.xml
 oozie.service.StoreService.create.db.schema = true
 oozie.service.StoreService.jdbc.driver = com.mysql.jdbc.Driver
-oozie.service.StoreService.jdbc.url = jdbc:mysql://ys0:3306/ooziedb?createDatabaseIfNotExist=true
+oozie.service.StoreService.jdbc.url = jdbc:mysql://ys0:3306/ooziedb_cdh3?createDatabaseIfNotExist=true
 oozie.service.StoreService.jdbc.username = oozie
 oozie.service.StoreService.jdbc.password = oozie
 [yhli@ys0 ~]$ $OOZIE_HOME/bin/oozie-run.sh
-[yhli@ys0 ~]$ sudo mysql -u oozie -poozie -h ys0 ooziedb
+[yhli@ys0 ~]$ sudo mysql -u oozie -poozie -h ys0 ooziedb_cdh3
 mysql> show tables;
 mysql> exit;
 

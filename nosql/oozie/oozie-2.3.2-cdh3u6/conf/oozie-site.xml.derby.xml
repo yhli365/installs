@@ -19,8 +19,7 @@
 <!--
     Refer to the oozie-default.xml file for the complete list of
     Oozie configuration properties and their default values.
--->
-
+--> 
     <property>
         <name>oozie.service.ActionService.executor.ext.classes</name>
         <value>
@@ -130,7 +129,7 @@
 
     <property>
         <name>oozie.service.StoreService.jdbc.driver</name>
-        <value>com.mysql.jdbc.Driver</value>
+        <value>org.apache.derby.jdbc.EmbeddedDriver</value>
         <description>
             JDBC driver class.
         </description>
@@ -138,7 +137,7 @@
 
     <property>
         <name>oozie.service.StoreService.jdbc.url</name>
-        <value>jdbc:mysql://ys0:3306/oozie_v232_cdh3?createDatabaseIfNotExist=true</value>
+        <value>jdbc:derby:${oozie.data.dir}/${oozie.db.schema.name}-db;create=true</value>
         <description>
             JDBC URL.
         </description>
