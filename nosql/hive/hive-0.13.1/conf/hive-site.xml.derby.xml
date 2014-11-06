@@ -23,17 +23,17 @@
 
 	<property>
 		<name>javax.jdo.option.ConnectionURL</name>
-		<value>jdbc:mysql://ys0/hivedb?createDatabaseIfNotExist=true</value>
+		<value>jdbc:derby:${hive.tmp.dir}/hive-db;create=true</value>
 	</property>
 
 	<property>
 		<name>javax.jdo.option.ConnectionDriverName</name>
-		<value>com.mysql.jdbc.Driver</value>
+		<value>org.apache.derby.jdbc.EmbeddedDriver</value>
 	</property>
 
 	<property>
 		<name>javax.jdo.option.ConnectionUserName</name>
-		<value>hive</value>
+		<value>APP</value>
 	</property>
 
 	<property>
@@ -43,6 +43,6 @@
 
 	<property>
 		<name>hive.metastore.warehouse.dir</name>
-		<value>/user/hive/mysql</value>
+		<value>/user/hive/derby</value>
 	</property>
 </configuration>

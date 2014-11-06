@@ -14,6 +14,15 @@ Hive
 [yhli@ys0 ~]$ hadoop fs -chmod g+w   /tmp
 [yhli@ys0 ~]$ hadoop fs -chmod g+w   /user/hive/warehouse
 
+-#)db.schema:derby
+[yhli@ys0 ~]$ vi $HIVE_HOME/conf/hive-site.xml
+javax.jdo.option.ConnectionDriverName = org.apache.derby.jdbc.EmbeddedDriver
+javax.jdo.option.ConnectionURL = jdbc:derby:${hive.tmp.dir}/hive-db;create=true
+oozie.service.StoreService.jdbc.username = hive
+oozie.service.StoreService.jdbc.password = hive
+[yhli@ys0 ~]$ $HIVE_HOME/bin/schematool -dbType derby -initSchema
+[yhli@ys0 ~]$ $HIVE_HOME/bin/schematool -dbType derby -info
+
 -#)metadata store: mysql
 [yhli@ys0 ~]$ cp -r /usr/share/java/mysql-connector-java-*.jar $HIVE_HOME/lib/
 [yhli@ys0 ~]$ ll $HIVE_HOME/lib/ | grep mysql-connector-java
