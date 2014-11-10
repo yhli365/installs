@@ -1,0 +1,79 @@
+Linux NFS服务器的安装与配置
+=================================================
+@os CentOS release 6.5 (Final)
+
+--)系统环境
+[root@ys0 ~]# lsb_release -a
+Description:    CentOS release 6.5 (Final)
+[root@ys0 ~]# service iptables status
+iptables: Firewall is not running.
+[root@ys0 ~]# getenforce
+Disabled
+
+--)安装服务
+[root@ys0 ~]# rpm -q samba samba-client samba-swat
+[root@ys0 ~]# yum install samba samba-client samba-swat
+
+--)查看安装情况
+[root@ys0 ~]# rpm -qa | grep samba
+
+--)安装包说明
+samba-common-3.5.10-125.el6.x86_64	//主要提供samba服务器的设置文件与设置文件语法检验程序testparm
+samba-client-3.5.10-125.el6.x86_64	//客户端软件，主要提供linux主机作为客户端时，所需要的工具指令集
+samba-swat-3.5.10-125.el6.x86_64	//基于https协议的samba服务器web配置界面
+samba-3.5.10-125.el6.x86_64			//服务器端软件，主要提供samba服务器的守护程序，共享文档，日志的轮替，开机默认选项
+
+Samba服务器安装完毕，会生成配置文件目录/etc/samba和其它一些samba可执行命令工具，/etc/samba/smb.conf是samba的核心配置文件，/etc/init.d/smb是samba的启动/关闭文件。
+
+--)启动Samba服务器
+[root@ys0 ~]# service smb status
+[root@ys0 ~]# /etc/init.d/smb start
+[root@ys0 ~]# /etc/init.d/smb stop
+[root@ys0 ~]# /etc/init.d/smb restart
+
+--)设置开机自启动
+[root@ys0 ~]# chkconfig --level 35 smb on
+
+--)配置Samba服务示例(公司现有多个部门，因工作需要，将DEV部的资料存放在samba服务器的/samba/dev 目录中集中管理，以便DEV人员浏览，并且该目录只允许DEV部员工访问。)
+#)添加用户和组
+[root@ys0 ~]# groupadd dev
+[root@ys0 ~]# useradd -g dev david
+[root@ys0 ~]# passwd david
+#)将刚才建立的两个帐户添加到samba的账户中
+[root@ys0 ~]# smbpasswd -a david
+[root@ys0 ~]# smbpasswd -a yhli
+#)修改samba的主配置文件
+[root@ys0 ~]# cp /etc/samba/smb.conf /etc/samba/smb.conf.orig
+[root@ys0 ~]# vi /etc/samba/smb.conf
+#)建立共享目录
+[root@ys0 ~]# mkdir -p /samba/share
+[root@ys0 ~]# echo -e "Test samba" > /samba/share/samba.txt
+[root@ys0 ~]# echo -e "Hello samba" > /samba/share/hello.txt
+#)由于要设置匿名用户可以下载或上传共享文件，所以要给/share目录授权为nobody权限。
+[root@ys0 ~]# chown -R nobody:nobody /samba/share
+#)重新加载配置
+[root@ys0 ~]# service smb reload
+#)重启smb服务
+[root@ys0 ~]# /etc/init.d/smb restart
+#)测试smb.conf配置是否正确
+[root@ys0 ~]# testparm
+#)在Linux下访问Samba服务器的共享文件
+[root@ys0 ~]# smbclient //192.168.56.200/public -Udavid
+#)在Windows下访问Samba服务器的共享文件
+\\192.168.56.200 输入用户名/密码
+#)清理
+[root@ys0 ~]# userdel -rf david
+
+--)Linux客服端操作(linux访问windows共享文件夹)
+#)查看Samba服务器的共享资料
+[root@ys0 ~]# smbclient -L //192.168.56.1 -Uyhli
+#)登陆Samba服务器
+[root@ys0 ~]# smbclient //192.168.56.1/open -Uyhli
+smb: \> ? //在这里输入?即可查看在smb命令行可用的所有命令。
+操作过程与登陆FTP服务器很类似，登陆Samba服务器后，就可以进行文件的上传与下载，如果有足够的权限，还可以进行修改文件操作。
+#)此外，Samba服务器共享出来的文件还可以在Linux客户端进行挂载
+[root@ys0 ~]# mkdir -p /mnt/samba
+[root@ys0 ~]# mount -t cifs -o codepage=cp936,username=yhli,password=ccnu,iocharset=utf8 -l //192.168.56.1/open /mnt/samba
+[root@ys0 ~]# ll /mnt/samba
+[root@ys0 ~]# umount /mnt/samba
+

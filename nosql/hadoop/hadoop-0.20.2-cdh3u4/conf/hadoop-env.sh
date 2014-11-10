@@ -1,4 +1,5 @@
 # Set Hadoop-specific environment variables here.
+export CDH_DATA_DIR=/home/yhli/cdh/data
 
 # The only required environment variable is JAVA_HOME.  All others are
 # optional.  When running a distributed configuration it is best to
@@ -18,7 +19,7 @@ export HADOOP_HEAPSIZE=256
 
 # Extra Java runtime options.  Empty by default.
 # if [ "$HADOOP_OPTS" == "" ]; then export HADOOP_OPTS=-server; else HADOOP_OPTS+=" -server"; fi
-export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true"
+export HADOOP_OPTS="$HADOOP_OPTS -Djava.net.preferIPv4Stack=true"
 
 # Command specific options appended to HADOOP_OPTS when specified
 export HADOOP_NAMENODE_OPTS="-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS"
@@ -51,7 +52,7 @@ export HADOOP_SLAVES=${CDH_DATA_DIR}/conf/hadoop/slaves
 
 # The directory where pid files are stored. /tmp by default.
 # export HADOOP_PID_DIR=/var/hadoop/pids
-export HADOOP_PID_DIR=${CDH_DATA_DIR}/pids
+export HADOOP_PID_DIR=${CDH_DATA_DIR}/pids/hadoop
 
 # A string representing this instance of hadoop. $USER by default.
 # export HADOOP_IDENT_STRING=$USER
