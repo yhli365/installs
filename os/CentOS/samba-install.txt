@@ -34,35 +34,40 @@ Samba服务器安装完毕，会生成配置文件目录/etc/samba和其它一�
 --)设置开机自启动
 [root@ys0 ~]# chkconfig --level 35 smb on
 
---)配置Samba服务示例(公司现有多个部门，因工作需要，将DEV部的资料存放在samba服务器的/samba/dev 目录中集中管理，以便DEV人员浏览，并且该目录只允许DEV部员工访问。)
+--)配置Samba服务示例
 #)添加用户和组
 [root@ys0 ~]# groupadd dev
-[root@ys0 ~]# useradd -g dev david
-[root@ys0 ~]# passwd david
-#)将刚才建立的两个帐户添加到samba的账户中
-[root@ys0 ~]# smbpasswd -a david
+[root@ys0 ~]# useradd -g dev yhli
+[root@ys0 ~]# passwd yhli
+#)将刚才建立的帐户添加到samba的账户中
 [root@ys0 ~]# smbpasswd -a yhli
+#smbpasswd -x 用户名 (删除用户)
+#smbpasswd -d 用户名 (禁用用户)
+#smbpasswd -e 用户名 (启用用户)
 #)修改samba的主配置文件
 [root@ys0 ~]# cp /etc/samba/smb.conf /etc/samba/smb.conf.orig
 [root@ys0 ~]# vi /etc/samba/smb.conf
 #)建立共享目录
-[root@ys0 ~]# mkdir -p /samba/share
-[root@ys0 ~]# echo -e "Test samba" > /samba/share/samba.txt
-[root@ys0 ~]# echo -e "Hello samba" > /samba/share/hello.txt
-#)由于要设置匿名用户可以下载或上传共享文件，所以要给/share目录授权为nobody权限。
-[root@ys0 ~]# chown -R nobody:nobody /samba/share
+[root@ys0 ~]# mkdir -p /test/samba/share
+[root@ys0 ~]# cd /work/var/samba
+[root@ys0 samba]# echo -e "Test samba" > share/samba.txt
+[root@ys0 samba]# echo -e "Hello samba" > share/hello.txt
+;由于要设置匿名用户可以下载或上传共享文件，所以要给share目录授权为nobody权限。
+[root@ys0 samba]# chown -R nobody:nobody share
+#)测试smb.conf配置是否正确
+[root@ys0 ~]# testparm
 #)重新加载配置
 [root@ys0 ~]# service smb reload
 #)重启smb服务
-[root@ys0 ~]# /etc/init.d/smb restart
-#)测试smb.conf配置是否正确
-[root@ys0 ~]# testparm
+[root@ys0 ~]# service smb restart
 #)在Linux下访问Samba服务器的共享文件
-[root@ys0 ~]# smbclient //192.168.56.200/public -Udavid
+[root@ys0 ~]# smbclient -L //192.168.56.200 -Uyhli
+[root@ys0 ~]# smbclient -c "ls" //192.168.56.200/public -Uyhli%yhli
+[root@ys0 ~]# smbclient //192.168.56.200/public -Uyhli
+smb: \> ls
+smb: \> exit
 #)在Windows下访问Samba服务器的共享文件
 \\192.168.56.200 输入用户名/密码
-#)清理
-[root@ys0 ~]# userdel -rf david
 
 --)Linux客服端操作(linux访问windows共享文件夹)
 #)查看Samba服务器的共享资料

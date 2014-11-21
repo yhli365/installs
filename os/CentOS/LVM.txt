@@ -1,0 +1,377 @@
+CentOS 6.5下配置LVM（逻辑卷管理）
+
+#)检查系统中是否安装了LVM管理工具
+[root@ys0 ~]# rpm -qa | grep lvm
+lvm2-libs-2.02.100-8.el6.x86_64
+lvm2-2.02.100-8.el6.x86_64
+mesa-private-llvm-3.3-0.3.rc3.el6.x86_64
+
+#)准备物理硬盘: /dev/sdb (1G)
+
+--)PV管理
+#)创建PV
+[root@ys0 ~]# pvcreate /dev/sdb
+  Physical volume "/dev/sdb" successfully created
+
+#)查看PV
+[root@ys0 ~]# pvdisplay
+  --- Physical volume ---
+  PV Name               /dev/sda2
+  VG Name               vg_ys0
+  PV Size               49.51 GiB / not usable 3.00 MiB
+  Allocatable           yes (but full)
+  PE Size               4.00 MiB
+  Total PE              12674
+  Free PE               0
+  Allocated PE          12674
+  PV UUID               WrdEDk-J4Ci-AuxX-nyMY-e17V-FV1m-LEnvCd
+   
+  "/dev/sdb" is a new physical volume of "1.00 GiB"
+  --- NEW Physical volume ---
+  PV Name               /dev/sdb
+  VG Name               
+  PV Size               1.00 GiB
+  Allocatable           NO
+  PE Size               0   
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               ziUCNL-ugnR-5ecQ-lUWc-2mDj-lpIJ-ftNYg6
+   
+#)还可以使用命令pvs 和pvscan 查看简略信息。
+[root@ys0 ~]# pvs
+  PV         VG     Fmt  Attr PSize  PFree
+  /dev/sda2  vg_ys0 lvm2 a--  49.51g    0 
+  /dev/sdb          lvm2 a--   1.00g 1.00g
+[root@ys0 ~]# pvscan
+  PV /dev/sda2   VG vg_ys0          lvm2 [49.51 GiB / 0    free]
+  PV /dev/sdb                       lvm2 [1.00 GiB]
+  Total: 2 [50.51 GiB] / in use: 1 [49.51 GiB] / in no VG: 1 [1.00 GiB]
+
+--)VG管理
+#)创建VG
+[root@ys0 ~]# vgcreate vg_cdh5 /dev/sdb
+  Volume group "vg_cdh5" successfully created
+
+#)查看VG
+[root@ys0 ~]# vgdisplay
+  --- Volume group ---
+  VG Name               vg_cdh5
+  System ID             
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  1
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                0
+  Open LV               0
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               1020.00 MiB
+  PE Size               4.00 MiB
+  Total PE              255
+  Alloc PE / Size       0 / 0   
+  Free  PE / Size       255 / 1020.00 MiB
+  VG UUID               tipVRZ-Zaji-Z867-bwI2-rVlP-7HJ5-wzhGS0
+   
+  --- Volume group ---
+  VG Name               vg_ys0
+  System ID             
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  3
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                2
+  Open LV               2
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               49.51 GiB
+  PE Size               4.00 MiB
+  Total PE              12674
+  Alloc PE / Size       12674 / 49.51 GiB
+  Free  PE / Size       0 / 0   
+  VG UUID               pn4oKB-zYug-MWK3-QVlm-2Prw-SXvp-wH805r
+   
+#)同样可以使用命令vgs 和vgscan 查看
+[root@ys0 ~]# vgs
+  VG      #PV #LV #SN Attr   VSize    VFree   
+  vg_cdh5   1   0   0 wz--n- 1020.00m 1020.00m
+  vg_ys0    1   2   0 wz--n-   49.51g       0 
+[root@ys0 ~]# vgscan
+  Reading all physical volumes.  This may take a while...
+  Found volume group "vg_cdh5" using metadata type lvm2
+  Found volume group "vg_ys0" using metadata type lvm2
+
+--)LV管理
+#)创建指定大小LV
+[root@ys0 ~]# lvcreate -L 500M -n lv_cdh5 vg_cdh5
+  Logical volume "lv_cdh5" created
+  
+#)创建卷组全部大小的逻辑卷LV
+[root@ys0 ~]# vgdisplay vg_cdh5
+  --- Volume group ---
+  VG Name               vg_cdh5
+  System ID             
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  1
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                0
+  Open LV               0
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               5.00 GiB
+  PE Size               4.00 MiB
+  Total PE              1279
+  Alloc PE / Size       0 / 0   
+  Free  PE / Size       1279 / 5.00 GiB
+  VG UUID               c25OiT-cyC0-xDa2-14Oy-SBYP-QlJx-yZp185
+[root@ys0 ~]# lvcreate -l 1279 -n lv_cdh5 vg_cdh5
+;再次查看Free PE                                     
+[root@jetsen ~]# vgdisplay vg_cdh5|grep "Free"    
+
+#)查看LV的信息
+[root@ys0 ~]# lvdisplay
+  --- Logical volume ---
+  LV Path                /dev/vg_cdh5/lv_cdh5
+  LV Name                lv_cdh5
+  VG Name                vg_cdh5
+  LV UUID                I3wTgP-2rtT-JH8B-8gHV-xVWv-I4Pc-xxEm4N
+  LV Write Access        read/write
+  LV Creation host, time ys0, 2014-11-12 14:26:38 +0800
+  LV Status              available
+  # open                 0
+  LV Size                500.00 MiB
+  Current LE             125
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:2
+   
+  --- Logical volume ---
+  LV Path                /dev/vg_ys0/lv_root
+  LV Name                lv_root
+  VG Name                vg_ys0
+  LV UUID                7FOZSf-PX3E-W8vf-JlHi-myUX-2bxz-fDEwXi
+  LV Write Access        read/write
+  LV Creation host, time ys0, 2014-08-31 16:19:49 +0800
+  LV Status              available
+  # open                 1
+  LV Size                47.54 GiB
+  Current LE             12170
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:0
+   
+  --- Logical volume ---
+  LV Path                /dev/vg_ys0/lv_swap
+  LV Name                lv_swap
+  VG Name                vg_ys0
+  LV UUID                CkPLDp-1U9p-occN-02nl-VajQ-abSv-a7zUxG
+  LV Write Access        read/write
+  LV Creation host, time ys0, 2014-08-31 16:19:53 +0800
+  LV Status              available
+  # open                 1
+  LV Size                1.97 GiB
+  Current LE             504
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:1
+
+#)同样可以使用命令lvs 和lvscan 查看
+[root@ys0 ~]# lvs
+  LV      VG      Attr       LSize   Pool Origin Data%  Move Log Cpy%Sync Convert
+  lv_cdh5 vg_cdh5 -wi-a----- 500.00m                                             
+  lv_root vg_ys0  -wi-ao----  47.54g                                             
+  lv_swap vg_ys0  -wi-ao----   1.97g                                             
+[root@ys0 ~]# lvscan
+  ACTIVE            '/dev/vg_cdh5/lv_cdh5' [500.00 MiB] inherit
+  ACTIVE            '/dev/vg_ys0/lv_root' [47.54 GiB] inherit
+  ACTIVE            '/dev/vg_ys0/lv_swap' [1.97 GiB] inherit
+
+#)再来看VG 的信息
+[root@ys0 ~]# vgs
+  VG      #PV #LV #SN Attr   VSize    VFree  
+  vg_cdh5   1   1   0 wz--n- 1020.00m 520.00m
+  vg_ys0    1   2   0 wz--n-   49.51g      0 
+
+--)格式化LV
+[root@ys0 ~]# mkfs.ext4 /dev/vg_cdh5/lv_cdh5
+mke2fs 1.41.12 (17-May-2010)
+Filesystem label=
+OS type: Linux
+Block size=1024 (log=0)
+Fragment size=1024 (log=0)
+Stride=0 blocks, Stripe width=0 blocks
+128016 inodes, 512000 blocks
+25600 blocks (5.00%) reserved for the super user
+First data block=1
+Maximum filesystem blocks=67633152
+63 block groups
+8192 blocks per group, 8192 fragments per group
+2032 inodes per group
+Superblock backups stored on blocks: 
+        8193, 24577, 40961, 57345, 73729, 204801, 221185, 401409
+
+Writing inode tables: done                            
+Creating journal (8192 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+This filesystem will be automatically checked every 38 mounts or
+180 days, whichever comes first.  Use tune2fs -c or -i to override.
+
+--)挂载使用
+[root@ys0 ~]# mkdir -p /disk/cdh5
+[root@ys0 ~]# mount /dev/vg_cdh5/lv_cdh5 /disk/cdh5
+[root@ys0 ~]# df -TH
+Filesystem                  Type   Size  Used Avail Use% Mounted on
+/dev/mapper/vg_ys0-lv_root  ext4    51G  2.2G   46G   5% /
+tmpfs                       tmpfs  985M     0  985M   0% /dev/shm
+/dev/sda1                   ext4   508M   41M  442M   9% /boot
+/dev/mapper/vg_cdh5-lv_cdh5 ext4   508M   11M  471M   3% /disk/cdh5
+
+#)将挂载信息写入/etc/fstab
+[root@ys0 ~]# vi /etc/fstab
+proc                    /proc                   proc    defaults        0 0
+/dev/vg_cdh5/lv_cdh5    /disk/cdh5              ext4    defaults        0 0
+
+--)添加测试数据
+#)下面我们将对LVM进行扩容和缩减操作，所以向/mnt/lv1 中写入测试数据以验证LVM 的磁盘动态管理。
+[root@ys0 ~]# 
+echo -e "lvm test1" > /disk/cdh5/lvmtest1.txt
+echo -e "lvm test2" > /disk/cdh5/lvmtest2.txt
+echo -e "lvm test3" > /disk/cdh5/lvmtest3.txt
+ll /disk/cdh5
+
+--)LVM的扩容操作
+LVM最大的好处就是可以对磁盘进行动态管理，而且不会丢失现有的数据。
+假如有一天，lv1的使用量达到了80%，需要扩容，那我们该怎么做呢？因为vg0中还有很多剩余空间，所以我们可以从vg0中再分配点空间给lv1。
+
+#)LV的扩容
+;查看vg的剩余容量
+[root@ys0 ~]# vgs
+  VG      #PV #LV #SN Attr   VSize    VFree  
+  vg_cdh5   1   1   0 wz--n- 1020.00m 520.00m
+  vg_ys0    1   2   0 wz--n-   49.51g      0 
+
+;对lv进行扩容
+[root@ys0 ~]# lvextend -L +100M /dev/vg_cdh5/lv_cdh5
+  Extending logical volume lv_cdh5 to 600.00 MiB
+  Logical volume lv_cdh5 successfully resized
+
+;查看现在vg的剩余容量
+[root@ys0 ~]# vgs
+  VG      #PV #LV #SN Attr   VSize    VFree  
+  vg_cdh5   1   1   0 wz--n- 1020.00m 420.00m
+  vg_ys0    1   2   0 wz--n-   49.51g      0 
+
+;再查看lv的容量
+[root@ys0 ~]# lvs
+  LV      VG      Attr       LSize   Pool Origin Data%  Move Log Cpy%Sync Convert
+  lv_cdh5 vg_cdh5 -wi-ao---- 600.00m                                             
+  lv_root vg_ys0  -wi-ao----  47.54g                                             
+  lv_swap vg_ys0  -wi-ao----   1.97g
+
+;对文件系统进行扩容
+[root@ys0 ~]# resize2fs /dev/vg_cdh5/lv_cdh5
+resize2fs 1.41.12 (17-May-2010)
+Filesystem at /dev/vg_cdh5/lv_cdh5 is mounted on /disk/cdh5; on-line resizing required
+old desc_blocks = 2, new_desc_blocks = 3
+Performing an on-line resize of /dev/vg_cdh5/lv_cdh5 to 614400 (1k) blocks.
+The filesystem on /dev/vg_cdh5/lv_cdh5 is now 614400 blocks long.
+
+;使用df -TH 命令查看实际的磁盘容量
+[root@ys0 ~]# df -TH
+Filesystem                  Type   Size  Used Avail Use% Mounted on
+/dev/mapper/vg_ys0-lv_root  ext4    51G  2.2G   46G   5% /
+tmpfs                       tmpfs  985M     0  985M   0% /dev/shm
+/dev/sda1                   ext4   508M   41M  442M   9% /boot
+/dev/mapper/vg_cdh5-lv_cdh5 ext4   610M   11M  568M   2% /disk/cdh5
+
+;查看测试数据
+[root@ys0 ~]# 
+ll /disk/cdh5
+cat /disk/cdh5/lvmtest1.txt
+cat /disk/cdh5/lvmtest2.txt
+cat /disk/cdh5/lvmtest3.txt
+数据正常，对lv的在线动态扩容完成。
+
+#)VG的扩容
+还有一种情况，就是假如我们的vg0 空间不够用了，怎么办？这时我们就需要对VG进行扩容。
+VG的扩容可以有两种方法，第一种方法是通过增加PV来实现，操作如下：
+;创建PV，使用/dev/sdc 来创建一个PV
+[root@ys0 ~]# pvcreate /dev/sdc
+
+;扩容VG
+[root@ys0 ~]# vgextend vg_cdh5 /dev/sdc
+
+;查看结果
+[root@ys0 ~]# vgs
+
+第二种方法是通过扩展RAID设备的容量来间接对VG进行扩容。这种方法在上一篇文章中有介绍，这里不再赘述，需要注意的地方是，/dev/md5 的大小变化后，需要调整PV的大小，操作如下：
+[root@ys0 ~]# pvresize /dev/md5
+
+#)虚拟盘VDI扩容: 调整PV,LV的大小
+[root@ys0 ~]# pvresize /dev/sdc
+  Physical volume "/dev/sdc" changed
+  1 physical volume(s) resized / 0 physical volume(s) not resized
+[root@ys0 ~]# pvdisplay /dev/sdc
+  --- Physical volume ---
+  PV Name               /dev/sdc
+  VG Name               vg_cdh5
+  PV Size               7.81 GiB / not usable 3.00 MiB
+  Allocatable           yes 
+  PE Size               4.00 MiB
+  Total PE              1999
+  Free PE               720
+  Allocated PE          1279
+  PV UUID               4PyElm-s17m-KsY2-peZ3-Cs9p-2KIY-XNpfdi
+[root@ys0 ~]# lvextend -l +720 /dev/vg_cdh5/lv_cdh5
+  Extending logical volume lv_cdh5 to 7.81 GiB
+  Logical volume lv_cdh5 successfully resized
+[root@ys0 ~]# resize2fs /dev/vg_cdh5/lv_cdh5
+resize2fs 1.41.12 (17-May-2010)
+Filesystem at /dev/vg_cdh5/lv_cdh5 is mounted on /disk/cdh5; on-line resizing required
+old desc_blocks = 1, new_desc_blocks = 1
+Performing an on-line resize of /dev/vg_cdh5/lv_cdh5 to 2046976 (4k) blocks.
+The filesystem on /dev/vg_cdh5/lv_cdh5 is now 2046976 blocks long.
+
+[root@ys0 ~]# df -TH
+Filesystem                  Type   Size  Used Avail Use% Mounted on
+/dev/mapper/vg_ys0-lv_root  ext4    51G  2.2G   46G   5% /
+tmpfs                       tmpfs  985M     0  985M   0% /dev/shm
+/dev/sda1                   ext4   508M   41M  442M   9% /boot
+/dev/mapper/vg_cdh5-lv_cdh5 ext4   8.3G  168M  7.7G   3% /disk/cdh5
+
+
+--)LVM的缩减操作
+缩减操作需要离线处理。
+
+--)删除LVM
+如果要彻底的来移除LVM的话，需要把创建的步骤反过来操作。
+
+#)umount 文件系统
+[root@ys0 ~]# umount /disk/cdh5
+
+#)移除LV
+[root@ys0 ~]# lvremove /dev/vg_cdh5/lv_cdh5
+
+#)移除VG
+[root@ys0 ~]# vgremove vg_cdh5
+
+#)移除PV
+[root@ys0 ~]# pvremove /dev/sdb
+

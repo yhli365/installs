@@ -1,0 +1,43 @@
+CDH5
+
+--)switch
+[yhli@ys0 ~]$ mkdir -p ~/cdh
+#单机伪集群配置: cdh5
+[yhli@ys0 ~]$ sh /work/data/cdh5/install.sh
+#多节点集群配置: cdh5n3
+[yhli@ys0 ~]$ sh /work/data/cdh5n3/install.sh
+
+--)env
+[yhli@ys0 ~]$ vi ~/.bash_profile
+if [ -f ~/cdh/data/bashenv ]; then
+        . ~/cdh/data/bashenv
+fi
+[yhli@ys0 ~]$ source ~/.bash_profile
+[yhli@ys0 ~]$ env | grep cdh
+
+--)conf
+#)hadoop
+cp -r ~/cdh/hadoop/conf/* ~/cdh/data/conf/hadoop
+上传软件特定配置文件到~/cdh/data/conf/hadoop
+上传集群特定配置文件到~/cdh/data/conf/hadoop
+
+#)hbase
+cp -r ~/cdh/hbase/conf/* ~/cdh/data/conf/hbase
+上传软件特定配置文件到~/cdh/data/conf/hbase
+上传集群特定配置文件到~/cdh/data/conf/hbase
+
+#)hive
+上传软件特定配置文件到~/cdh/data/conf/hive
+
+#)sqoop
+上传软件特定配置文件到~/cdh/data/conf/sqoop
+上传集群特定配置文件到~/cdh/data/conf/sqoop
+
+#)oozie
+cp -r ~/cdh/oozie/conf/* ~/cdh/data/conf/oozie
+上传软件特定配置文件到~/cdh/data/conf/oozie
+
+--)chmod
+chmod +x ~/cdh/data/conf/*/*.sh
+
+

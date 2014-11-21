@@ -1,0 +1,147 @@
+Hadoop
+@site http://hadoop.apache.org/
+@site http://www.cloudera.com/
+@version hadoop-2.5.0-cdh5.2.0.tar.gz
+
+--)install-------------------------------------------------
+#)abbr
+NN/NameNode/core-site.xml#fs.defaultFS
+SNN/SencondaryNameNode/hdfs-site.xml#dfs.namenode.secondary.http-address
+DN/DataNode/slaves
+RM/ResourceManager/yarn-site.xml#yarn.resourcemanager.hostname
+NM/NodeManager/slaves
+JHS/JobHistoryServer/mapred-site.xml#mapreduce.jobhistory.webapp.address
+
+#)CentOS配置服务器名称
+[root@localhost ~] vi /etc/sysconfig/network
+HOSTNAME=ys0
+[root@localhost ~] vi /etc/hosts
+192.168.56.200  ys0
+192.168.56.201  ys1
+192.168.56.202  ys2
+
+#)配置客户机上hosts文件[C:\Windows\System32\drivers\etc\hosts],win7需要管理员权限
+192.168.56.200       ys0
+192.168.56.201       ys1
+192.168.56.202       ys2
+
+#)创建hadoop用户yhli和组dev
+[root@ys0 ~]# id yhli
+[root@ys0 ~]# groupadd dev
+[root@ys0 ~]# useradd -g dev yhli
+[root@ys0 ~]# passwd yhli
+[root@ys0 ~]# vi /etc/sudoers
+yhli    ALL=(ALL)       ALL
+
+#)配置用户SSH无密码登陆
+[root@ys0 ~]# su - yhli
+[yhli@ys0 ~]$ ssh-keygen -t rsa -P ""
+[yhli@ys0 ~]$ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+[yhli@ys0 ~]$ chmod 700 ~/.ssh
+[yhli@ys0 ~]$ chmod 600 ~/.ssh/authorized_keys
+#测试(第一次登陆需确认并输入密码)
+[yhli@ys0 ~]$ ssh ys0
+
+#)安装jdk
+[yhli@ys0 ~]$ tar -xzvf jdk-7u67-linux-x64.tar.gz -C /work/yhli/app
+
+#)安装hadoop
+[yhli@ys0 ~]$ tar -xzvf hadoop-2.5.0-cdh5.2.0.tar.gz -C /disk/cdh5/app
+
+#)CDH5 Native Libraries
+#1)Extract from RPM(提取)
+http://archive-primary.cloudera.com/cdh5/redhat/6/x86_64/cdh/
+[yhli@ys0 ~]$ ll $HADOOP_HOME/lib/native
+[yhli@ys0 ~]$ cd ~/install/RPMS
+[yhli@ys0 RPMS]$ rpm -qpl hadoop-2.5.0+cdh5.2.0+*.rpm
+[yhli@ys0 RPMS]$ rm -rf usr/
+[yhli@ys0 RPMS]$ rpm2cpio hadoop-2.5.0+cdh5.2.0+*.rpm |cpio -ivmd ./usr/lib/hadoop/lib/native/*
+[yhli@ys0 RPMS]# cp -r usr/lib/hadoop/lib/native $HADOOP_HOME/lib/
+
+#2)编译与安装LZO
+#Install rpm(lzo lzo-devel)
+[yhli@ys0 ~]$ sudo yum info lzo lzo-devel
+[yhli@ys0 ~]$ sudo yum install lzo
+[yhli@ys0 ~]$ sudo yum install lzo-devel
+[yhli@ys0 ~]$ sudo rpm -q lzo lzo-devel
+lzo-2.06-1.el6.rfx.x86_64
+lzo-devel-2.06-1.el6.rfx.x86_64
+[yhli@ys0 ~]$
+
+#Compile hadoop-lzo
+--download 
+https://github.com/twitter/hadoop-lzo/tree/release-0.4.19
+hadoop-lzo-release-0.4.19.zip
+--env
+[yhli@ys0 ~]$ 
+export JAVA_HOME=/work/yhli/app/jdk1.7.0_67
+export M2_HOME=/work/yhli/app/apache-maven-3.2.3
+export PATH=$JAVA_HOME/bin:$M2_HOME/bin:$PATH
+[yhli@ys0 ~]$ mvn -version
+Apache Maven 3.2.3 (33f8c3e1027c3ddde99d3cdebad2656a31e8fdf4; 2014-08-12T04:58:10+08:00)
+Maven home: /work/yhli/app/apache-maven-3.2.3
+Java version: 1.7.0_67, vendor: Oracle Corporation
+Java home: /work/yhli/app/jdk1.7.0_67/jre
+Default locale: en_US, platform encoding: UTF-8
+OS name: "linux", version: "2.6.32-431.el6.x86_64", arch: "amd64", family: "unix"
+[yhli@ys0 ~]$ 
+--compile
+[yhli@ys0 ~]$ cd ~/install
+[yhli@ys0 install]$ unzip hadoop-lzo-release-0.4.19.zip 
+[yhli@ys0 install]$ cd hadoop-lzo-release-0.4.19
+[yhli@ys0 hadoop-lzo-release-0.4.19]$ vi pom.xml
+    <hadoop.current.version>2.5.0</hadoop.current.version>
+[yhli@ys0 hadoop-lzo-release-0.4.19]$ export CFLAGS=-m64
+[yhli@ys0 hadoop-lzo-release-0.4.19]$ export CXXFLAGS=-m64
+[yhli@ys0 hadoop-lzo-release-0.4.19]$ mvn clean package -Dmaven.test.skip=true
+--dist
+[yhli@ys0 hadoop-lzo-release-0.4.19]$ mkdir dist
+[yhli@ys0 hadoop-lzo-release-0.4.19]$ cp -r target/native/Linux-amd64-64/lib dist/native
+[yhli@ys0 hadoop-lzo-release-0.4.19]$ cp -r target/hadoop-lzo-*.jar dist
+[yhli@ys0 hadoop-lzo-release-0.4.19]$ tar -czf hadoop-lzo-0.4.19.tar.gz dist/
+--deploy
+[yhli@ys0 hadoop-lzo-release-0.4.19]$ cp -r dist/native/* $HADOOP_HOME/lib/native
+[yhli@ys0 hadoop-lzo-release-0.4.19]$ cp -r dist/hadoop-lzo-0.4.19.jar $HADOOP_HOME/share/hadoop/common/lib
+
+#)conf
+根据需要修改相关配置
+
+#)系统初始化
+[yhli@ys0 ~]$ ll ~/cdh/data/hadoop
+[yhli@ys0 ~]$ rm -rf ~/cdh/data/hadoop/*
+[yhli@ys0 ~]$ hadoop namenode -format
+
+--)command-------------------------------------------------
+#)service
+[yhli@ys0 ~]$ start-dfs.sh
+[yhli@ys0 ~]$ start-yarn.sh
+[yhli@ys0 ~]$ mr-jobhistory-daemon.sh start historyserver
+
+[yhli@ys0 ~]$ stop-dfs.sh
+[yhli@ys0 ~]$ stop-yarn.sh
+[yhli@ys0 ~]$ mr-jobhistory-daemon.sh stop historyserver
+
+[yhli@ys0 ~]$ hadoop-daemon.sh start namenode | datanode | secondarynamenode
+[yhli@ys0 ~]$ yarn-daemon.sh start resourcemanager | nodemanager | proxyserver
+
+#)tool
+[yhli@ys0 ~]$ hadoop version
+[yhli@ys0 ~]$ hdfs dfsadmin -report
+[yhli@ys0 ~]$ hdfs fsck /
+[yhli@ys0 ~]$ hdfs dfs
+[yhli@ys0 ~]$ hdfs getconf -confkey dfs.blocksize
+[yhli@ys0 ~]$ mapred job -list
+[yhli@ys0 ~]$ mapred queue -list
+[yhli@ys0 ~]$ mapred classpath
+
+#)web
+NameNode - http://ys0:50070/
+SecondaryNameNode - http://ys0:50090/
+DataNode - http://ys0:50075/
+
+ResourceManager - http://ys0:8088/
+JobHistoryServer - http://ys0:19888/
+
+#)process
+[yhli@ys0 ~]$ jps -l
+

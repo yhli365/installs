@@ -1,0 +1,26 @@
+# bashenv
+# @author: yhli365@qq.com
+
+export CDH_DIR=/home/yhli/cdh
+
+export JAVA_HOME=$CDH_DIR/jdk
+export HADOOP_HOME=$CDH_DIR/hadoop
+export HBASE_HOME=$CDH_DIR/hbase
+export HIVE_HOME=$CDH_DIR/hive
+export PIG_HOME=$CDH_DIR/pig
+export SQOOP_HOME=$CDH_DIR/sqoop
+export OOZIE_HOME=$CDH_DIR/oozie
+
+export PATH=$JAVA_HOME/bin:$HADOOP_HOME/bin:$HBASE_HOME/bin:$PATH
+
+#conf
+export HADOOP_CONF_DIR=$CDH_DIR/data/conf/hadoop
+export HBASE_CONF_DIR=$CDH_DIR/data/conf/hbase
+export HIVE_CONF_DIR=$CDH_DIR/data/conf/hive
+export SQOOP_CONF_DIR=$CDH_DIR/data/conf/sqoop
+export OOZIE_CONFIG=$CDH_DIR/data/conf/oozie
+
+#other
+export OOZIE_LOG=$CDH_DIR/data/logs/oozie
+export OOZIE_DATA=$CDH_DIR/data/oozie
+export OOZIE_URL=http://ys0:11000/oozie

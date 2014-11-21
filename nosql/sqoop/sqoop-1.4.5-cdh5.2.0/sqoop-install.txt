@@ -1,0 +1,25 @@
+Sqoop
+@version sqoop-1.4.5-cdh5.2.0.tar.gz
+
+--)install-------------------------------------------------
+#)unzip
+[yhli@ys0 ~]$ tar -xzf sqoop-1.4.5-cdh5.2.0.tar.gz -C /disk/cdh5/app
+
+#)conf
+根据需要修改相关配置
+
+#)jdbc jars: mysql
+#http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.32.tar.gz
+上传 $SQOOP_HOME/lib/mysql-connector-java-5.1.32.jar
+[yhli@ys0 ~]$ ll $SQOOP_HOME/lib/ | grep mysql-connector-java
+
+--)command-------------------------------------------------
+#)service
+[yhli@ys0 ~]$ $SQOOP_HOME/bin/sqoop version
+[yhli@ys0 ~]$ $SQOOP_HOME/bin/sqoop help
+[yhli@ys0 ~]$ $SQOOP_HOME/bin/sqoop import --help
+
+
+--)bugs----------------------------------------------------
+#)SQOOP-93
+Export should be able to read SequenceFile format created by Hive

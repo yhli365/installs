@@ -1,0 +1,128 @@
+#虚拟磁盘VDI文件管理
+@version VirtualBox_4.2.8
+
+--)compact:压缩虚拟机VDI文件大小
+宿主机: windows 7
+虚拟机: CentOS 6.5
+虚拟磁盘: cdh5.vdi(/dev/sdc LSM)
+
+#)查看占用空间大小
+cmd.exe
+cmd> cd C:\Program Files\Oracle\VirtualBox
+cmd> VBoxManage showhdinfo D:\yvms\vbox\cdh5.vdi
+UUID:           b579c293-16fd-4f72-8ee0-4c46be327382
+Parent UUID:    base
+State:          locked write
+Type:           normal (base)
+Location:       D:\yvms\vbox\cdh5.vdi
+Storage format: VDI
+Format variant: dynamic default
+Capacity:       5120 MBytes
+Size on disk:   621 MBytes
+In use by VMs:  ys0_ct65x (UUID: 5ce6e5b1-1804-47f3-b22d-3766ec44f2f8)
+
+#)查看虚拟磁盘VDI实际使用大小(/dev/sdb1)
+[root@ys0 ~]# df -h
+Filesystem                  Size  Used Avail Use% Mounted on
+/dev/mapper/vg_ys0-lv_root   47G  2.2G   43G   5% /
+tmpfs                       939M     0  939M   0% /dev/shm
+/dev/sda1                   485M   39M  421M   9% /boot
+/dev/mapper/vg_cdh5-lv_cdh5  5.0G  159M  4.6G   4% /disk/cdh5
+
+#)在Guest系统上，把所有没用的数据写零
+[root@ys0 ~]# dd if=/dev/zero of=/disk/cdh5/bigemptyfile
+[root@ys0 ~]# df -h
+Filesystem                   Size  Used Avail Use% Mounted on
+/dev/mapper/vg_ys0-lv_root    47G  2.0G   43G   5% /
+tmpfs                        939M     0  939M   0% /dev/shm
+/dev/sda1                    485M   39M  421M   9% /boot
+/dev/mapper/vg_cdh5-lv_cdh5  5.0G  5.0G     0 100% /disk/cdh5
+[root@ys0 ~]# rm /disk/cdh5/bigemptyfile
+[root@ys0 ~]# df -h
+Filesystem                   Size  Used Avail Use% Mounted on
+/dev/mapper/vg_ys0-lv_root    47G  2.0G   43G   5% /
+tmpfs                        939M     0  939M   0% /dev/shm
+/dev/sda1                    485M   39M  421M   9% /boot
+/dev/mapper/vg_cdh5-lv_cdh5  5.0G  159M  4.6G   4% /disk/cdh5
+[root@ys0 ~]# poweroff
+
+#)压缩磁盘
+cmd> VBoxManage modifyhd D:\yvms\vbox\cdh5.vdi --compact
+0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+
+cmd> VBoxManage showhdinfo D:\yvms\vbox\cdh5.vdi
+UUID:           b579c293-16fd-4f72-8ee0-4c46be327382
+Parent UUID:    base
+State:          created
+Type:           normal (base)
+Location:       D:\yvms\vbox\cdh5.vdi
+Storage format: VDI
+Format variant: dynamic default
+Capacity:       5120 MBytes
+Size on disk:   78 MBytes
+In use by VMs:  ys0_ct65x (UUID: 5ce6e5b1-1804-47f3-b22d-3766ec44f2f8)
+
+#)重启虚拟机，正常使用
+
+--)resize:扩展虚拟机VDI文件大小
+#)扩展虚拟介质大小到8G
+cmd> VBoxManage modifyhd D:\yvms\vbox\cdh5.vdi --resize 8000
+0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+
+cmd> VBoxManage showhdinfo D:\yvms\vbox\cdh5.vdi
+UUID:           b579c293-16fd-4f72-8ee0-4c46be327382
+Parent UUID:    base
+State:          created
+Type:           normal (base)
+Location:       D:\yvms\vbox\cdh5.vdi
+Storage format: VDI
+Format variant: dynamic default
+Capacity:       8000 MBytes
+Size on disk:   78 MBytes
+In use by VMs:  ys0_ct65x (UUID: 5ce6e5b1-1804-47f3-b22d-3766ec44f2f8)
+
+#)重启虚拟机
+[root@ys0 ~]# pvdisplay /dev/sdc
+  --- Physical volume ---
+  PV Name               /dev/sdc
+  VG Name               vg_cdh5
+  PV Size               5.00 GiB / not usable 4.00 MiB
+  Allocatable           yes (but full)
+  PE Size               4.00 MiB
+  Total PE              1279
+  Free PE               0
+  Allocated PE          1279
+  PV UUID               4PyElm-s17m-KsY2-peZ3-Cs9p-2KIY-XNpfdi
+
+#)虚拟盘VDI扩容: 调整PV,LV的大小
+[root@ys0 ~]# pvresize /dev/sdc
+  Physical volume "/dev/sdc" changed
+  1 physical volume(s) resized / 0 physical volume(s) not resized
+[root@ys0 ~]# pvdisplay /dev/sdc
+  --- Physical volume ---
+  PV Name               /dev/sdc
+  VG Name               vg_cdh5
+  PV Size               7.81 GiB / not usable 3.00 MiB
+  Allocatable           yes 
+  PE Size               4.00 MiB
+  Total PE              1999
+  Free PE               720
+  Allocated PE          1279
+  PV UUID               4PyElm-s17m-KsY2-peZ3-Cs9p-2KIY-XNpfdi
+[root@ys0 ~]# lvextend -l +720 /dev/vg_cdh5/lv_cdh5
+  Extending logical volume lv_cdh5 to 7.81 GiB
+  Logical volume lv_cdh5 successfully resized
+[root@ys0 ~]# resize2fs /dev/vg_cdh5/lv_cdh5
+resize2fs 1.41.12 (17-May-2010)
+Filesystem at /dev/vg_cdh5/lv_cdh5 is mounted on /disk/cdh5; on-line resizing required
+old desc_blocks = 1, new_desc_blocks = 1
+Performing an on-line resize of /dev/vg_cdh5/lv_cdh5 to 2046976 (4k) blocks.
+The filesystem on /dev/vg_cdh5/lv_cdh5 is now 2046976 blocks long.
+
+[root@ys0 ~]# df -TH
+Filesystem                  Type   Size  Used Avail Use% Mounted on
+/dev/mapper/vg_ys0-lv_root  ext4    51G  2.2G   46G   5% /
+tmpfs                       tmpfs  985M     0  985M   0% /dev/shm
+/dev/sda1                   ext4   508M   41M  442M   9% /boot
+/dev/mapper/vg_cdh5-lv_cdh5 ext4   8.3G  168M  7.7G   3% /disk/cdh5
+
