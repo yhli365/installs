@@ -3,9 +3,9 @@ CDH5
 --)switch
 [yhli@ys0 ~]$ mkdir -p ~/cdh
 #单机伪集群配置: cdh5
-[yhli@ys0 ~]$ sh /work/data/cdh5/install.sh
+[yhli@ys0 ~]$ sh /work/yhli/data/cdh5/install.sh
 #多节点集群配置: cdh5n3
-[yhli@ys0 ~]$ sh /work/data/cdh5n3/install.sh
+[yhli@ys0 ~]$ sh /work/yhli/data/cdh5n3/install.sh
 
 --)env
 [yhli@ys0 ~]$ vi ~/.bash_profile

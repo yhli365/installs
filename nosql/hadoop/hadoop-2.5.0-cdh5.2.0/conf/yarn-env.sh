@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+export CDH_DATA_DIR=/home/yhli/cdh/data
+export YARN_LOG_DIR=$CDH_DATA_DIR/logs/hadoop
+export YARN_PID_DIR=$CDH_DATA_DIR/pids
+
 # User for YARN daemons
 export HADOOP_YARN_USER=${HADOOP_YARN_USER:-yarn}
 
@@ -54,6 +58,15 @@ fi
 # or JAVA_HEAP_MAX with YARN_HEAPMAX as the preferred option of the two.
 #export YARN_RESOURCEMANAGER_HEAPSIZE=1000
 
+# Specify the max Heapsize for the timeline server using a numerical value
+# in the scale of MB. For example, to specify an jvm option of -Xmx1000m, set
+# the value to 1000.
+# This value will be overridden by an Xmx setting specified in either YARN_OPTS
+# and/or YARN_TIMELINESERVER_OPTS.
+# If not specified, the default value will be picked from either YARN_HEAPMAX
+# or JAVA_HEAP_MAX with YARN_HEAPMAX as the preferred option of the two.
+#export YARN_TIMELINESERVER_HEAPSIZE=1000
+
 # Specify the JVM options to be used when starting the ResourceManager.
 # These options will be appended to the options specified as YARN_OPTS
 # and therefore may override any similar flags set in YARN_OPTS
@@ -78,8 +91,7 @@ fi
 # so that filenames w/ spaces are handled correctly in loops below
 IFS=
 
-export CDH_DATA_DIR=/home/yhli/cdhdata
-export YARN_LOG_DIR=$CDH_DATA_DIR/logs/hadoop
+
 # default log directory & file
 if [ "$YARN_LOG_DIR" = "" ]; then
   YARN_LOG_DIR="$HADOOP_YARN_HOME/logs"
@@ -110,10 +122,4 @@ if [ "x$JAVA_LIBRARY_PATH" != "x" ]; then
 fi  
 YARN_OPTS="$YARN_OPTS -Dyarn.policy.file=$YARN_POLICYFILE"
 
-export YARN_PID_DIR=$CDH_DATA_DIR/pids
 
-#echo "JAVA_HOME: $JAVA_HOME"
-#echo "HADOOP_YARN_HOME: $HADOOP_YARN_HOME"
-#echo "YARN_CONF_DIR: $YARN_CONF_DIR"
-#echo "YARN_LOG_DIR: $YARN_LOG_DIR"
-#echo "YARN_PID_DIR: $YARN_PID_DIR"

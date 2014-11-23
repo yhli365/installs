@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup.sh
+# install.sh
 
 home=`dirname "${BASH_SOURCE-$0}"`
 home=`cd "$home"; pwd`
@@ -21,7 +21,7 @@ SOLR_HOME=$CDH_HOME/solr-4.4.0-cdh5.2.0
 if [ -d ~/cdh/data ]; then
     rm ~/cdh/data
 fi
-ln -s /work/data/cdh5 ~/cdh/data
+ln -s /work/yhli/data/cdh5 ~/cdh/data
 
 if [ -d ~/cdh/jdk ]; then
     rm ~/cdh/jdk

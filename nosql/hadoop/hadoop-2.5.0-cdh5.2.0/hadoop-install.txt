@@ -60,9 +60,16 @@ http://archive-primary.cloudera.com/cdh5/redhat/6/x86_64/cdh/
 
 #2)编译与安装LZO
 #Install rpm(lzo lzo-devel)
+;yum
 [yhli@ys0 ~]$ sudo yum info lzo lzo-devel
 [yhli@ys0 ~]$ sudo yum install lzo
 [yhli@ys0 ~]$ sudo yum install lzo-devel
+;或者rpm
+[yhli@ys0 ~]$ sudo rpm -Uvh lzo-2.06-1.el6.rfx.x86_64.rpm
+[yhli@ys0 ~]$ sudo rpm -Uvh lzo-devel-2.06-1.el6.rfx.x86_64.rpm
+[yhli@ys0 ~]$ sudo rpm -ivh lzo-2.06-1.el6.rfx.x86_64.rpm
+[yhli@ys0 ~]$ sudo rpm -ivh lzo-devel-2.06-1.el6.rfx.x86_64.rpm
+;check
 [yhli@ys0 ~]$ sudo rpm -q lzo lzo-devel
 lzo-2.06-1.el6.rfx.x86_64
 lzo-devel-2.06-1.el6.rfx.x86_64
@@ -109,7 +116,12 @@ OS name: "linux", version: "2.6.32-431.el6.x86_64", arch: "amd64", family: "unix
 #)系统初始化
 [yhli@ys0 ~]$ ll ~/cdh/data/hadoop
 [yhli@ys0 ~]$ rm -rf ~/cdh/data/hadoop/*
-[yhli@ys0 ~]$ hadoop namenode -format
+[yhli@ys0 ~]$ hdfs namenode -format
+
+#)删除无用的文件
+[yhli@ys0 ~]$ cd $HADOOP_HOME
+[yhli@ys0 hadoop]$ rm -rf sbin/*.cmd
+[yhli@ys0 hadoop]$ rm -rf bin/*.cmd
 
 --)command-------------------------------------------------
 #)service

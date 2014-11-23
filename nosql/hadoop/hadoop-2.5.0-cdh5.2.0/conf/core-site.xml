@@ -4,7 +4,7 @@
 
 	<property>
 		<name>hadoop.tmp.dir</name>
-		<value>/home/yhli/cdhdata/hadoop</value>
+		<value>/home/yhli/cdh/data/hadoop</value>
 	</property>
 
 	<property>
@@ -24,8 +24,7 @@
 
 	<property>
 		<name>io.compression.codecs</name>
-		<value>org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.BZip2Codec,com.hadoop.compression.lzo.LzoCodec
-		</value>
+		<value>org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.BZip2Codec,org.apache.hadoop.io.compress.DeflateCodec,org.apache.hadoop.io.compress.SnappyCodec,com.hadoop.compression.lzo.LzopCodec,com.hadoop.compression.lzo.LzoCodec</value>
 	</property>
 
 	<property>

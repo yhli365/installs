@@ -1,0 +1,35 @@
+HBase
+@site http://hbase.apache.org/
+@site http://www.cloudera.com/
+@version hbase-0.98.6-cdh5.2.0.tar.gz
+
+--)install-------------------------------------------------
+#)安装hbase
+[yhli@ys0 ~]$ tar -xzf hbase-0.98.6-cdh5.2.0.tar.gz -C /disk/cdh5/app
+
+#)hadoop
+[yhli@ys0 ~]$ mkdir $HBASE_HOME/bak
+[yhli@ys0 ~]$ mv $HBASE_HOME/lib/hadoop-core-*.jar $HBASE_HOME/bak
+[yhli@ys0 ~]$ cp $HADOOP_HOME/hadoop-core-*.jar $HBASE_HOME/lib
+
+#)conf
+根据需要修改相关配置
+
+#)数据存储目录
+[yhli@ys0 ~]$ hadoop dfs -ls /hbase
+[yhli@ys0 ~]$ ll ~/cdh/data/hbase
+
+--)command-------------------------------------------------
+#)启动Hadoop
+dfs,mapred
+
+#)service
+[yhli@ys0 ~]$ start-hbase.sh
+[yhli@ys0 ~]$ stop-hbase.sh
+
+[yhli@ys0 ~]$ hbase-daemon.sh start|stop regionserver|zookeeper|master
+[yhli@ys0 ~]$ hbase-daemons.sh start|stop regionserver|zookeeper
+
+#)web
+HBaseAdmin - http://ys0:60010/
+
