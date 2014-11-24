@@ -9,6 +9,7 @@ CDH5
 
 --)env
 [yhli@ys0 ~]$ vi ~/.bash_profile
+# User specific environment and startup programs
 if [ -f ~/cdh/data/bashenv ]; then
         . ~/cdh/data/bashenv
 fi
@@ -17,9 +18,8 @@ fi
 
 --)conf
 #)hadoop
-cp -r ~/cdh/hadoop/conf/* ~/cdh/data/conf/hadoop
+cp -r ~/cdh/hadoop/etc/hadoop/* ~/cdh/data/conf/hadoop
 上传软件特定配置文件到~/cdh/data/conf/hadoop
-上传集群特定配置文件到~/cdh/data/conf/hadoop
 
 #)hbase
 cp -r ~/cdh/hbase/conf/* ~/cdh/data/conf/hbase
