@@ -1,0 +1,21 @@
+HBase
+@version hbase-0.98.6-cdh5.2.0
+
+#)PerformanceEvaluation
+hbase org.apache.hadoop.hbase.PerformanceEvaluation --table=petseq --rows=1000 sequentialWrite 1
+hbase org.apache.hadoop.hbase.PerformanceEvaluation --table=petseq --rows=1000 sequentialRead 1
+
+hbase org.apache.hadoop.hbase.PerformanceEvaluation --table=petrand --rows=1000 randomWrite 1
+hbase org.apache.hadoop.hbase.PerformanceEvaluation --table=petrand --rows=1000 randomRead 1
+
+hdfs dfs -ls performance_evaluation
+hdfs dfs -cat performance_evaluation/20141124131616/inputs/*
+hdfs dfs -cat performance_evaluation/20141124131616/outputs/*
+
+hbase shell
+hbase> list
+hbase> scan 'petseq', {LIMIT => 20}
+hbase> scan 'petseq', {LIMIT => 10, STARTROW => 'xyz'}
+hbase> flush 'TestTable'
+hbase> 
+hbase> 

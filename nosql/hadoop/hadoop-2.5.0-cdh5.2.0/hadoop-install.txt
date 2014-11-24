@@ -110,6 +110,17 @@ OS name: "linux", version: "2.6.32-431.el6.x86_64", arch: "amd64", family: "unix
 [yhli@ys0 hadoop-lzo-release-0.4.19]$ cp -r dist/native/* $HADOOP_HOME/lib/native
 [yhli@ys0 hadoop-lzo-release-0.4.19]$ cp -r dist/hadoop-lzo-0.4.19.jar $HADOOP_HOME/share/hadoop/common/lib
 
+#)默认配置文件路径
+src\hadoop-common-project\hadoop-common\src\main\resources\core-default.xml
+src\hadoop-hdfs-project\hadoop-hdfs\src\main\resources\hdfs-default.xml
+src\hadoop-mapreduce-project\hadoop-mapreduce-client\hadoop-mapreduce-client-core\src\main\resources\mapred-default.xml
+src\hadoop-yarn-project\hadoop-yarn\hadoop-yarn-common\src\main\resources\yarn-default.xml
+
+#)删除无用的文件
+[yhli@ys0 ~]$ cd $HADOOP_HOME
+[yhli@ys0 hadoop]$ rm -rf sbin/*.cmd
+[yhli@ys0 hadoop]$ rm -rf bin/*.cmd
+
 #)conf
 根据需要修改相关配置
 
@@ -117,11 +128,6 @@ OS name: "linux", version: "2.6.32-431.el6.x86_64", arch: "amd64", family: "unix
 [yhli@ys0 ~]$ ll ~/cdh/data/hadoop
 [yhli@ys0 ~]$ rm -rf ~/cdh/data/hadoop/*
 [yhli@ys0 ~]$ hdfs namenode -format
-
-#)删除无用的文件
-[yhli@ys0 ~]$ cd $HADOOP_HOME
-[yhli@ys0 hadoop]$ rm -rf sbin/*.cmd
-[yhli@ys0 hadoop]$ rm -rf bin/*.cmd
 
 --)command-------------------------------------------------
 #)service

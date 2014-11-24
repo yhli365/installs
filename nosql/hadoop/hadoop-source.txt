@@ -1,8 +1,0 @@
-
---)默认配置文件路径
-#)hadoop-2.3.0-cdh5.1.0
-src\hadoop-common-project\hadoop-common\src\main\resources\core-default.xml
-src\hadoop-hdfs-project\hadoop-hdfs\src\main\resources\hdfs-default.xml
-src\hadoop-mapreduce-project\hadoop-mapreduce-client\hadoop-mapreduce-client-core\src\main\resources\mapred-default.xml
-src\hadoop-yarn-project\hadoop-yarn\hadoop-yarn-common\src\main\resources\yarn-default.xml
-

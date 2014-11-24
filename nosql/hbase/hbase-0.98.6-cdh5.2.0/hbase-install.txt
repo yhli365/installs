@@ -8,9 +8,14 @@ HBase
 [yhli@ys0 ~]$ tar -xzf hbase-0.98.6-cdh5.2.0.tar.gz -C /disk/cdh5/app
 
 #)hadoop
-[yhli@ys0 ~]$ mkdir $HBASE_HOME/bak
-[yhli@ys0 ~]$ mv $HBASE_HOME/lib/hadoop-core-*.jar $HBASE_HOME/bak
-[yhli@ys0 ~]$ cp $HADOOP_HOME/hadoop-core-*.jar $HBASE_HOME/lib
+[yhli@ys0 ~]$ ll $HBASE_HOME/lib/hadoop-*.jar
+
+#)默认配置文件路径
+hbase-common/src/main/resources/hbase-default.xml
+
+#)删除无用的文件
+[yhli@ys0 ~]$ cd $HBASE_HOME
+[yhli@ys0 hbase]$ rm -rf bin/*.cmd
 
 #)conf
 根据需要修改相关配置
@@ -29,6 +34,12 @@ dfs,mapred
 
 [yhli@ys0 ~]$ hbase-daemon.sh start|stop regionserver|zookeeper|master
 [yhli@ys0 ~]$ hbase-daemons.sh start|stop regionserver|zookeeper
+
+#)tool
+[yhli@ys0 ~]$ hbase version
+[yhli@ys0 ~]$ hbase shell
+[yhli@ys0 ~]$ hbase hbck
+[yhli@ys0 ~]$ hbase classpath
 
 #)web
 HBaseAdmin - http://ys0:60010/

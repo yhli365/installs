@@ -22,9 +22,7 @@ cp -r ~/cdh/hadoop/etc/hadoop/* ~/cdh/data/conf/hadoop
 上传软件特定配置文件到~/cdh/data/conf/hadoop
 
 #)hbase
-cp -r ~/cdh/hbase/conf/* ~/cdh/data/conf/hbase
 上传软件特定配置文件到~/cdh/data/conf/hbase
-上传集群特定配置文件到~/cdh/data/conf/hbase
 
 #)hive
 上传软件特定配置文件到~/cdh/data/conf/hive
@@ -39,5 +37,4 @@ cp -r ~/cdh/oozie/conf/* ~/cdh/data/conf/oozie
 
 --)chmod
 chmod +x ~/cdh/data/conf/*/*.sh
-
 
