@@ -1,0 +1,25 @@
+https://www.python.org/
+
+--)Install module
+#)module
+https://pypi.python.org/pypi
+
+#)install
+[yhli@ys0 install]# tar -xzf avro-1.7.7.tar.gz 
+[yhli@ys0 install]# cd avro-1.7.7
+[yhli@ys0 avro-1.7.7]# sudo python setup.py install
+
+#)check
+[yhli@ys0 ~]# python -V
+Python 2.6.6
+[yhli@ys0 ~]$ python
+>>> import avro.schema as schema
+>>> help(schema)
+FILE
+    /usr/lib/python2.6/site-packages/avro-1.7.7-py2.6.egg/avro/schema.py
+>>> exit()
+
+#)cmds
+[yhli@ys0 avro-1.7.7]# python setup.py --help
+[yhli@ys0 avro-1.7.7]# python setup.py --fullname --description
+[yhli@ys0 avro-1.7.7]$ python setup.py --help-commands

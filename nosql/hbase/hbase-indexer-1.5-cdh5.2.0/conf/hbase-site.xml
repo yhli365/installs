@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+
+	<property>
+		<name>hbase.rootdir</name>
+		<value>hdfs://ys0:9000/hbase</value>
+	</property>
+
+	<property>
+		<name>hbase.tmp.dir</name>
+		<value>/home/yhli/cdh/data/hbase</value>
+	</property>
+
+	<property>
+		<name>hbase.zookeeper.quorum</name>
+		<value>ys0</value>
+	</property>
+
+	<property>
+		<name>hbase.zookeeper.property.dataDir</name>
+		<value>${hbase.tmp.dir}/zookeeper</value>
+	</property>
+
+	<property>
+		<name>hbase.cluster.distributed</name>
+		<value>false</value>
+	</property>
+
+	<property>
+		<name>hbase.hregion.memstore.flush.size</name>
+		<value>134217728</value>
+	</property>
+
+	<property>
+		<name>hbase.regionserver.global.memstore.upperLimit</name>
+		<value>0.4</value>
+	</property>
+
+	<property>
+		<name>hbase.regionserver.global.memstore.lowerLimit</name>
+		<value>0.38</value>
+	</property>
+
+	<property>
+		<name>hfile.block.cache.size</name>
+		<value>0.4</value>
+	</property>
+
+	<property>
+		<name>hbase.hregion.majorcompaction</name>
+		<value>604800000</value>
+	</property>
+
+	<property>
+		<name>hbase.hstore.compactionThreshold</name>
+		<value>3</value>
+	</property>
+
+	<property>
+		<name>hbase.hstore.blockingStoreFiles</name>
+		<value>10</value>
+	</property>
+
+	<property>
+		<name>hbase.hstore.compaction.max</name>
+		<value>10</value>
+	</property>
+
+	<property>
+		<name>hbase.hregion.memstore.block.multiplier</name>
+		<value>4</value>
+	</property>
+
+	<property>
+		<name>hbase.hregion.max.filesize</name>
+		<value>1073741824</value>
+	</property>
+
+	<property>
+		<name>hbase.zookeeper.property.maxClientCnxns</name>
+		<value>300</value>
+	</property>
+
+	<property>
+		<name>hbase.balancer.period</name>
+		<value>300000</value>
+	</property>
+
+	<property>
+		<name>hbase.regionserver.handler.count</name>
+		<value>30</value>
+	</property>
+
+	<!-- hidden -->
+	<!-- unknown -->
+	<property>
+		<name>hbase.regionserver.codecs</name>
+		<value>gz,lzo</value>
+	</property>
+
+	<property>
+		<name>hbase.regionserver.lease.period</name>
+		<value>60000</value>
+	</property>
+
+	<property>
+		<name>hbase.regionserver.optionallogflushinterval</name>
+		<value>1000</value>
+	</property>
+
+	<!-- integration[hbase-solr] -->
+	<!-- SEP is basically replication, so enable it -->
+	<property>
+		<name>hbase.replication</name>
+		<value>true</value>
+	</property>
+	<!-- Source ratio of 100% makes sure that each SEP consumer is actually 
+		used (otherwise, some can sit idle, especially with small clusters) -->
+	<property>
+		<name>replication.source.ratio</name>
+		<value>1.0</value>
+	</property>
+	<!-- Maximum number of hlog entries to replicate in one go. If this is large, 
+		and a consumer takes a while to process the events, the HBase rpc call will 
+		time out. -->
+	<property>
+		<name>replication.source.nb.capacity</name>
+		<value>1000</value>
+	</property>
+	<!-- A custom replication source that fixes a few things and adds some functionality 
+		(doesn't interfere with normal replication usage). -->
+	<property>
+		<name>replication.replicationsource.implementation</name>
+		<value>com.ngdata.sep.impl.SepReplicationSource</value>
+	</property>
+
+</configuration>

@@ -1,0 +1,60 @@
+Solr
+@version solr-4.4.0-cdh5.2.0
+
+--)修改solrconfig
+[yhli@ys0 ~]$ cd $SOLR_HOME/example/solr/collection1/conf
+[yhli@ys0 conf]$ cp solrconfig.xml solrconfig.xml.orig
+[yhli@ys0 conf]$ vi solrconfig.xml
+  <lib dir="/home/yhli/cdh/solr/contrib/extraction/lib" regex=".*\.jar" />
+  <lib dir="/home/yhli/cdh/solr/dist/" regex="solr-cell-\d.*\.jar" />
+
+  <lib dir="/home/yhli/cdh/solr/contrib/clustering/lib/" regex=".*\.jar" />
+  <lib dir="/home/yhli/cdh/solr/dist/" regex="solr-clustering-\d.*\.jar" />
+
+  <lib dir="/home/yhli/cdh/solr/contrib/langid/lib/" regex=".*\.jar" />
+  <lib dir="/home/yhli/cdh/solr/dist/" regex="solr-langid-\d.*\.jar" />
+
+  <lib dir="/home/yhli/cdh/solr/contrib/velocity/lib" regex=".*\.jar" />
+  <lib dir="/home/yhli/cdh/solr/dist/" regex="solr-velocity-\d.*\.jar" />
+
+--)简单的2个shard集群
+#)node1
+cp -r $SOLR_HOME/example ~/cdh/data/solr/example1
+cd ~/cdh/data/solr/example1
+nohup java -Djetty.port=8913 -DzkHost=ys0:9913 -DzkRun -Dbootstrap_confdir=./solr/collection1/conf -Dcollection.configName=myconf -DnumShards=2 -jar start.jar > nohup.out 2>&1 &
+http://ys0:8913/solr
+
+#)node2
+cp -r $SOLR_HOME/example ~/cdh/data/solr/example2
+cd ~/cdh/data/solr/example2
+nohup java -Djetty.port=8923 -DzkHost=ys0:9913 -jar start.jar > nohup.out 2>&1 &
+http://ys0:8923/solr
+
+#)add doc
+cd ~/cdh/data/solr/example1/exampledocs
+java -Durl=http://ys0:8913/solr/collection1/update -jar post.jar ipod_video.xml
+java -Durl=http://ys0:8913/solr/collection1/update -jar post.jar monitor.xml
+java -Durl=http://ys0:8923/solr/collection1/update -jar post.jar mem.xml
+
+http://ys0:8913/solr/collection1/select?q=*:*
+http://ys0:8913/solr/collection1/select?q=*:*&shards.tolerant=true
+
+#)ps
+ps -ef | grep jetty
+tail -100f logs/solr.log
+more nohup.out
+rm -rf solr/zoo_data
+
+--)简单的支持副本的2个碎片集群
+#)node3
+cp -r $SOLR_HOME/example ~/cdh/data/solr/example3
+cd ~/cdh/data/solr/example3
+nohup java -Djetty.port=8933 -DzkHost=ys0:9913 -jar start.jar > nohup.out 2>&1 &
+http://ys0:8933/solr
+
+#)node4
+cp -r $SOLR_HOME/example ~/cdh/data/solr/example4
+cd ~/cdh/data/solr/example4
+nohup java -Djetty.port=8943 -DzkHost=ys0:9913 -jar start.jar > nohup.out 2>&1 &
+http://ys0:8943/solr
+

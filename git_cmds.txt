@@ -1,0 +1,49 @@
+﻿Git常用命令
+
+#)config
+git help config
+git config --system (cat /etc/gitconfig)
+git config --global (cat ~/.gitconfig)
+git config (cat .git/config)
+
+git config --list
+git config --global user.name "yhli365"
+git config --global user.email yhli365@126.com
+
+git config user.email
+git config --global --unset user.email
+
+git config --global alias.last 'log -1 HEAD'
+git last
+
+git config --system --list | grep core
+git config --global --list | grep core
+git config core.autocrlf
+git config core.safecrlf
+git config --global core.autocrlf false
+git config --global core.safecrlf true
+
+#)从现有仓库克隆
+git clone https://github.com/yhli365/ygit-test.git
+
+#)查看当前的远程库
+cd ygit-test
+git remote -v
+
+#)提交更新
+git status
+git checkout
+git rm -r src/main/avro
+git add .
+git commit -m ""
+git push
+git pull
+
+--)ERROR--------------
+#)GIT 提交错误 fatal: LF would be replaced by CRLF in
+$ git add .
+fatal: LF would be replaced by CRLF in src/main/
+$ git config --global core.autocrlf false
+$ git config --global core.safecrlf true
+$ 然后用文本编辑器转成Windows CRLF
+

@@ -1,0 +1,168 @@
+https://www.ruby-lang.org/en/
+https://www.ruby-lang.org/zh_cn/
+
+--)CentOS/ruby
+#)1a.Yum: ruby,ruby-* 
+[root@ys0 ~]# yum info ruby*
+[root@ys0 ~]# yum install ruby* -y
+[root@ys0 ~]# rpm -qa | grep ruby
+
+#)1b.Source: ruby
+https://www.ruby-lang.org/
+[yhli@ys0 ruby]# tar -xzf ruby-2.1.5.tar.gz -C ~/install
+[yhli@ys0 ruby]# cd ~/install/ruby-2.1.5
+[yhli@ys0 ruby-2.1.5]$  ./configure
+[yhli@ys0 ruby-2.1.5]$ sudo make
+[yhli@ys0 ruby-2.1.5]$ sudo make install
+[yhli@ys0 ruby-2.1.5]$ 
+
+#)check
+[yhli@ys0 ~]$ ruby --version
+ruby 2.1.5p273 (2014-11-13 revision 48405) [x86_64-linux]
+
+[yhli@ys0 ~]$ gem -v
+2.2.2
+
+--)Windows/ruby
+rubyinstaller-1.9.3-p551.exe
+cmd> ruby -v
+ruby 1.9.3p551 (2014-11-13) [i386-mingw32]
+cmd> gem -v
+1.8.29
+
+--)RubyGems
+http://rubygems.org/
+[yhli@ys0 ruby]$ unzip rubygems-2.4.5.zip -d ~/install
+[yhli@ys0 ruby]# cd ~/install/rubygems-2.4.5
+[yhli@ys0 rubygems-2.4.5]# ruby setup.rb --help
+[yhli@ys0 rubygems-2.4.5]# sudo ruby setup.rb
+
+--)Cmds
+#)IRB
+[yhli@ys0 ~]# irb
+irb(main):001:0> 
+
+#)Gem
+gem environment
+gem help
+gem help examples
+gem help commands
+ 
+gem list --local | grep avro
+gem search avro
+gem search avro --both
+gem search avro --remote
+gem dependency avro
+gem specification avro
+
+gem install avro
+gem install avro --remote
+gem install avro --version 1.7.7
+gem update avro
+
+gem uninstall avro
+gem uninstall multi_json
+
+gem server
+http://127.0.0.1:8808/
+
+--)Gems(avro)
+#)install.remote
+$ gem list --local avro
+$ gem list --remote avro
+$ gem install avro
+Fetching: multi_json-1.10.1.gem (100%)
+Fetching: avro-1.7.7.gem (100%)
+Successfully installed multi_json-1.10.1
+Successfully installed avro-1.7.7
+2 gems installed
+
+#)install.local
+$ download http://rubygems.org/
+avro-1.7.7.gem
+-multi_json-1.10.1.gem
+
+$ gem install --local multi_json-1.10.1.gem
+$ gem install --local avro-1.7.7.gem
+$ gem list --local avro
+
+--)IRB:20分钟体验 Ruby
+[yhli@ys0 ~]# irb
+irb(main):001:0> 
+
+#)打印的基本命令
+"Hello World"
+puts "Hello World"
+
+#)您的免费计算器
+3+2
+3*2
+3**2
+Math.sqrt(9)
+a = 3 ** 2
+b = 4 ** 2
+Math.sqrt(a+b)
+
+#)函数
+def h
+puts "Hello World!"
+end
+h
+h()
+
+def h(name)
+puts "Hello #{name}!"
+end
+h("Matz")
+
+#)在字符串中预留位置
+def h(name = "World")
+puts "Hello #{name.capitalize}!"
+end
+h "chris"
+h
+
+#)如何更有礼貌，创建类
+class Greeter
+   def initialize(name = "World")
+     @name = name
+   end
+   def say_hi
+     puts "Hi #{@name}!"
+   end
+   def say_bye
+     puts "Bye #{@name}, come back soon."
+   end
+end
+
+g = Greeter.new("Pat")
+g.say_hi
+g.say_bye
+g.@name
+
+#)揭开对象的面纱
+Greeter.instance_methods
+Greeter.instance_methods(false)
+
+g.respond_to?("name")
+g.respond_to?("say_hi")
+g.respond_to?("to_s")
+
+#)改变类吧，永远都不晚
+class Greeter
+  attr_accessor :name
+end
+
+g = Greeter.new("Andy")
+g.respond_to?("name")
+g.respond_to?("name=")
+g.say_hi
+g.name="Betty"
+g
+g.name
+g.say_hi
+#attr_accessor 会自动为我们定义两个新的函数， name 用来读取变量的值， name= 用来给变量赋值。
+
+#)见面熟的 MegaGreeter！
+ruby ri20min.rb
+

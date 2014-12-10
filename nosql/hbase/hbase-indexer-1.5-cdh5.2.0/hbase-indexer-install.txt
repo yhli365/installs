@@ -1,0 +1,80 @@
+HBase-solr
+@site http://github.com/NGDATA/hbase-indexer/wiki
+@version hbase-solr-1.5-cdh5.2.0.tar.gz
+
+--)install-------------------------------------------------
+#)安装hbase-solr
+[yhli@ys0 ~]$ tar -xzf hbase-solr-1.5-cdh5.2.0.tar.gz -C /disk/cdh5/app
+[yhli@ys0 ~]$ cd /disk/cdh5/app/hbase-solr-1.5-cdh5.2.0
+[yhli@ys0 hbase-solr-1.5-cdh5.2.0]$ tar -xzf hbase-indexer-dist/target/hbase-indexer-1.5-cdh5.2.0.tar.gz -C /disk/cdh5/app
+[yhli@ys0 hbase-solr-1.5-cdh5.2.0]$ cd /disk/cdh5/app/hbase-indexer-1.5-cdh5.2.0
+
+#)HBase集成
+[yhli@ys0 hbase-indexer-1.5-cdh5.2.0]$ ll lib/hbase-sep-*
+[yhli@ys0 hbase-indexer-1.5-cdh5.2.0]$ ll $HBASE_HOME/lib/hbase-sep-*
+[yhli@ys0 hbase-indexer-1.5-cdh5.2.0]$ cp lib/hbase-sep-* $HBASE_HOME/lib
+修改HBASE SEP配置(hbase-site.xml)
+
+#)conf
+根据需要修改相关配置
+
+#)数据存储目录
+[yhli@ys0 ~]$ hadoop dfs -ls /hbase
+[yhli@ys0 ~]$ ll ~/cdh/data/hbase
+
+--)Tutorial-------------------------------------------------
+#)tool
+[yhli@ys0 ~]$ export HBASE_INDEXER_CLI_ZK=ys0:2181
+[yhli@ys0 ~]$ cd $HBASE_INDEXER_HOME
+[yhli@ys0 indexer]$ bin/hbase-indexer version
+[yhli@ys0 indexer]$ bin/hbase-indexer classpath
+[yhli@ys0 indexer]$ bin/hbase-indexer replication-status
+[yhli@ys0 indexer]$ bin/hbase-indexer list-indexers
+
+#)清除zookeeper
+rm -rf ~/cdh/data/hbase/zookeeper/
+
+#)hadoop
+start-dfs.sh
+start-yarn.sh
+mr-jobhistory-daemon.sh start historyserver
+
+#)hbase
+start-hbase.sh
+
+#)Start Solr
+cd $SOLR_HOME/example
+java -Dbootstrap_confdir=./solr/collection1/conf -Dcollection.configName=myconf -DzkHost=ys0:2181/solr -jar start.jar
+
+#)Create a table to be indexed in HBase
+hbase shell
+hbase> create 'indexdemo-user', { NAME => 'info', REPLICATION_SCOPE => '1' }
+
+#)Start the HBase Indexer daemon
+bin/hbase-indexer server
+
+#)Add an indexer
+bin/hbase-indexer add-indexer \
+  -n myindexer \
+  -c demo/user_indexer.xml \
+  -cp solr.zk=ys0:2181/solr \
+  -cp solr.collection=collection1
+
+bin/hbase-indexer list-indexers
+bin/hbase-indexer delete-indexer -n myindexer
+
+#)Update the table content
+hbase shell
+hbase> put 'indexdemo-user', 'row1', 'info:firstname', 'John'
+hbase> put 'indexdemo-user', 'row1', 'info:lastname', 'Smith'
+
+http://ys0:8983/solr/#/collection1/query
+
+hbase> put 'indexdemo-user', 'row1', 'info:firstname', 'Jim'
+hbase> deleteall 'indexdemo-user', 'row1'
+
+#)web
+NameNode - http://ys0:50070/
+ResourceManager - http://ys0:8088/
+HBaseAdmin - http://ys0:60010/
+Solr - http://ys0:8983/solr

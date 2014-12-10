@@ -35,6 +35,29 @@ cp -r ~/cdh/hadoop/etc/hadoop/* ~/cdh/data/conf/hadoop
 cp -r ~/cdh/oozie/conf/* ~/cdh/data/conf/oozie
 上传软件特定配置文件到~/cdh/data/conf/oozie
 
+#)indexer
+上传软件特定配置文件到~/cdh/data/conf/indexer
+
 --)chmod
 chmod +x ~/cdh/data/conf/*/*.sh
 
+
+--)cmds
+#)hadoop
+start-dfs.sh
+start-yarn.sh
+mr-jobhistory-daemon.sh start historyserver
+
+mr-jobhistory-daemon.sh stop historyserver
+stop-yarn.sh
+stop-dfs.sh
+
+http://ys0:50070/
+http://ys0:8088/
+http://ys0:19888/
+
+#)hbase
+start-hbase.sh
+stop-hbase.sh
+
+http://ys0:60010/

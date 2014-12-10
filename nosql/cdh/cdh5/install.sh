@@ -17,6 +17,7 @@ HIVE_HOME=$CDH_HOME/hive-0.13.1-cdh5.2.0
 SQOOP_HOME=$CDH_HOME/sqoop-1.4.5-cdh5.2.0
 OOZIE_HOME=$CDH_HOME/oozie-4.0.0-cdh5.2.0
 SOLR_HOME=$CDH_HOME/solr-4.4.0-cdh5.2.0
+HBASE_INDEXER_HOME=$CDH_HOME/hbase-indexer-1.5-cdh5.2.0
 
 if [ -d ~/cdh/data ]; then
     rm ~/cdh/data
@@ -72,6 +73,13 @@ if [ -d $SOLR_HOME ]; then
     ln -s $SOLR_HOME ~/cdh/solr
 fi
 
+if [ -d ~/cdh/indexer ]; then
+    rm ~/cdh/indexer
+fi
+if [ -d $HBASE_INDEXER_HOME ]; then
+    ln -s $HBASE_INDEXER_HOME ~/cdh/indexer
+fi
+
 #data
 mkdir -p $home/pids
 
@@ -95,3 +103,10 @@ mkdir -p $home/conf/oozie
 mkdir -p $home/logs/oozie
 mkdir -p $home/oozie
 
+mkdir -p $home/conf/solr
+mkdir -p $home/logs/solr
+mkdir -p $home/solr
+
+mkdir -p $home/conf/indexer
+mkdir -p $home/logs/indexer
+mkdir -p $home/indexer

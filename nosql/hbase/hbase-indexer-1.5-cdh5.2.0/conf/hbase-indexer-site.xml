@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<configuration>
+
+	<property>
+		<name>hbaseindexer.zookeeper.connectstring</name>
+		<value>ys0</value>
+	</property>
+
+	<property>
+		<name>hbase.zookeeper.quorum</name>
+		<value>ys0</value>
+	</property>
+
+</configuration>
