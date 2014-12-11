@@ -41,8 +41,12 @@ cp -r ~/cdh/oozie/conf/* ~/cdh/data/conf/oozie
 --)chmod
 chmod +x ~/cdh/data/conf/*/*.sh
 
-
 --)cmds
+#)samba
+sudo mount -t cifs -o codepage=cp936,username=yhli,password=ccnu,iocharset=utf8 -l //192.168.56.1/open /mnt/samba
+sudo service smb restart
+\\ys0
+
 #)hadoop
 start-dfs.sh
 start-yarn.sh
