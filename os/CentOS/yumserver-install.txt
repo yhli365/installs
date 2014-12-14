@@ -4,7 +4,7 @@ centos-YumServer.txt
 
 ---------------------------
 --)搭建本地仓库[CentOS]
-#虚拟机光盘加载iso: CentOS-6.5-x86_64-bin-DVD1.iso
+#)虚拟机光盘加载iso: CentOS-6.5-x86_64-bin-DVD1.iso
 [root@ys0 ~]# mkdir /media/cdrom
 [root@ys0 ~]# ll /dev | grep cdrom
 [root@ys0 ~]# mount -t iso9660 -o loop /dev/cdrom /media/cdrom
@@ -15,7 +15,7 @@ centos-YumServer.txt
    <title>CentOS 6.5 Release Notes</title>
 [root@ys0 ~]# 
 
-#客户端修改yum源地址的配置文件
+#)客户端修改yum源地址的配置文件
 [root@ys0 ~]# cd /etc/yum.repos.d/
 [root@ys0 yum.repos.d]# mkdir orig
 [root@ys0 yum.repos.d]# mv *.repo orig
@@ -29,7 +29,7 @@ enabled=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
 
 --)搭建服务端仓库
-#安装并启动vsftpd服务
+#)安装并启动vsftpd服务
 [root@ys0 ~]# rpm -q vsftpd
 package vsftpd is not installed
 [root@ys0 ~]# ll /media/cdrom/Packages | grep vsftpd
@@ -47,41 +47,35 @@ vsftpd          0:off   1:off   2:on    3:on    4:on    5:on    6:off
 [root@ys0 ~]# curl ftp://ys0/
 [root@ys0 ~]# vi /etc/vsftpd/vsftpd.conf
 
---mount_test
-[root@ys0 ~]# mkdir -p /var/ftp/test
-[root@ys0 ~]# mount --bind /etc/ /var/ftp/test
-[root@ys0 ~]# curl ftp://ys0/test/
-[root@ys0 ~]# umount /var/ftp/test
-
-#安装createrepo
+#)安装createrepo
 [root@ys0 ~]# yum info createrepo
 [root@ys0 ~]# yum install createrepo
 [root@ys0 ~]# rpm -q createrepo
 createrepo-0.9.9-18.el6.noarch
 
-#建立仓库目录[myrepo]
+#)建立仓库目录[myrepo]
 [root@ys0 ~]# mkdir -p /var/ftp/pub/yum/6/myrepo/{x86_64,noarch}
 上传rpm包到上述目录下
 [root@ys0 ~]# createrepo /var/ftp/pub/yum/6/myrepo
 [root@ys0 ~]# createrepo --update /var/ftp/pub/yum/6/myrepo
---[root@ys0 ~]# cd /var/ftp/pub/6/myrepo
---[root@ys0 ~]# ls | xargs -i createrepo {}
 
-#建立仓库目录[centos]
+#)建立仓库目录[centos]
 [root@ys0 ~]# mkdir -p /var/ftp/pub/yum/6/centos
 [root@ys0 ~]# mount -t iso9660 -o loop /dev/cdrom /var/ftp/pub/yum/6/centos
 --或者上传CentOS-6.5-x86_64-bin-DVD1.iso
 [root@ys0 ~]# mount -t iso9660 -o loop /disk/CentOS-6.5-x86_64-bin-DVD1.iso /var/ftp/pub/yum/6/centos
 [root@ys0 ~]# umount /var/ftp/pub/yum/6/centos
 
-#客户端修改yum源地址的配置文件
+--)客户端YUM配置
+#)修改yum源地址的配置文件
 [root@ys0 ~]# vi /etc/yum.repos.d/centos-yhli.repo
 [myrepo]
 name=CentOS-$releasever-$basearch - MyRepo
-baseurl=ftp://yumserver/pub/yum/$releasever/myrepo
+baseurl=ftp://yw/pub/yum/$releasever/myrepo
 enabled=1
 gpgcheck=0
 
+#)安装测试
 [root@ys0 ~]# yum clean all
 [root@ys0 ~]# yum info lzo lzo-devel
 

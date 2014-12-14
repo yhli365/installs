@@ -1,0 +1,239 @@
+利用Cobbler批量布署CentOS
+=================================================
+@os CentOS 6.5
+
+--)系统环境
+#)版本
+[root@yw ~]# lsb_release -a
+Description:    CentOS release 6.5 (Final)
+#)关闭防火墙
+[root@yw ~]# service iptables status
+iptables: Firewall is not running.
+#)关闭SELinux
+[root@yw ~]# sed -i '/^SELINUX=/ s/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+[root@yw ~]# cat /etc/sysconfig/selinux
+[root@yw ~]# setenforce 0
+[root@yw ~]# getenforce
+Disabled
+
+--)安装cobbler相关服务
+#)挂载CentOS基本源
+[root@yw ~]# mount -t iso9660 -o loop /dev/cdrom /media/cdrom
+[root@yw ~]# cat /media/cdrom/RELEASE-NOTES-en-US.html | grep title
+
+#)安装服务
+[root@yw ~]# yum info dhcp httpd xinetd tftp-server rsync
+[root@yw ~]# yum install dhcp httpd xinetd tftp-server rsync -y
+[root@yw ~]# rpm -q dhcp httpd xinetd tftp-server rsync
+dhcp-4.1.1-38.P1.el6.centos.x86_64
+httpd-2.2.15-29.el6.centos.x86_64
+xinetd-2.3.14-39.el6_4.x86_64
+tftp-server-0.49-7.el6.x86_64
+rsync-3.0.6-9.el6_4.1.x86_64
+
+#)Cobbler不在CentOS的基本源中，需要导入EPEL源升级软件包, 确保epel-release包的版本为最新，当前最新版本为6-8:
+[root@yw ~]# wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+[root@yw ~]# rpm -qpl epel-release-6-8.noarch.rpm
+[root@yw ~]# rpm -Uvh epel-release-6-8.noarch.rpm
+[root@yw ~]# rpm -qa | grep epel
+epel-release-6-8.noarch
+[root@yw ~]# cat /etc/yum.repos.d/epel.repo
+
+#)安装cobbler包
+[root@yw ~]# yum info cobbler
+[root@yw ~]# yum install cobbler
+[root@yw ~]# rpm -q cobbler
+
+#)可选: 安装cobbler无法自动下载的依赖包: http://rpm.pbone.net/
+PyYAML-3.10-3.1.el6.x86_64.rpm 
+[root@yw ~]# createrepo --update /var/ftp/pub/yum/6/myrepo
+[root@yw ~]# yum clean all
+[root@yw ~]# yum install PyYAML
+
+--)启动服务
+service httpd status
+service xinetd status
+service dhcpd status
+service cobblerd status
+
+service httpd start
+service xinetd start
+service cobblerd start
+
+/etc/init.d/cobblerd restart
+
+--)Cobbler子命令介绍
+cobbler check         #检查cobbler配置
+cobbler sync          #步配置到dhcp pxe和数据目录
+cobbler list          #列出所有的cobbler元素
+cobbler import        #导入安装的系统光盘镜像
+cobbler report        #列出各元素的详细信息
+cobbler distro        #查看导入的发行版系统信息
+cobbler profile       #查看配置信息
+cobbler system        #查看添加的系统信息
+cobbler reposync      #同步yum仓库到本地
+
+--)配置cobbler
+#)check
+[root@yw ~]# cobbler check
+The following are potential configuration items that you may want to fix:
+
+1 : The 'server' field in /etc/cobbler/settings must be set to something other than localhost, or kickstarting features will not work.  This should be a resolvable hostname or IP for the boot server as reachable by all machines that will use it.
+2 : For PXE to be functional, the 'next_server' field in /etc/cobbler/settings must be set to something other than 127.0.0.1, and should match the IP of the boot server on the PXE network.
+3 : SELinux is enabled. Please review the following wiki page for details on ensuring cobbler works correctly in your SELinux environment:
+    https://github.com/cobbler/cobbler/wiki/Selinux
+4 : some network boot-loaders are missing from /var/lib/cobbler/loaders, you may run 'cobbler get-loaders' to download them, or, if you only want to handle x86/x86_64 netbooting, you may ensure that you have installed a *recent* version of the syslinux package installed and can ignore this message entirely.  Files in this directory, should you want to support all architectures, should include pxelinux.0, menu.c32, elilo.efi, and yaboot. The 'cobbler get-loaders' command is the easiest way to resolve these requirements.
+5 : change 'disable' to 'no' in /etc/xinetd.d/rsync
+6 : debmirror package is not installed, it will be required to manage debian deployments and repositories
+7 : ksvalidator was not found, install pykickstart
+8 : The default password used by the sample templates for newly installed machines (default_password_crypted in /etc/cobbler/settings) is still set to 'cobbler' and should be changed, try: "openssl passwd -1 -salt 'random-phrase-here' 'your-password-here'" to generate new one
+9 : fencing tools were not found, and are required to use the (optional) power management features. install cman or fence-agents to use them
+
+Restart cobblerd and then run 'cobbler sync' to apply changes.
+
+#)编辑settings配置文件，修改上面报错的位置信息。
+[root@yw ~]# cp /etc/cobbler/settings /etc/cobbler/settings.orig
+[root@yw ~]# vi /etc/cobbler/settings
+101) #修改cobbler默认加密密码，使用如下命令生成
+default_password_crypted: "$1$2846df22$XB7ridQ1zegf34levyYn51"
+272) #替换本机IP地址 （DHCP服务地址）
+next_server: 192.168.56.250
+384) #替换本机IP地址（cobbler服务地址）
+server: 192.168.56.250
+242) #（cobbler管理dhcp，后面用于同步更新配置信息[cobbler sync]）
+manage_dhcp: 1
+261) #（cobbler管理rsync功能）
+manage_rsync: 1
+
+[root@yw ~]# openssl passwd -1 -salt `openssl rand -hex 4`
+Password: 
+$1$2846df22$XB7ridQ1zegf34levyYn51
+
+#)加载部分缺失的网络boot-loaders
+[root@yw ~]# cobbler get-loaders
+
+#)启动tftp和rsync服务
+[root@yw ~]# cp /etc/xinetd.d/tftp /etc/xinetd.d/tftp.orig
+[root@yw ~]# vi /etc/xinetd.d/tftp
+修改成：disable=no
+[root@yw ~]# cp /etc/xinetd.d/rsync /etc/xinetd.d/rsync.orig
+[root@yw ~]# vi /etc/xinetd.d/rsync
+修改成：disable=no
+
+#)修改DHCP模板，确保DHCP分配的地址和Cobbler在同一网段
+[root@yw ~]# cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
+[root@yw ~]# cp /etc/cobbler/dhcp.template /etc/dhcp/dhcp.template.orig
+[root@yw ~]# vi /etc/cobbler/dhcp.template
+subnet 192.168.56.0 netmask 255.255.255.0 {
+     option subnet-mask         255.255.255.0;
+     range dynamic-bootp        192.168.56.170 192.168.56.190;
+     default-lease-time         21600;
+     max-lease-time             43200;
+     next-server                192.168.56.250;
+     class "pxeclients" {
+          match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
+          if option pxe-system-type = 00:02 {
+                  filename "ia64/elilo.efi";
+          } else if option pxe-system-type = 00:06 {
+                  filename "grub/grub-x86.efi";
+          } else if option pxe-system-type = 00:07 {
+                  filename "grub/grub-x86_64.efi";
+          } else {
+                  filename "pxelinux.0";
+          }
+     }
+...
+}
+
+[root@yw ~]# service dhcpd restart
+
+#)如果要部署Debian/ubuntu系统则需要debmirror软件包
+[root@yw ~]# yum info debmirror
+[root@yw ~]# yum install debmirror -y
+[root@yw ~]# rpm -qa | grep debmirror
+debmirror-2.14-2.el6.noarch
+
+修改/etc/debmirror.conf配置文件，注释掉@dists和@arches两行
+# cp /etc/debmirror.conf /etc/debmirror.conf.orig
+# vi /etc/debmirror.conf
+...
+#@dists="sid";
+@sections="main,main/debian-installer,contrib,non-free";
+#@arches="i386";
+...
+
+#)install pykickstart
+[root@yw ~]# yum info pykickstart
+[root@yw ~]# yum install pykickstart -y
+[root@yw ~]# rpm -q pykickstart
+pykickstart-1.74.14-1.el6.noarch
+
+#)安装cman启动电源管理功能
+[root@yw ~]# yum info cman
+[root@yw ~]# yum install cman -y
+[root@yw ~]# rpm -qa | grep cman
+cman-3.0.12.1-59.el6.x86_64
+
+#)检查cobbler安装环境
+[root@yw ~]# cobbler check
+No configuration problems found.  All systems go.
+注意，一定要修复完全部的configuration problems，否则tftp会出现连接超时，cobbler无法通过PXE进行系统批量安装的操作。
+
+[root@yw ~]# cobbler sync
+
+--)导入ISO
+#)查看dirstro
+[root@yw ~]# cobbler distro list
+[root@yw ~]# cobbler list
+
+#)CentOS-6.5-x86_64-bin-DVD1.iso
+[root@yw ~]# mkdir /media/cdrom
+[root@yw ~]# mount -t iso9660 -o loop /dev/cdrom /media/cdrom
+[root@yw ~]# ll /var/www/cobbler/ks_mirror/
+[root@yw ~]# cobbler import --name=CentOS-6.5-x86_64 --path=/media/cdrom
+task started: 2014-12-14_235621_import
+task started (id=Media import, time=Sun Dec 14 23:56:21 2014)
+Found a candidate signature: breed=redhat, version=rhel6
+Found a matching signature: breed=redhat, version=rhel6
+Adding distros from path /var/www/cobbler/ks_mirror/CentOS-6.5-x86_64:
+creating new distro: CentOS-6.5-x86_64
+trying symlink: /var/www/cobbler/ks_mirror/CentOS-6.5-x86_64 -> /var/www/cobbler/links/CentOS-6.5-x86_64
+creating new profile: CentOS-6.5-x86_64
+associating repos
+checking for rsync repo(s)
+checking for rhn repo(s)
+checking for yum repo(s)
+starting descent into /var/www/cobbler/ks_mirror/CentOS-6.5-x86_64 for CentOS-6.5-x86_64
+processing repo at : /var/www/cobbler/ks_mirror/CentOS-6.5-x86_64
+need to process repo/comps: /var/www/cobbler/ks_mirror/CentOS-6.5-x86_64
+looking for /var/www/cobbler/ks_mirror/CentOS-6.5-x86_64/repodata/*comps*.xml
+Keeping repodata as-is :/var/www/cobbler/ks_mirror/CentOS-6.5-x86_64/repodata
+*** TASK COMPLETE ***
+[root@yw ~]# cobbler distro list
+
+--)部署测试
+#) 启动机器，按F12, 选择LAN启动，然后选择安装的操作版本
+通过VirtualBox创建一台虚拟机测试一下，把虚拟机设置成网络PXE启动（和cobbler在同一个网络），启动后就可以看到Cobbler引导界面，看到界面后选择CentOS-6.5-x86_64条目就可以顺利开始无人工干预安装系统，
+VirtualBox虚拟机测试时，需要安装扩展包(Extension_Pack)才能支持PXE启动（目前仅intel网卡），网卡选择和cobbler一样的"Host-only"
+
+--)CobblerWeb界面
+#)install
+[root@yw ~]# yum info cobbler-web
+[root@yw ~]# yum install cobbler-web -y
+[root@yw ~]# rpm -q cobbler-web
+cobbler-web-2.6.3-1.el6.noarch
+
+#)可修改认证相关配置。
+[root@yw ~]# cp /etc/cobbler/modules.conf /etc/cobbler/modules.conf.orig
+[root@yw ~]# vi /etc/cobbler/modules.conf
+[authentication]
+module = authn_configfile
+
+默认用户 cobbler/cobbler
+
+#)重启http,Cobbler
+[root@yw ~]# service cobblerd restart
+[root@yw ~]# service httpd restart
+
+#)查看Web页面
+http://192.168.56.250/cobbler_web
