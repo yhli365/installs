@@ -1,0 +1,112 @@
+Cloudera Manager 5 和 CDH5 本地（离线）安装指南（Hadoop集群搭建）
+=================================================
+@os CentOS 6.5
+@site Installation Path B - Manual Installation Using Cloudera Manager Packages
+http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_ig_install_path_b.html
+
+--)系统环境
+#)查看版本
+[root@yw ~]# lsb_release -a
+Description:    CentOS release 6.5 (Final)
+#)关闭防火墙
+[root@yw ~]# service iptables status
+iptables: Firewall is not running.
+#)关闭SELinux
+[root@yw ~]# sed -i '/^SELINUX=/ s/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+[root@yw ~]# cat /etc/sysconfig/selinux
+[root@yw ~]# setenforce 0
+[root@yw ~]# getenforce
+Disabled
+#)Hostname
+[root@yw ~]# vi /etc/hosts
+192.168.56.251  yw
+
+--)下载软件包(CDH5.2.1)
+#)cm5-repo: http://archive-primary.cloudera.com/cm5/repo-as-tarball/5.2.1/
+cm5.2.1-centos6.tar.gz
+
+#)cdh5-parcels: http://archive-primary.cloudera.com/cdh5/parcels/5.2.1/
+CDH-5.2.1-1.cdh5.2.1.p0.12-el6.parcel
+CDH-5.2.1-1.cdh5.2.1.p0.12-el6.parcel.sha1
+manifest.json
+
+--)安装DB:mysql
+#)安装配置
+[root@yw ~]# yum info mysql mysql-server
+[root@yw ~]# yum install mysql mysql-server -y
+[root@yw ~]# cp /etc/my.cnf /etc/my.cnf.orig
+[root@yw ~]# vi /etc/my.cnf
+[mysqld]增加一行:
+character-set-server = utf8
+
+#)启动服务
+[root@yw ~]# chkconfig mysqld on
+[root@yw ~]# chkconfig --list mysqld
+mysqld 0:off 1:off 2:on 3:on 4:on 5:on 6:off
+[root@yw ~]# service mysqld start
+[root@yw ~]# service mysqld stop
+
+#)修改root密码(默认密码为空)
+[root@yw ~]# mysqladmin -u root password 'root'
+[root@yw ~]# mysql -u root -proot
+mysql> show databases;
+mysql> drop database if exists scm;
+mysql> exit;
+
+--)安装CM Server
+#)Create a Local Repository
+[root@yw ~]# tar -xzf cm5.2.1-centos6.tar.gz -C /var/ftp/pub
+[root@yw ~]# chown -R root:root /var/ftp/pub/cm
+[root@yw ~]# chmod -R ugo+rX /var/ftp/pub/cm
+
+[root@yw ~]# vi /etc/yum.repos.d/centos.repo
+[cm5]
+name=cm5
+baseurl=ftp://192.168.56.251/pub/cm/5
+enabled=1
+gpgcheck=0
+[root@yw ~]# yum info cloudera-manager-server
+
+#)Install the Oracle JDK
+[root@yw ~]# sudo yum info oracle-j2sdk1.7
+[root@yw ~]# sudo yum install oracle-j2sdk1.7 -y
+[root@yw ~]# java -version
+java version "1.7.0_67"
+Java(TM) SE Runtime Environment (build 1.7.0_67-b01)
+Java HotSpot(TM) 64-Bit Server VM (build 24.65-b04, mixed mode)
+
+#)Install the Cloudera Manager Server Packages
+[root@yw ~]# userdel cloudera-scm
+[root@yw ~]# sudo yum install cloudera-manager-daemons cloudera-manager-server -y
+[root@yw ~]# sudo yum install enterprise-debuginfo -y
+
+#)Set up a Database for the Cloudera Manager Server
+1.Run the scm_prepare_database.sh script on the host where the Cloudera Manager Server package is installed:
+[root@yw ~]# ln -s mysql-connector-java-5.1.32.jar /usr/share/java/mysql-connector-java.jar
+[root@yw ~]# cat /etc/cloudera-scm-server/db.properties
+[root@yw ~]# sudo /usr/share/cmf/schema/scm_prepare_database.sh mysql -h localhost -uroot -proot --scm-host localhost scm scm scm
+2.Remove the embedded PostgreSQL properties file if it exists:
+[root@yw ~]# rm -rf /etc/cloudera-scm-server/db.mgmt.properties
+
+#)Start the Cloudera Manager Server
+[root@yw ~]# sudo service cloudera-scm-server start
+
+#)Start and Log into the Cloudera Manager Admin Console
+1.Wait several minutes for the Cloudera Manager Server to complete its startup. 
+[root@yw ~]# tail -100f /var/log/cloudera-scm-server/cloudera-scm-server.log
+[root@yw ~]# mv /var/log/cloudera-scm-server/cloudera-scm-server.log /var/log/cloudera-scm-server/cloudera-scm-server.log1412171609
+2.In a web browser, enter http://yw:7180
+
+--)部署Parcel存储库
+#)上传CDH以下文件到本地 Parcel 存储库路径: /opt/cloudera/parcel-repo
+CDH-5.2.1-1.cdh5.2.1.p0.12-el6.parcel
+CDH-5.2.1-1.cdh5.2.1.p0.12-el6.parcel.sha1
+manifest.json
+#)如果Parcel文件不在默认存储库路径，需要在登陆web安装时修改本地 Parcel 存储库路径
+
+--)WEB安装
+#)启动CM Server端
+[root@yw cm-5.2.1]# etc/init.d/cloudera-scm-server start
+#)登陆WEB，默认账户和密码都是admin，安装时选择免费版
+http://192.168.56.251:7180
+

@@ -1,27 +1,27 @@
-ÀûÓÃCobblerÅúÁ¿²¼ÊğCentOS
+åˆ©ç”¨Cobbleræ‰¹é‡å¸ƒç½²CentOS
 =================================================
 @os CentOS 6.5
 
---)ÏµÍ³»·¾³
-#)°æ±¾
+--)ç³»ç»Ÿç¯å¢ƒ
+#)ç‰ˆæœ¬
 [root@yw ~]# lsb_release -a
 Description:    CentOS release 6.5 (Final)
-#)¹Ø±Õ·À»ğÇ½
+#)å…³é—­é˜²ç«å¢™
 [root@yw ~]# service iptables status
 iptables: Firewall is not running.
-#)¹Ø±ÕSELinux
+#)å…³é—­SELinux
 [root@yw ~]# sed -i '/^SELINUX=/ s/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
 [root@yw ~]# cat /etc/sysconfig/selinux
 [root@yw ~]# setenforce 0
 [root@yw ~]# getenforce
 Disabled
 
---)°²×°cobblerÏà¹Ø·şÎñ
-#)¹ÒÔØCentOS»ù±¾Ô´
+--)å®‰è£…cobblerç›¸å…³æœåŠ¡
+#)æŒ‚è½½CentOSåŸºæœ¬æº
 [root@yw ~]# mount -t iso9660 -o loop /dev/cdrom /media/cdrom
 [root@yw ~]# cat /media/cdrom/RELEASE-NOTES-en-US.html | grep title
 
-#)°²×°·şÎñ
+#)å®‰è£…æœåŠ¡
 [root@yw ~]# yum info dhcp httpd xinetd tftp-server rsync
 [root@yw ~]# yum install dhcp httpd xinetd tftp-server rsync -y
 [root@yw ~]# rpm -q dhcp httpd xinetd tftp-server rsync
@@ -31,7 +31,7 @@ xinetd-2.3.14-39.el6_4.x86_64
 tftp-server-0.49-7.el6.x86_64
 rsync-3.0.6-9.el6_4.1.x86_64
 
-#)Cobbler²»ÔÚCentOSµÄ»ù±¾Ô´ÖĞ£¬ĞèÒªµ¼ÈëEPELÔ´Éı¼¶Èí¼ş°ü, È·±£epel-release°üµÄ°æ±¾Îª×îĞÂ£¬µ±Ç°×îĞÂ°æ±¾Îª6-8:
+#)Cobblerä¸åœ¨CentOSçš„åŸºæœ¬æºä¸­ï¼Œéœ€è¦å¯¼å…¥EPELæºå‡çº§è½¯ä»¶åŒ…, ç¡®ä¿epel-releaseåŒ…çš„ç‰ˆæœ¬ä¸ºæœ€æ–°ï¼Œå½“å‰æœ€æ–°ç‰ˆæœ¬ä¸º6-8:
 [root@yw ~]# wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 [root@yw ~]# rpm -qpl epel-release-6-8.noarch.rpm
 [root@yw ~]# rpm -Uvh epel-release-6-8.noarch.rpm
@@ -39,18 +39,18 @@ rsync-3.0.6-9.el6_4.1.x86_64
 epel-release-6-8.noarch
 [root@yw ~]# cat /etc/yum.repos.d/epel.repo
 
-#)°²×°cobbler°ü
+#)å®‰è£…cobbleråŒ…
 [root@yw ~]# yum info cobbler
 [root@yw ~]# yum install cobbler
 [root@yw ~]# rpm -q cobbler
 
-#)¿ÉÑ¡: °²×°cobblerÎŞ·¨×Ô¶¯ÏÂÔØµÄÒÀÀµ°ü: http://rpm.pbone.net/
+#)å¯é€‰: å®‰è£…cobbleræ— æ³•è‡ªåŠ¨ä¸‹è½½çš„ä¾èµ–åŒ…: http://rpm.pbone.net/
 PyYAML-3.10-3.1.el6.x86_64.rpm 
 [root@yw ~]# createrepo --update /var/ftp/pub/yum/6/myrepo
 [root@yw ~]# yum clean all
 [root@yw ~]# yum install PyYAML
 
---)Æô¶¯·şÎñ
+--)å¯åŠ¨æœåŠ¡
 service httpd status
 service xinetd status
 service dhcpd status
@@ -62,18 +62,18 @@ service cobblerd start
 
 /etc/init.d/cobblerd restart
 
---)Cobbler×ÓÃüÁî½éÉÜ
-cobbler check         #¼ì²écobblerÅäÖÃ
-cobbler sync          #²½ÅäÖÃµ½dhcp pxeºÍÊı¾İÄ¿Â¼
-cobbler list          #ÁĞ³öËùÓĞµÄcobblerÔªËØ
-cobbler import        #µ¼Èë°²×°µÄÏµÍ³¹âÅÌ¾µÏñ
-cobbler report        #ÁĞ³ö¸÷ÔªËØµÄÏêÏ¸ĞÅÏ¢
-cobbler distro        #²é¿´µ¼ÈëµÄ·¢ĞĞ°æÏµÍ³ĞÅÏ¢
-cobbler profile       #²é¿´ÅäÖÃĞÅÏ¢
-cobbler system        #²é¿´Ìí¼ÓµÄÏµÍ³ĞÅÏ¢
-cobbler reposync      #Í¬²½yum²Ö¿âµ½±¾µØ
+--)Cobblerå­å‘½ä»¤ä»‹ç»
+cobbler check         #æ£€æŸ¥cobbleré…ç½®
+cobbler sync          #æ­¥é…ç½®åˆ°dhcp pxeå’Œæ•°æ®ç›®å½•
+cobbler list          #åˆ—å‡ºæ‰€æœ‰çš„cobblerå…ƒç´ 
+cobbler import        #å¯¼å…¥å®‰è£…çš„ç³»ç»Ÿå…‰ç›˜é•œåƒ
+cobbler report        #åˆ—å‡ºå„å…ƒç´ çš„è¯¦ç»†ä¿¡æ¯
+cobbler distro        #æŸ¥çœ‹å¯¼å…¥çš„å‘è¡Œç‰ˆç³»ç»Ÿä¿¡æ¯
+cobbler profile       #æŸ¥çœ‹é…ç½®ä¿¡æ¯
+cobbler system        #æŸ¥çœ‹æ·»åŠ çš„ç³»ç»Ÿä¿¡æ¯
+cobbler reposync      #åŒæ­¥yumä»“åº“åˆ°æœ¬åœ°
 
---)ÅäÖÃcobbler
+--)é…ç½®cobbler
 #)check
 [root@yw ~]# cobbler check
 The following are potential configuration items that you may want to fix:
@@ -91,36 +91,36 @@ The following are potential configuration items that you may want to fix:
 
 Restart cobblerd and then run 'cobbler sync' to apply changes.
 
-#)±à¼­settingsÅäÖÃÎÄ¼ş£¬ĞŞ¸ÄÉÏÃæ±¨´íµÄÎ»ÖÃĞÅÏ¢¡£
+#)ç¼–è¾‘settingsé…ç½®æ–‡ä»¶ï¼Œä¿®æ”¹ä¸Šé¢æŠ¥é”™çš„ä½ç½®ä¿¡æ¯ã€‚
 [root@yw ~]# cp /etc/cobbler/settings /etc/cobbler/settings.orig
 [root@yw ~]# vi /etc/cobbler/settings
-101) #ĞŞ¸ÄcobblerÄ¬ÈÏ¼ÓÃÜÃÜÂë£¬Ê¹ÓÃÈçÏÂÃüÁîÉú³É
+101) #ä¿®æ”¹cobbleré»˜è®¤åŠ å¯†å¯†ç ï¼Œä½¿ç”¨å¦‚ä¸‹å‘½ä»¤ç”Ÿæˆ
 default_password_crypted: "$1$2846df22$XB7ridQ1zegf34levyYn51"
-272) #Ìæ»»±¾»úIPµØÖ· £¨DHCP·şÎñµØÖ·£©
+272) #æ›¿æ¢æœ¬æœºIPåœ°å€ ï¼ˆDHCPæœåŠ¡åœ°å€ï¼‰
 next_server: 192.168.56.250
-384) #Ìæ»»±¾»úIPµØÖ·£¨cobbler·şÎñµØÖ·£©
+384) #æ›¿æ¢æœ¬æœºIPåœ°å€ï¼ˆcobbleræœåŠ¡åœ°å€ï¼‰
 server: 192.168.56.250
-242) #£¨cobbler¹ÜÀídhcp£¬ºóÃæÓÃÓÚÍ¬²½¸üĞÂÅäÖÃĞÅÏ¢[cobbler sync]£©
+242) #ï¼ˆcobblerç®¡ç†dhcpï¼Œåé¢ç”¨äºåŒæ­¥æ›´æ–°é…ç½®ä¿¡æ¯[cobbler sync]ï¼‰
 manage_dhcp: 1
-261) #£¨cobbler¹ÜÀírsync¹¦ÄÜ£©
+261) #ï¼ˆcobblerç®¡ç†rsyncåŠŸèƒ½ï¼‰
 manage_rsync: 1
 
 [root@yw ~]# openssl passwd -1 -salt `openssl rand -hex 4`
 Password: 
 $1$2846df22$XB7ridQ1zegf34levyYn51
 
-#)¼ÓÔØ²¿·ÖÈ±Ê§µÄÍøÂçboot-loaders
+#)åŠ è½½éƒ¨åˆ†ç¼ºå¤±çš„ç½‘ç»œboot-loaders
 [root@yw ~]# cobbler get-loaders
 
-#)Æô¶¯tftpºÍrsync·şÎñ
+#)å¯åŠ¨tftpå’ŒrsyncæœåŠ¡
 [root@yw ~]# cp /etc/xinetd.d/tftp /etc/xinetd.d/tftp.orig
 [root@yw ~]# vi /etc/xinetd.d/tftp
-ĞŞ¸Ä³É£ºdisable=no
+ä¿®æ”¹æˆï¼šdisable=no
 [root@yw ~]# cp /etc/xinetd.d/rsync /etc/xinetd.d/rsync.orig
 [root@yw ~]# vi /etc/xinetd.d/rsync
-ĞŞ¸Ä³É£ºdisable=no
+ä¿®æ”¹æˆï¼šdisable=no
 
-#)ĞŞ¸ÄDHCPÄ£°å£¬È·±£DHCP·ÖÅäµÄµØÖ·ºÍCobblerÔÚÍ¬Ò»Íø¶Î
+#)ä¿®æ”¹DHCPæ¨¡æ¿ï¼Œç¡®ä¿DHCPåˆ†é…çš„åœ°å€å’ŒCobbleråœ¨åŒä¸€ç½‘æ®µ
 [root@yw ~]# cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
 [root@yw ~]# cp /etc/cobbler/dhcp.template /etc/dhcp/dhcp.template.orig
 [root@yw ~]# vi /etc/cobbler/dhcp.template
@@ -147,13 +147,13 @@ subnet 192.168.56.0 netmask 255.255.255.0 {
 
 [root@yw ~]# service dhcpd restart
 
-#)Èç¹ûÒª²¿ÊğDebian/ubuntuÏµÍ³ÔòĞèÒªdebmirrorÈí¼ş°ü
+#)å¦‚æœè¦éƒ¨ç½²Debian/ubuntuç³»ç»Ÿåˆ™éœ€è¦debmirrorè½¯ä»¶åŒ…
 [root@yw ~]# yum info debmirror
 [root@yw ~]# yum install debmirror -y
 [root@yw ~]# rpm -qa | grep debmirror
 debmirror-2.14-2.el6.noarch
 
-ĞŞ¸Ä/etc/debmirror.confÅäÖÃÎÄ¼ş£¬×¢ÊÍµô@distsºÍ@archesÁ½ĞĞ
+ä¿®æ”¹/etc/debmirror.confé…ç½®æ–‡ä»¶ï¼Œæ³¨é‡Šæ‰@distså’Œ@archesä¸¤è¡Œ
 # cp /etc/debmirror.conf /etc/debmirror.conf.orig
 # vi /etc/debmirror.conf
 ...
@@ -168,21 +168,21 @@ debmirror-2.14-2.el6.noarch
 [root@yw ~]# rpm -q pykickstart
 pykickstart-1.74.14-1.el6.noarch
 
-#)°²×°cmanÆô¶¯µçÔ´¹ÜÀí¹¦ÄÜ
+#)å®‰è£…cmanå¯åŠ¨ç”µæºç®¡ç†åŠŸèƒ½
 [root@yw ~]# yum info cman
 [root@yw ~]# yum install cman -y
 [root@yw ~]# rpm -qa | grep cman
 cman-3.0.12.1-59.el6.x86_64
 
-#)¼ì²écobbler°²×°»·¾³
+#)æ£€æŸ¥cobblerå®‰è£…ç¯å¢ƒ
 [root@yw ~]# cobbler check
 No configuration problems found.  All systems go.
-×¢Òâ£¬Ò»¶¨ÒªĞŞ¸´ÍêÈ«²¿µÄconfiguration problems£¬·ñÔòtftp»á³öÏÖÁ¬½Ó³¬Ê±£¬cobblerÎŞ·¨Í¨¹ıPXE½øĞĞÏµÍ³ÅúÁ¿°²×°µÄ²Ù×÷¡£
+æ³¨æ„ï¼Œä¸€å®šè¦ä¿®å¤å®Œå…¨éƒ¨çš„configuration problemsï¼Œå¦åˆ™tftpä¼šå‡ºç°è¿æ¥è¶…æ—¶ï¼Œcobbleræ— æ³•é€šè¿‡PXEè¿›è¡Œç³»ç»Ÿæ‰¹é‡å®‰è£…çš„æ“ä½œã€‚
 
 [root@yw ~]# cobbler sync
 
---)µ¼ÈëISO
-#)²é¿´dirstro
+--)å¯¼å…¥ISO
+#)æŸ¥çœ‹dirstro
 [root@yw ~]# cobbler distro list
 [root@yw ~]# cobbler list
 
@@ -211,29 +211,29 @@ Keeping repodata as-is :/var/www/cobbler/ks_mirror/CentOS-6.5-x86_64/repodata
 *** TASK COMPLETE ***
 [root@yw ~]# cobbler distro list
 
---)²¿Êğ²âÊÔ
-#) Æô¶¯»úÆ÷£¬°´F12, Ñ¡ÔñLANÆô¶¯£¬È»ºóÑ¡Ôñ°²×°µÄ²Ù×÷°æ±¾
-Í¨¹ıVirtualBox´´½¨Ò»Ì¨ĞéÄâ»ú²âÊÔÒ»ÏÂ£¬°ÑĞéÄâ»úÉèÖÃ³ÉÍøÂçPXEÆô¶¯£¨ºÍcobblerÔÚÍ¬Ò»¸öÍøÂç£©£¬Æô¶¯ºó¾Í¿ÉÒÔ¿´µ½CobblerÒıµ¼½çÃæ£¬¿´µ½½çÃæºóÑ¡ÔñCentOS-6.5-x86_64ÌõÄ¿¾Í¿ÉÒÔË³Àû¿ªÊ¼ÎŞÈË¹¤¸ÉÔ¤°²×°ÏµÍ³£¬
-VirtualBoxĞéÄâ»ú²âÊÔÊ±£¬ĞèÒª°²×°À©Õ¹°ü(Extension_Pack)²ÅÄÜÖ§³ÖPXEÆô¶¯£¨Ä¿Ç°½öintelÍø¿¨£©£¬Íø¿¨Ñ¡ÔñºÍcobblerÒ»ÑùµÄ"Host-only"
+--)éƒ¨ç½²æµ‹è¯•
+#) å¯åŠ¨æœºå™¨ï¼ŒæŒ‰F12, é€‰æ‹©LANå¯åŠ¨ï¼Œç„¶åé€‰æ‹©å®‰è£…çš„æ“ä½œç‰ˆæœ¬
+é€šè¿‡VirtualBoxåˆ›å»ºä¸€å°è™šæ‹Ÿæœºæµ‹è¯•ä¸€ä¸‹ï¼ŒæŠŠè™šæ‹Ÿæœºè®¾ç½®æˆç½‘ç»œPXEå¯åŠ¨ï¼ˆå’Œcobbleråœ¨åŒä¸€ä¸ªç½‘ç»œï¼‰ï¼Œå¯åŠ¨åå°±å¯ä»¥çœ‹åˆ°Cobblerå¼•å¯¼ç•Œé¢ï¼Œçœ‹åˆ°ç•Œé¢åé€‰æ‹©CentOS-6.5-x86_64æ¡ç›®å°±å¯ä»¥é¡ºåˆ©å¼€å§‹æ— äººå·¥å¹²é¢„å®‰è£…ç³»ç»Ÿï¼Œ
+VirtualBoxè™šæ‹Ÿæœºæµ‹è¯•æ—¶ï¼Œéœ€è¦å®‰è£…æ‰©å±•åŒ…(Extension_Pack)æ‰èƒ½æ”¯æŒPXEå¯åŠ¨ï¼ˆç›®å‰ä»…intelç½‘å¡ï¼‰ï¼Œç½‘å¡é€‰æ‹©å’Œcobblerä¸€æ ·çš„"Host-only"
 
---)CobblerWeb½çÃæ
+--)CobblerWebç•Œé¢
 #)install
 [root@yw ~]# yum info cobbler-web
 [root@yw ~]# yum install cobbler-web -y
 [root@yw ~]# rpm -q cobbler-web
 cobbler-web-2.6.3-1.el6.noarch
 
-#)¿ÉĞŞ¸ÄÈÏÖ¤Ïà¹ØÅäÖÃ¡£
+#)å¯ä¿®æ”¹è®¤è¯ç›¸å…³é…ç½®ã€‚
 [root@yw ~]# cp /etc/cobbler/modules.conf /etc/cobbler/modules.conf.orig
 [root@yw ~]# vi /etc/cobbler/modules.conf
 [authentication]
 module = authn_configfile
 
-Ä¬ÈÏÓÃ»§ cobbler/cobbler
+é»˜è®¤ç”¨æˆ· cobbler/cobbler
 
-#)ÖØÆôhttp,Cobbler
+#)é‡å¯http,Cobbler
 [root@yw ~]# service cobblerd restart
 [root@yw ~]# service httpd restart
 
-#)²é¿´WebÒ³Ãæ
+#)æŸ¥çœ‹Webé¡µé¢
 http://192.168.56.250/cobbler_web

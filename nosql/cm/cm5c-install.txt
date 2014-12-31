@@ -1,0 +1,104 @@
+Cloudera Manager 5 和 CDH5 本地（离线）安装指南（Hadoop集群搭建）
+=================================================
+@os CentOS 6.5
+@site Installation Path C - Manual Installation Using Cloudera Manager Tarballs
+http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_ig_install_path_c.html
+
+--)系统环境
+#)查看版本
+[root@yw ~]# lsb_release -a
+Description:    CentOS release 6.5 (Final)
+#)关闭防火墙
+[root@yw ~]# service iptables status
+iptables: Firewall is not running.
+#)关闭SELinux
+[root@yw ~]# sed -i '/^SELINUX=/ s/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+[root@yw ~]# cat /etc/sysconfig/selinux
+[root@yw ~]# setenforce 0
+[root@yw ~]# getenforce
+Disabled
+#)Hostname
+[root@yw ~]# vi /etc/hosts
+192.168.56.251  yw
+
+--)软件包
+#)cm5: http://archive-primary.cloudera.com/cm5/cm/5/
+cloudera-manager-el6-cm5.2.1_x86_64.tar.gz
+#)cdh5: http://archive-primary.cloudera.com/cdh5/parcels/5.2.1/
+CDH-5.2.1-1.cdh5.2.1.p0.12-el6.parcel
+CDH-5.2.1-1.cdh5.2.1.p0.12-el6.parcel.sha1
+manifest.json
+
+--)安装DB:mysql
+#)安装配置
+[root@yw ~]# yum info mysql mysql-server
+[root@yw ~]# yum install mysql mysql-server -y
+[root@yw ~]# cp /etc/my.cnf /etc/my.cnf.orig
+[root@yw ~]# vi /etc/my.cnf
+[mysqld]增加一行:
+character-set-server = utf8
+
+#)启动服务
+[root@yw ~]# chkconfig mysqld on
+[root@yw ~]# chkconfig --list mysqld
+mysqld 0:off 1:off 2:on 3:on 4:on 5:on 6:off
+[root@yw ~]# service mysqld start
+[root@yw ~]# service mysqld stop
+
+#)修改root密码(默认密码为空)
+[root@yw ~]# mysqladmin -u root password 'root'
+[root@yw ~]# mysql -u root -proot
+mysql> show databases;
+mysql> exit;
+
+--)安装JDK
+[root@yw ~]# tar -xzf jdk-7u67-linux-x64.tar.gz -C /opt
+[root@yw ~]# vi ~/.bash_profile
+export JAVA_HOME=/opt/jdk1.7.0_67
+PATH=$JAVA_HOME/bin:$PATH:$HOME/bin
+export PATH
+[root@yw ~]# source ~/.bash_profile 
+[root@yw ~]# java -version
+
+--)安装CM5(Cloudera Manager)
+#)解压
+[root@yw ~]# tar -xzf cloudera-manager-el6-cm5.2.1_x86_64.tar.gz -C /opt
+[root@yw ~]# cd /opt/cm-5.2.1
+#)修改配置文件
+[root@yw cm-5.2.1]# vi etc/cloudera-scm-agent/config.ini
+3) server_host=192.168.56.251
+#)添加cloudera-scm用户(所有节点)
+[root@yw cm-5.2.1]# userdel cloudera-scm
+[root@yw cm-5.2.1]# useradd --system --home-dir=/opt/cm-5.2.1/run/cloudera-scm-server --no-create-home --shell=/bin/false --comment "Cloudera SCM User" cloudera-scm
+#)为CM建立数据库:mysql
+[root@yw cm-5.2.1]# cp mysql-connector-java-5.1.32.jar share/cmf/lib
+[root@yw cm-5.2.1]# share/cmf/schema/scm_prepare_database.sh mysql cm scm scm -hlocalhost -uroot -proot
+#)启动CM Server端
+[root@yw cm-5.2.1]# etc/init.d/cloudera-scm-server start
+注意server首次启动不要立即关闭或重启，因为首次启动会自动创建相关表以及数据，如果因为特殊原因中途退出，请先删除所有表以及数据之后再次启动，否则将会出现启动不成功的情况。
+#)关闭CM Server端
+[root@yw cm-5.2.1]# etc/init.d/cloudera-scm-server stop
+#)查看CM Server日志
+[root@yw cm-5.2.1]# tail -100f log/cloudera-scm-server/cloudera-scm-server.log
+
+--)部署Parcel存储库
+#)上传CDH以下文件到本地 Parcel 存储库路径: /opt/cloudera/parcel-repo
+CDH-5.2.1-1.cdh5.2.1.p0.12-el6.parcel
+CDH-5.2.1-1.cdh5.2.1.p0.12-el6.parcel.sha1
+manifest.json
+#)如果Parcel文件不在默认存储库路径，需要在登陆web安装时修改本地 Parcel 存储库路径
+
+--)所有节点上安装CM5 Agent(Cloudera Manager 5 Agent)
+#)安装
+
+#)启动CM Agent(注意必须以管理员权限启动)
+[root@yw ~]# /opt/cm-5.2.1/etc/init.d/cloudera-scm-agent start
+#)查看日志
+[root@yw ~]# tail -100f /opt/cm-5.2.1/log/cloudera-scm-agent/cloudera-scm-agent.log
+
+--)WEB安装
+#)启动CM Server端
+[root@yw cm-5.2.1]# etc/init.d/cloudera-scm-server start
+#)登陆WEB，默认账户和密码都是admin，安装时选择免费版
+http://192.168.56.251:7180
+

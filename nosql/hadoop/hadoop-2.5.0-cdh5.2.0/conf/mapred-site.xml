@@ -51,5 +51,10 @@
 		<name>mapreduce.reduce.memory.mb</name>
 		<value>256</value>
 	</property>
+	
+	<property>
+		<name>mapreduce.application.classpath</name>
+   		<value>$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*,$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*,/home/yhli/cdh/hbase/lib/*</value>
+	</property>
 
 </configuration>

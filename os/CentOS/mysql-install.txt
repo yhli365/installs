@@ -76,3 +76,10 @@ mysql> show databases;
 [yhli@ys0 ~]# sudo mysql -u yhli -pyhli yhlidb
 mysql> show tables;
 [yhli@ys0 ~]# sudo mysql -h ys0 -u yhli -pyhli yhlidb
+
+--)Mysql客户端
+#)HeidiSQL (OpenSource)
+http://www.heidisql.com/
+HeidiSQL is a useful and reliable tool designed for web developers using 
+the popular MySQL server, Microsoft SQL databases and PostgreSQL. 
+
