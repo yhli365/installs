@@ -39,6 +39,11 @@ git commit -m ""
 git push
 git pull
 
+git tag -a 1.0.1 -m 'my version 1.0.1'
+git tag
+git show 1.0.1
+git push origin --tags
+
 --)ERROR--------------
 #)GIT 提交错误 fatal: LF would be replaced by CRLF in
 $ git add .

@@ -24,7 +24,17 @@
 
 	<property>
 		<name>yarn.scheduler.maximum-allocation-mb</name>
-		<value>256</value>
+		<value>128</value>
+	</property>
+
+	<property>
+		<name>yarn.scheduler.minimum-allocation-vcores</name>
+		<value>1</value>
+	</property>
+
+	<property>
+		<name>yarn.scheduler.maximum-allocation-vcores</name>
+		<value>32</value>
 	</property>
 
 	<property>
@@ -41,6 +51,11 @@
 	<property>
 		<name>yarn.nodemanager.resource.memory-mb</name>
 		<value>512</value>
+	</property>
+
+	<property>
+		<name>yarn.nodemanager.resource.cpu-vcores</name>
+		<value>3</value>
 	</property>
 
 	<property>
