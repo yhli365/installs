@@ -6,6 +6,11 @@
 		<name>mapreduce.framework.name</name>
 		<value>yarn</value>
 	</property>
+	
+	<property>
+		<name>mapreduce.cluster.local.dir</name>
+		<value>${hadoop.tmp.dir}/mapred/local</value>
+	</property>
 
 	<property>
 		<name>mapreduce.task.io.sort.mb</name>
@@ -26,17 +31,7 @@
 		<name>mapred.child.java.opts</name>
 		<value>-Xmx100m</value>
 	</property>
-
-	<property>
-		<name>mapreduce.map.speculative</name>
-		<value>true</value>
-	</property>
-
-	<property>
-		<name>mapreduce.reduce.speculative</name>
-		<value>true</value>
-	</property>
-
+	
 	<property>
 		<name>yarn.app.mapreduce.am.resource.mb</name>
 		<value>64</value>
@@ -50,6 +45,16 @@
 	<property>
 		<name>mapreduce.reduce.memory.mb</name>
 		<value>64</value>
+	</property>
+
+	<property>
+		<name>mapreduce.map.speculative</name>
+		<value>true</value>
+	</property>
+
+	<property>
+		<name>mapreduce.reduce.speculative</name>
+		<value>true</value>
 	</property>
 
 	<property>
