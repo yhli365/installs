@@ -1,0 +1,20 @@
+Kafka
+@version KafkaOffsetMonitor-assembly-0.2.0.jar
+#test kafka_2.9.2-0.8.1.1
+
+--)install-------------------------------------------------
+#)安装
+$ cd $KAFKA_HOME
+$ mkdir monitor
+$ put KafkaOffsetMonitor-assembly-0.2.0.jar to monitor
+$ put offset-start.sh to monitor
+$ chmod +x monitor/*.sh
+
+#)启动
+$ rm -rf monitor/offsetapp.db
+$ monitor/offset-start.sh
+
+$ ps ax | grep -i 'OffsetGetterWeb' | grep java | grep -v grep | awk '{print $1}' | xargs kill
+
+#)Web
+http://ys0:8086/

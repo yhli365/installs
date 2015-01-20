@@ -6,12 +6,98 @@ Kafka
 $ tar -xzf kafka_2.9.2-0.8.1.1.tgz -C /disk/cdh5/app
 $ ln -s /disk/cdh5/app/kafka_2.9.2-0.8.1.1 ~/cdh/kafka
 
+#)脚本改进(将日志目录可以在*.properties中配置run.logs.dir,以便本机方便启动多个broker)
+$ cp bin/kafka-run-class.sh bin/kafka-run-class.sh.orig
+$ vi bin/kafka-run-class.sh
+# create logs directory
+LOG_DIR=$base_dir/logs
+修改为
+for arg in $@; do
+  if [ "${arg:0-11:11}" = ".properties" ]; then
+    echo "config: ${arg}"
+	LOG_DIR=`sed '/^run.logs.dir=/!d;s/.*=//' ${arg}`
+  fi
+done
+if [ -z "$LOG_DIR" ]; then
+  LOG_DIR=$base_dir/logs
+fi
+
+#)配置参数Server
+$ vi config/server.properties
+--Server Basics
+broker.id=0
+
+--Socket Server Settings
+port=9092
+#host.name=localhost
+num.network.threads=2
+num.io.threads=8
+socket.send.buffer.bytes=1048576
+socket.receive.buffer.bytes=1048576
+socket.request.max.bytes=104857600
+
+--Log Basics
+log.dirs=/data/kafka/kafka-logs
+num.partitions=2
+
+--Log Flush Policy
+log.flush.interval.messages=10000
+log.flush.interval.ms=1000
+
+--Log Retention Policy
+log.retention.hours=168
+log.retention.bytes=1073741824
+log.segment.bytes=536870912
+log.retention.check.interval.ms=60000
+log.cleaner.enable=false
+
+--Zookeeper
+zookeeper.connect=localhost:2181
+zookeeper.connection.timeout.ms=1000000
+
+--Replica
+replica.lag.max.messages=
+replica.lag.time.max.ms=
+
+--My extend
+run.logs.dir=/data/kafka/logs
+
+#)配置参数Producer
+request.required.acks=
+
+--)常用命令----------------------------------------------------
+#)查看topic分布情况
+$ bin/kafka-topics.sh --list --zookeeper localhost:2181
+$ bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic test
+
+#)创建topic
+$ bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 3 --partitions 2 --topic test
+
+#)删除topic慎用，只会删除zookeeper中的元数据，消息文件须手动删除
+$ bin/kafka-run-class.sh kafka.admin.DeleteTopicCommand --zookeeper localhost:2181 --topic test
+$ cd /data/kafka
+$ ll kafka-logs*/test-*
+$ rm -rf kafka-logs*/test-*
+
 --)Test(单Broker测试)-----------------------------------------
 $ cd ~/cdh/kafka
+$ mkdir /data/kafka
+
+#)配置zk,Kafka
+$ vi config/zookeeper.properties
+dataDir=/data/kafka/zookeeper
+run.logs.dir=/data/kafka/logs
+
+$ vi config/server.properties
+log.dirs=/data/kafka/kafka-logs
+run.logs.dir=/data/kafka/logs
 
 #)启动服务
-$ bin/zookeeper-server-start.sh config/zookeeper.properties
-$ bin/kafka-server-start.sh config/server.properties
+$ bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
+$ bin/kafka-server-start.sh -daemon config/server.properties
+
+$ ps ax | grep -i 'zookeeper' | grep -v grep | awk '{print $1}' | xargs kill
+$ ps ax | grep -i 'kafka\.Kafka' | grep java | grep -v grep | awk '{print $1}' | xargs kill
 
 #)新建一个话题Topic
 Topic的名字叫”test”,只有一个分区和一个备份。
@@ -33,20 +119,23 @@ $ bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic test --from-b
 --)Test(多Broker测试)-----------------------------------------
 #)首先为每个broker创建一个配置文件
 $ cp config/server.properties config/server-1.properties
-$ cp config/server.properties config/server-2.properties
 $ vi config/server-1.properties
 broker.id=1
 port=9093
-log.dir=/tmp/kafka-logs-1
+log.dirs=/data/kafka/kafka-logs-1
+run.logs.dir=/data/kafka/logs-1
+
+$ cp config/server.properties config/server-2.properties
 $ vi config/server-2.properties
 broker.id=2
 port=9094
-log.dir=/tmp/kafka-logs-2
+log.dirs=/data/kafka/kafka-logs-2
+run.logs.dir=/data/kafka/logs-2
 
 #)启动这两个broker
 Zookeeper还在，上面用的broker还活着。
-$ bin/kafka-server-start.sh config/server-1.properties &
-$ bin/kafka-server-start.sh config/server-2.properties &
+$ bin/kafka-server-start.sh -daemon config/server-1.properties
+$ bin/kafka-server-start.sh -daemon config/server-2.properties
 
 #)创建一个topic试试，把备份设置为3
 $ bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 3 --partitions 1 --topic my-replicated-topic
@@ -65,8 +154,7 @@ my test message 2
 $ bin/kafka-console-consumer.sh --zookeeper localhost:2181 --from-beginning --topic my-replicated-topic
 
 #)测试一下容错. 干掉leader,也就是Broker 1:
-$ ps -ef | grep server-1.properties
-$ kill -9 7564
+$ ps ax | grep -i 'kafka\.Kafka' | grep java | grep server-1.properties | grep -v grep | awk '{print $1}' | xargs kill
 
 Leader被切换到一个follower上节, 点1不会被列在isr中了，因为它死了:
 $ bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic my-replicated-topic
