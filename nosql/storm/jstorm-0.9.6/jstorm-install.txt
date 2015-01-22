@@ -1,0 +1,101 @@
+JStorm
+@version jstorm-0.9.6.2.zip
+
+--)install-------------------------------------------------
+#)JStorm dependencies
+$ python -V
+Python 2.6.6
+
+$ java -version
+java version "1.7.0_67"
+
+#)JStorm
+$ unzip jstorm-0.9.6.2.zip -d /disk/cdh5/app
+$ ln -s /disk/cdh5/app/jstorm-0.9.6.2 ~/cdh/jstorm
+
+$ vi ~/.bashrc
+export JSTORM_HOME=/home/yhli/cdh/jstorm
+export PATH=$PATH:$JSTORM_HOME/bin
+$ source ~/.bashrc
+
+$ vi $JSTORM_HOME/conf/storm.yaml
+nimbus.host: "192.168.56.200"
+storm.local.dir: "/data/jstorm"
+
+$ vi $JSTORM_HOME/bin/start.sh
+export JSTORM_HOME=/home/yhli/cdh/jstorm
+
+$ mv $JSTORM_HOME/bin/start.sh $JSTORM_HOME/bin/start-jstorm.sh
+$ mv $JSTORM_HOME/bin/stop.sh $JSTORM_HOME/bin/stop-jstorm.sh
+
+#)JStorm web ui
+web ui 可以和nimbus不在同一个节点
+$ mkdir ~/.jstorm
+$ cp -f $JSTORM_HOME/conf/storm.yaml ~/.jstorm
+
+$ cd $JSTORM_HOME
+$ mkdir jstorm-ui
+$ unzip -oq jstorm-ui-0.9.6.2.war -d jstorm-ui
+
+$ tar -xzf apache-tomcat-7.0.57.tar.gz -C /disk/cdh5/app
+$ ln -s /disk/cdh5/app/apache-tomcat-7.0.57 ~/cdh/tomcat
+$ cd ~/cdh/tomcat
+$ mv webapps/ROOT webapps/ROOT.old
+$ ln -s /home/yhli/cdh/jstorm/jstorm-ui webapps/ROOT
+
+--)cmds----------------------------------------------------
+#)ZK
+$ ~/cdh/zk/bin/zkServer.sh start
+$ ~/cdh/zk/bin/zkServer.sh stop
+
+#)JStrom
+$ start-jstorm.sh
+$ stop-jstorm.sh
+
+$ nohup jstorm nimbus &
+$ nohup jstorm supervisor &
+$ tail -100f $JSTORM_HOME/logs/nimbus.log
+$ tail -100f $JSTORM_HOME/logs/supervisor.log
+
+$ jstorm list
+$ jstorm kill
+
+#)JStrom UI(Tomcat)
+$ ~/cdh/tomcat/bin/startup.sh
+$ ~/cdh/tomcat/bin/shutdown.sh
+http://ys0:8080/
+
+--)Test----------------------------------------------------
+$ cd  ~/cdh/jstorm/example/sequence_test
+
+$ ./jstart.sequence.sh 
+$ jstorm kill SequenceTest
+
+$ ./jstart.batch.sh
+$ jstorm kill batch
+
+$ ./jstart.drpc.topology.sh
+$ ./jdrpc.client.test.sh
+$ jstorm kill reach
+
+--)Source--------------------------------------------------
+#)jstorm
+$ git clone https://github.com/alibaba/jstorm.git
+$ git checkout 0.9.6.2
+--Build JStorm
+$ mvn clean package install -DskipTests
+--Build install tar
+$ mvn package assembly:assembly -DskipTests
+--Build example
+$ cd example/sequence-split-merge/
+$ vi pom.xml
+<jstorm.version>0.9.6.2</jstorm.version>
+$ mvn eclipse:clean eclipse:eclipse 
+$ mvn package
+$ mvn clean eclipse:clean
+
+--fixed: 本地上传缺失的jar
+@jstorm-ui
+mvn install:install-file -Dfile=primefaces-3.2.jar -DgroupId=org.primefaces -DartifactId=primefaces -Dversion=3.2 -Dpackaging=jar
+mvn install:install-file -Dfile=cupertino-1.0.3.jar -DgroupId=org.primefaces.themes -DartifactId=cupertino -Dversion=1.0.3 -Dpackaging=jar
+mvn install:install-file -Dfile=javaee-web-api-6.0.jar -DgroupId=javax -DartifactId=javaee-web-api -Dversion=6.0 -Dpackaging=jar

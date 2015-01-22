@@ -1,8 +1,12 @@
-Storm
+#)storm
 http://storm-project.net/
 https://github.com/apache/incubator-storm
 https://github.com/nathanmarz/storm-starter
 
 https://github.com/nathanmarz/storm/wiki/Tutorial
 https://github.com/nathanmarz/storm/wiki/Documentation
+
+#)storm-examples
+#Storm components for interacting with HDFS file systems
+git clone https://github.com/ptgoetz/storm-hdfs.git
 
