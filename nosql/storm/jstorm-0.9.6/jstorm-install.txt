@@ -28,6 +28,22 @@ export JSTORM_HOME=/home/yhli/cdh/jstorm
 $ mv $JSTORM_HOME/bin/start.sh $JSTORM_HOME/bin/start-jstorm.sh
 $ mv $JSTORM_HOME/bin/stop.sh $JSTORM_HOME/bin/stop-jstorm.sh
 
+#)JStorm集成hadoop/hbase(公用jar)
+$ cd $JSTORM_HOME
+$ mkdir libext
+$ cp -r $HBASE_HOME/lib/*.jar libext/
+$ cp bin/jstorm bin/jstorm.orig
+$ vi bin/jstorm
+def get_classpath(extrajars):
+    ret = []
+    ret.extend(get_jars_full(JSTORM_DIR))
+    ret.extend(get_jars_full(JSTORM_DIR + "/lib"))
+    ret.extend(extrajars)
+	ret.extend(get_jars_full(JSTORM_DIR + "/libext"))
+    return normclasspath(":".join(ret))
+$ vi $JSTORM_HOME/conf/storm.yaml
+java.library.path: "/usr/local/lib:/opt/local/lib:/usr/lib:/home/yhli/cdh/hadoop/lib/native"
+
 #)JStorm web ui
 web ui 可以和nimbus不在同一个节点
 $ mkdir ~/.jstorm
