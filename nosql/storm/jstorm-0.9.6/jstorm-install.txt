@@ -27,6 +27,9 @@ export JSTORM_HOME=/home/yhli/cdh/jstorm
 
 $ mv $JSTORM_HOME/bin/start.sh $JSTORM_HOME/bin/start-jstorm.sh
 $ mv $JSTORM_HOME/bin/stop.sh $JSTORM_HOME/bin/stop-jstorm.sh
+$ vi $JSTORM_HOME/bin/stop-jstorm.sh
+killJStorm "supervisor"
+killJStorm "nimbus"
 
 #)JStorm集成hadoop/hbase(公用jar)
 $ cd $JSTORM_HOME
@@ -72,6 +75,8 @@ $ nohup jstorm nimbus &
 $ nohup jstorm supervisor &
 $ tail -100f $JSTORM_HOME/logs/nimbus.log
 $ tail -100f $JSTORM_HOME/logs/supervisor.log
+$ ps -ef |grep supervisor |grep -v grep |awk '{print $2}' |xargs kill
+$ ps -ef |grep nimbus |grep -v grep |awk '{print $2}' |xargs kill
 
 $ jstorm list
 $ jstorm kill

@@ -33,6 +33,11 @@
 	</property>
 	
 	<property>
+		<name>yarn.app.mapreduce.am.command-opts</name>
+		<value>-Xmx100m</value>
+	</property>
+
+	<property>
 		<name>yarn.app.mapreduce.am.resource.mb</name>
 		<value>64</value>
 	</property>
