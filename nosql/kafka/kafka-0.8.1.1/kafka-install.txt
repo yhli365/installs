@@ -62,9 +62,6 @@ replica.lag.time.max.ms=
 --My extend
 run.logs.dir=/data/kafka/logs
 
-#)配置参数Producer
-request.required.acks=
-
 --)常用命令----------------------------------------------------
 #)查看topic分布情况
 $ bin/kafka-topics.sh --list --zookeeper localhost:2181
@@ -83,20 +80,24 @@ $ rm -rf kafka-logs*/test-*
 $ cd ~/cdh/kafka
 $ mkdir /data/kafka
 
-#)配置zk,Kafka
-$ vi config/zookeeper.properties
-dataDir=/data/kafka/zookeeper
-run.logs.dir=/data/kafka/logs
-
+#)配置Kafka
 $ vi config/server.properties
 log.dirs=/data/kafka/kafka-logs
 run.logs.dir=/data/kafka/logs
 
-#)启动服务
-$ bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
-$ bin/kafka-server-start.sh -daemon config/server.properties
+#)ZK
+$ ~/cdh/zk/bin/zkServer.sh start
+$ ~/cdh/zk/bin/zkServer.sh stop
 
+或自带zk
+$ vi config/zookeeper.properties
+dataDir=/data/kafka/zookeeper
+run.logs.dir=/data/kafka/logs
+$ bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
 $ ps ax | grep -i 'zookeeper' | grep -v grep | awk '{print $1}' | xargs kill
+
+#)启动服务
+$ bin/kafka-server-start.sh -daemon config/server.properties
 $ ps ax | grep -i 'kafka\.Kafka' | grep java | grep -v grep | awk '{print $1}' | xargs kill
 
 #)新建一个话题Topic
