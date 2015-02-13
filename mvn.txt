@@ -1,0 +1,4 @@
+
+#查看依赖树
+mvn dependency:tree
+

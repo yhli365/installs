@@ -1,0 +1,15 @@
+Spark
+@version spark-1.2.0-bin-hadoop2.4.tgz
+
+--)install-------------------------------------------------
+#)dependencies
+$ python -V
+Python 2.6.6
+
+$ java -version
+java version "1.7.0_67"
+
+#)Spark
+$ tar -xzf spark-1.2.0-bin-hadoop2.4.tgz -C /disk/cdh5/app
+$ ln -s /disk/cdh5/app/spark-1.2.0-bin-hadoop2.4 ~/cdh/spark
+

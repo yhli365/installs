@@ -1,0 +1,93 @@
+Spark
+@version spark-1.2.0-bin-hadoop2.4.tgz
+
+$ hdfs dfs -put README.md README.md
+
+#)Interactive Analysis with the Spark Shell [Scala]
+$ bin/spark-shell
+
+#Basics
+scala> val textFile = sc.textFile("README.md")
+scala> textFile.count() // Number of items in this RDD
+res0: Long = 98
+
+scala> textFile.first() // First item in this RDD
+res1: String = # Apache Spark
+
+scala> textFile.filter(line => line.contains("Spark")).count() // How many lines contain "Spark"?
+res3: Long = 19
+
+scala> val linesWithSpark = textFile.filter(line => line.contains("Spark"))
+scala> linesWithSpark.count()
+res4: Long = 19
+
+#More on RDD Operations
+scala> textFile.map(line => line.split(" ").size).reduce((a, b) => if (a > b) a else b)
+res5: Int = 14
+
+scala> import java.lang.Math
+scala> textFile.map(line => line.split(" ").size).reduce((a, b) => Math.max(a, b))
+res6: Int = 14
+
+scala> val wordCounts = textFile.flatMap(line => line.split(" ")).map(word => (word, 1)).reduceByKey((a, b) => a + b)
+scala> wordCounts.collect()
+
+#Caching
+scala> linesWithSpark.cache()
+
+scala> linesWithSpark.count()
+res9: Long = 19
+
+scala> linesWithSpark.count()
+res10: Long = 19
+
+#)Interactive Analysis with the Spark Shell [Python]
+$ bin/pyspark
+
+#Basics
+>>> textFile = sc.textFile("README.md")
+>>> textFile.count() # Number of items in this RDD
+98
+
+>>> textFile.first() # First item in this RDD
+u'# Apache Spark'
+
+>>> textFile.filter(lambda line: "Spark" in line).count() # How many lines contain "Spark"?
+19
+>>> linesWithSpark = textFile.filter(lambda line: "Spark" in line)
+>>> linesWithSpark.count()
+19
+
+#More on RDD Operations
+>>> textFile.map(lambda line: len(line.split())).reduce(lambda a, b: a if (a > b) else b)
+14
+
+>>> def max(a, b):
+	if a > b:
+		return a
+	else:
+		return b
+
+>>> textFile.map(lambda line: len(line.split())).reduce(max)
+14
+
+>>> wordCounts = textFile.flatMap(lambda line: line.split()).map(lambda word: (word, 1)).reduceByKey(lambda a, b: a+b)
+>>> wordCounts.collect()
+
+#Caching
+>>> linesWithSpark.cache()
+
+>>> linesWithSpark.count()
+19
+
+>>> linesWithSpark.count()
+19
+
+#)Where to Go from Here
+# For Scala and Java, use run-example:
+$ bin/run-example SparkPi
+Pi is roughly 3.14498
+
+# For Python examples, use spark-submit directly:
+$ bin/spark-submit examples/src/main/python/pi.py
+Pi is roughly 3.139200

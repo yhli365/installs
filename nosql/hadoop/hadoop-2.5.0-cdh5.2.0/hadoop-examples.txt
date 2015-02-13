@@ -1,6 +1,11 @@
 Hadoop 2
 @version hadoop-2.5.0-cdh5.2.0
 
+#)org.apache.hadoop.examples.ExampleDriver
+wordcount/WordCount
+wordmean/WordMean
+wordmedian/WordMedian
+
 #)prepare
 [yhli@ys0 ~]$ echo $HADOOP_HOME
 [yhli@ys0 ~]$ mkdir -p ~/dev/cdh5/hadoop
