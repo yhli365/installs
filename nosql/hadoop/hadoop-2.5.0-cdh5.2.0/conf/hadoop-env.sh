@@ -42,7 +42,15 @@ for f in $HADOOP_HOME/contrib/capacity-scheduler/*.jar; do
     export HADOOP_CLASSPATH=$f
   fi
 done
-export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HBASE_CONF_DIR:$HBASE_HOME/conf:$HBASE_HOME/lib/*
+# export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HBASE_CONF_DIR:$HBASE_HOME/conf:$HBASE_HOME/lib/*
+export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HBASE_CONF_DIR:$HBASE_HOME/conf
+for f in $HBASE_HOME/lib/*.jar; do
+  if [ $f = "$HBASE_HOME/lib/slf4j-log4j12-1.7.5.jar" ]; then
+    continue
+  else
+    export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$f
+  fi
+done
 
 # The maximum amount of heap to use, in MB. Default is 1000.
 #export HADOOP_HEAPSIZE=

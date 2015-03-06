@@ -1,0 +1,111 @@
+Hive
+@version hive-0.13.1-cdh5.2.0.tar.gz
+
+--)install-------------------------------------------------
+#)安装
+$ tar -xzf hive-0.13.1-cdh5.2.0.tar.gz -C /disk/cdh5/app/
+$ ln -s /disk/cdh5/app/hive-0.13.1-cdh5.2.0 ~/cdh/hive
+$ export HIVE_HOME=/home/yhli/cdh/hive
+
+#)conf
+根据需要修改相关配置
+
+-#)db.schema:mysql
+$ cp mysql-connector-java-*.jar $HIVE_HOME/lib/
+$ ll $HIVE_HOME/lib/ | grep mysql-connector-java
+$ sudo service mysqld status
+$ sudo mysql -u root -proot
+mysql> 
+show databases;
+create database hivedb;
+CREATE USER 'hive';
+grant all privileges on hivedb.* to 'hive'@'%' identified by 'hive' with grant option;
+grant all privileges on hivedb.* to 'hive'@'ys0' identified by 'hive' with grant option;
+grant all privileges on hivedb.* to 'hive'@'localhost' identified by 'hive' with grant option;
+flush privileges;
+select user,host,password from mysql.user;
+show grants for 'hive'@'ys0';
+mysql> exit;
+
+$ vi $HIVE_HOME/conf/hive-site.xml
+javax.jdo.option.ConnectionURL = jdbc:mysql://ys0/hivedb?createDatabaseIfNotExist=true
+javax.jdo.option.ConnectionDriverName = com.mysql.jdbc.Driver
+javax.jdo.option.ConnectionUserName = hive
+javax.jdo.option.ConnectionPassword = hive
+[yhli@ys0 ~]$ $HIVE_HOME/bin/schematool -dbType mysql -initSchema
+[yhli@ys0 ~]$ $HIVE_HOME/bin/schematool -dbType mysql -info
+[yhli@ys0 ~]$ sudo mysql -u hive -p -h ys0 hivedb
+mysql> show tables;
+mysql> exit;
+
+#)fixed: Could not load shims in class org.apache.hadoop.log.metrics.EventCounter(@teston hadoop-0.20.2-cdh3u4)
+[yhli@ys0 conf]$ vi hive-log4j.properties
+[yhli@ys0 conf]$ vi hive-exec-log4j.properties
+#log4j.appender.EventCounter=org.apache.hadoop.hive.shims.HiveEventCounter
+log4j.appender.EventCounter=org.apache.hadoop.metrics.jvm.EventCounter
+[yhli@ys0 conf]$ jar uvf $HIVE_HOME/lib/hive-exec-0.13.1.jar hive-log4j.properties hive-exec-log4j.properties
+[yhli@ys0 conf]$ mkdir tmp
+[yhli@ys0 conf]$ cd tmp
+[yhli@ys0 tmp]$ jar xvf $HIVE_HOME/lib/hive-exec-0.13.1.jar hive-log4j.properties hive-exec-log4j.properties
+
+--)command-------------------------------------------------
+#)prepare
+hadoop: hdfs,mapred
+
+#)service
+$ cd $HIVE_HOME
+$ bin/hive --version
+$ bin/hive --help
+$ bin/hive --service cli --help
+$ bin/hive --service metastore --help
+$ bin/hive --service hiveserver2 --help
+
+$ bin/hive
+$ bin/beeline
+$ bin/hive --service metastore &
+$ bin/hive --service hiveserver2 &
+
+#)CLI
+$ echo 'X' >> /tmp/dummy.txt
+$ $HIVE_HOME/bin/hive
+hive> show databases;
+hive> show tables;
+hive> show functions;
+hive> create database if not exists testdb comment 'test database';
+hive> use testdb;
+hive> create table dummy (val string);
+hive> describe dummy;
+hive> ALTER TABLE dummy SET TBLPROPERTIES ('comment' = 'new_comment');
+hive> DESCRIBE EXTENDED dummy;
+hive> load data local inpath '/tmp/dummy.txt' overwrite into table dummy;
+hive> select * from dummy;
+hive> drop table if exists dummy;
+hive> drop database if exists testdb;
+hive> quit;
+
+$ hadoop dfs -ls /user/hive/warehouse/testdb.db/dummy/
+$ echo 'Z' >> /tmp/dummy.txt
+$ $HIVE_HOME/bin/hive -e "use testdb; \
+	load data local inpath '/tmp/dummy.txt' \
+	overwrite into table dummy;"
+$ $HIVE_HOME/bin/hive -S -e 'select * from testdb.dummy'
+
+#)Beeline CLI for HiveServer2
+$ $HIVE_HOME/bin/beeline --color=true
+Beeline version 0.13.1 by Apache Hive
+beeline> !connect jdbc:hive2:// scott tiger org.apache.hive.jdbc.HiveDriver
+0: jdbc:hive2://> help
+0: jdbc:hive2://> show databases;
+0: jdbc:hive2://> use testdb;
+0: jdbc:hive2://> select * from dummy;
+0: jdbc:hive2://> !quit
+
+$ $HIVE_HOME/bin/hive --service hiveserver2
+$ $HIVE_HOME/bin/beeline --color=true
+beeline> !connect jdbc:hive2://ys0:10000 scott tiger org.apache.hive.jdbc.HiveDriver
+0: jdbc:hive2://> help
+0: jdbc:hive2://> show databases;
+0: jdbc:hive2://> use testdb;
+0: jdbc:hive2://> select * from dummy;
+0: jdbc:hive2://> !quit
+
