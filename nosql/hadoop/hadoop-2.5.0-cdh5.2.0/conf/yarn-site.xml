@@ -24,7 +24,7 @@
 
 	<property>
 		<name>yarn.scheduler.maximum-allocation-mb</name>
-		<value>256</value>
+		<value>512</value>
 	</property>
 
 	<property>
@@ -50,7 +50,7 @@
 	<!-- Node Manager Configs -->
 	<property>
 		<name>yarn.nodemanager.resource.memory-mb</name>
-		<value>512</value>
+		<value>1024</value>
 	</property>
 
 	<property>

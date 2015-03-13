@@ -13,3 +13,73 @@ java version "1.7.0_67"
 $ tar -xzf spark-1.2.0-bin-hadoop2.4.tgz -C /disk/cdh5/app
 $ ln -s /disk/cdh5/app/spark-1.2.0-bin-hadoop2.4 ~/cdh/spark
 
+$ vi ~/.bashrc
+export SPARK_HOME=/home/yhli/cdh/spark
+export PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
+
+#)spark-sql
+$ cp $HIVE_HOME/conf/hive-site.xml $SPARK_HOME/conf
+$ spark-sql -h
+
+$ spark-sql \
+--driver-class-path $HIVE_HOME/lib/mysql-connector-java-5.1.32.jar \
+--executor-memory 128m \
+--master local
+
+http://ys0:4040/
+
+$ spark-sql \
+--driver-class-path $HIVE_HOME/lib/mysql-connector-java-5.1.32.jar \
+--driver-memory 128m \
+--executor-memory 128m \
+--num-executors 2 \
+--master yarn
+
+http://ys0:8088/proxy/application_1426214063270_0002/
+
+spark-sql> 
+show tables;
+describe avro_user;
+select * from avro_user limit 20;
+select favorite_color, count(*) from avro_user group by favorite_color;
+select * from avro_user where favorite_number=9 limit 20;
+select name, favorite_color, cast(substr(name, 5) as int) as nameid from avro_user limit 20;
+select * from avro_user where cast(substr(name, 5) as int)>10 and cast(substr(name, 5) as int)<20 limit 20;
+
+CACHE TABLE avro_user;
+SELECT COUNT(1) FROM avro_user;
+UNCACHE TABLE avro_user;
+
+exit;
+
+#)spark SQL Running the Thrift JDBC/ODBC server
+#Running the Thrift JDBC/ODBC server
+$ $SPARK_HOME/sbin/start-thriftserver.sh \
+--hiveconf hive.server2.thrift.port=10000 \
+--hiveconf hive.server2.thrift.bind.host=ys0 \
+--driver-class-path $HIVE_HOME/lib/mysql-connector-java-5.1.32.jar \
+--executor-memory 128m \
+--master local
+
+$ $SPARK_HOME/sbin/start-thriftserver.sh \
+--hiveconf hive.server2.thrift.port=10000 \
+--hiveconf hive.server2.thrift.bind.host=ys0 \
+--driver-class-path $HIVE_HOME/lib/mysql-connector-java-5.1.32.jar \
+--driver-memory 128m \
+--executor-memory 128m \
+--num-executors 2 \
+--master yarn
+
+http://ys0:4040/
+
+#运行beeline
+$ $SPARK_HOME/bin/beeline
+beeline> !connect jdbc:hive2://ys0:10000 scott tiger org.apache.hive.jdbc.HiveDriver
+0: jdbc:hive2://ys0:10000> !quit
+show tables;
+describe avro_user;
+select * from avro_user limit 20;
+
+#Stop the Thrift JDBC/ODBC server
+$ $SPARK_HOME/sbin/stop-thriftserver.sh
+
