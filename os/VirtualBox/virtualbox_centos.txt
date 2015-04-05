@@ -1,0 +1,27 @@
+
+#)安装依赖包
+yum info kernel-devel kernel-headers
+yum install kernel-devel kernel-headers -y
+
+#)安装virtualbox
+chmod +x VirtualBox-4.3.24-98716-Linux_amd64.run
+./VirtualBox-4.3.24-98716-Linux_amd64.run
+
+#)命令行启动/关闭虚拟机
+#查看当前的虚拟机
+VBoxManage list vms
+
+#第一种：使用 VRDP 方式通过命令行启动虚拟机：
+VBoxManage startvm dcsvr08 -type vrdp
+
+3389是VRDP（远程桌面）监听端口。
+启用VRDP后，一旦虚拟机启动完毕，我们就可以通过远程桌面/XManage等GUI远程管理工具来登录客户操作系统。
+
+#第二种 ：使用 Headless 启动无前端图形界面方式：
+VBoxHeadless -startvm "dcsvr08"
+
+#要确认虚拟机是否在运行
+VBoxManage list runningvms
+
+#从命令行关闭虚拟机
+VBoxManage controlvm dcsvr08 poweroff

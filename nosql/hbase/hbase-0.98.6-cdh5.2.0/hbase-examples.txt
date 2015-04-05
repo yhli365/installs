@@ -17,5 +17,12 @@ hbase> list
 hbase> scan 'petseq', {LIMIT => 20}
 hbase> scan 'petseq', {LIMIT => 10, STARTROW => 'xyz'}
 hbase> flush 'TestTable'
+
 hbase> 
-hbase> 
+create 'test', 'f1', { NUMREGIONS => 3, SPLITALGO => 'HexStringSplit'}
+disable 'test'
+alter 'test', NAME => 'f1', COMPRESSION => 'gz'
+alter 'test', NAME => 'f1', COMPRESSION => 'lzo'
+alter 'test', NAME => 'f1', COMPRESSION => 'snappy'
+enable 'test'
+drop 'test'

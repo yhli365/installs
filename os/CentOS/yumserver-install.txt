@@ -78,7 +78,8 @@ gpgcheck=0
 #)安装测试
 [root@ys0 ~]# yum clean all
 [root@ys0 ~]# yum info lzo lzo-devel
-
+[root@ys0 ~]# yum install lzo lzo-devel -y
+[root@ys0 ~]# rpm -q lzo lzo-devel
 
 --------------------------------tmp
 CentOS搭建内网yum仓库

@@ -32,6 +32,7 @@ export JAVA_HOME=/home/yhli/cdh/jdk
 
 # Extra Java CLASSPATH elements.  Optional.
 # export HBASE_CLASSPATH=
+export HBASE_CLASSPATH=${HADOOP_COMMON_HOME}/lib/hadoop-lzo-0.4.19.jar
 
 # The maximum amount of heap to use, in MB. Default is 1000.
 # export HBASE_HEAPSIZE=1000
