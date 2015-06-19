@@ -57,6 +57,12 @@ git branch
 -切换到master
 git checkout master
 
+#)分支
+查看本地和远程分支
+$ git branch -a
+切换分支
+$ git checkout 4e
+
 -导出
 如果你的 tag 名是 1.0，可以按照如下方式导出。
 1. 导出并压缩为 zip 格式:

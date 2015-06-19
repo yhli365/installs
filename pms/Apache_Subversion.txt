@@ -1,6 +1,12 @@
-Apache™ Subversion®
+﻿Apache™ Subversion®
 @site http://subversion.apache.org/
 @version subversion-1.8.4.tar.gz
+
+#eclipse
+http://subclipse.tigris.org/
+
+#TortoiseSVN
+http://tortoisesvn.net/
 
 -----------------------------#使用.CentOS
 -*)使用truecrypt存储repo

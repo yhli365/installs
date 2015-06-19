@@ -1,0 +1,72 @@
+@version solr-5.2.1.zip
+
+Solr Quick Start
+http://lucene.apache.org/solr/quickstart.html
+
+--)Install
+$ unzip -q solr-5.2.1.zip -d /disk/cdh5/app
+$ cd /disk/cdh5/app/solr-5.2.1
+$ bin/solr start -help
+
+--)Solr Examples: cloud
+#)cloud
+$ bin/solr start -e cloud -noprompt
+$ bin/solr healthcheck -c gettingstarted
+
+http://ys0:8983/solr
+http://ys0:8983/solr/gettingstarted/browse
+
+#)Indexing Data
+#Indexing a directory of "rich" files
+$ bin/post -c gettingstarted docs/
+
+#Indexing Solr XML
+$ bin/post -c gettingstarted example/exampledocs/*.xml
+
+#Indexing JSON
+$ bin/post -c gettingstarted example/exampledocs/books.json
+
+#Indexing CSV (Comma/Column Separated Values)
+$ bin/post -c gettingstarted example/exampledocs/books.csv
+
+#Other indexing techniques
+Import records from a database using the Data Import Handler (DIH).
+Use SolrJ from JVM-based languages or other Solr clients to programatically create documents to send to Solr.
+Use the Admin UI core-specific Documents tab to paste in a document to be indexed.
+
+#)Updating Data
+
+#)Deleting Data
+$ bin/post -c gettingstarted -d "<delete><id>SP2514N</id></delete>"
+
+#)Searching
+curl "http://ys0:8983/solr/gettingstarted/select?q=*%3A*&wt=json&indent=true"
+curl "http://ys0:8983/solr/gettingstarted/select?q=*:*&wt=json&indent=true"
+
+#Search for a single term
+curl "http://localhost:8983/solr/gettingstarted/select?wt=json&indent=true&q=foundation"
+curl "http://localhost:8983/solr/gettingstarted/select?wt=json&indent=true&q=foundation&fl=id"
+curl "http://localhost:8983/solr/gettingstarted/select?wt=json&indent=true&q=name:foundation"
+curl "http://localhost:8983/solr/gettingstarted/select?wt=json&indent=true&q=name:Foundation"
+
+#Phrase search
+curl "http://localhost:8983/solr/gettingstarted/select?wt=json&indent=true&q=\"CAS+latency\""
+
+#Combining searches(+[%2B],-)
+curl "http://localhost:8983/solr/gettingstarted/select?wt=json&indent=true&q=%2Bone+%2Bthree"
+curl "http://localhost:8983/solr/gettingstarted/select?wt=json&indent=true&q=%2Btwo+-one"
+
+#)Faceting
+curl "http://localhost:8983/solr/gettingstarted/select?wt=json&indent=true&q=*:*&rows=0&facet=true&facet.field=manu_id_s"
+
+#Range facets
+curl "http://localhost:8983/solr/gettingstarted/select?q=*:*&wt=json&indent=on&rows=0&facet=true&facet.range=price&f.price.facet.range.start=0&f.price.facet.range.end=600&f.price.facet.range.gap=50&facet.range.other=after"
+
+#Pivot facets
+curl "http://localhost:8983/solr/gettingstarted/select?q=*:*&rows=0&wt=json&indent=on&facet=on&facet.pivot=cat,inStock"
+
+#)Spatial
+
+#)Cleanup
+$ bin/solr stop -all ; rm -Rf example/cloud/
+
