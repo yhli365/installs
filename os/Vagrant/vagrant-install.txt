@@ -1,0 +1,60 @@
+
+virtualBox	https://www.virtualbox.org/
+Vagrant		http://www.vagrantup.com/
+box			https://atlas.hashicorp.com/boxes/search [yhli365@126.com]	
+
+#)软件版本
+virtualBox	4.3.12
+vagrant		1.7.2
+box			chef/centos-6.6 A standard CentOS 6.6 x64 base install
+
+#)下载box
+#搜索并获取下载URL
+https://atlas.hashicorp.com/chef/boxes/centos-6.6
+$ vagrant init chef/centos-6.6
+$ vagrant up --provider virtualbox
+(Downloading: https://vagrantcloud.com/chef/boxes/centos-6.6/versions/1.0.0/providers/virtualbox.box)
+#复制到迅雷等工具进行下载
+#下载后文件重命名为virtualbox-chef-centos-6.6-x64.box
+
+#)添加镜像到Vagrant
+$ vagrant box add yhli/centos-6.6 file:///E:/downloads/box/virtualbox-chef-centos-6.6-x64.box
+$ vagrant box list
+yhli/centos-6.6 (virtualbox, 0)
+#box中的镜像文件被放到了：~/.vagrant.d/boxes/，如果在window系统中应该是放到了： C:\Users\当前用户名\.vagrant.d\boxes\目录下。
+
+#)初始化开发环境
+$ cd vbs1 #切换目录
+$ vagrant init yhli/centos-6.6 #初始化
+$ vagrant up #启动环境
+
+#)SSH
+#127.0.0.1:2222 vagrant/vagrant root/vagrant
+$ vagrant ssh  #SSH 登录
+$ cd /vagrant  #切换到开发目录，也就是宿主机上的'vbs1'
+$ su - root
+$ uname -a
+#Windows可以使用客户端工具putty、Xshell4等.
+
+#)常用命令
+$ vagrant init  # 初始化
+$ vagrant up  # 启动虚拟机
+$ vagrant halt  # 关闭虚拟机
+$ vagrant reload  # 重启虚拟机
+$ vagrant ssh  # SSH 至虚拟机
+$ vagrant status  # 查看虚拟机运行状态
+$ vagrant destroy  # 销毁当前虚拟机
+$ vagrant ssh-config # 输出用于ssh连接的一些信息
+$ vagrant plugin list # 查看安装了哪些插件
+
+#)配置虚拟机
+$ vi Vagrantfile
+$ vagrant reload
+
+#)创建Hadoop集群
+$ cd cdh3
+$ vi Vagrantfile
+$ vagrant up
+$ vagrant status
+$ vagrant reload s2
+$ vagrant halt s2
