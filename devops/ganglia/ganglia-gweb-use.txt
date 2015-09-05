@@ -1,0 +1,191 @@
+
+gweb Main
+=============================
+gweb导航方案围绕ganglia的核心概念进行组织：网络、集群和节点。面包屑样式的导航链接使得用户可以从低层视图返回到高层视图。
+网格视图
+集群视图 物理视图
+主机视图 节点视图
+
+
+gweb Search
+=============================
+搜索选项卡使得用户可以快速找到主机和指标。该选项卡具有多重目的：
+--寻找特定指标。尤其是在寻找不常用指标是非常有用。
+--在未知集群的情况快速寻找一台主机。
+具备自动补全功能，结果包括：
+--匹配的主机列表。
+--匹配的指标。
+
+
+gweb Views
+=============================
+有两种创建/修改视图的方法: Web GUI, 使用JSON编程定义
+--使用GUI创建视图，向视图添加指标
+--使用JSON定义视图
+视图以JSON文件的形式存放在conf_dir目录下。视图的文件名必须以view_开头，以.json结束，并且必须唯一。
+$conf['conf_dir'] = "/var/lib/ganglia-web/conf"
+view_test.json
+#验证json
+$ python -m json.tool view_test.json
+
+
+gweb Aggregate Graphs
+=============================
+汇总图表(aggregate graphs)允许用户创建混合不同指标的综合图表，但最低限度是必须提供主机和指标的正则表达式。
+和汇总图表对应的是分解图表(decompose graphs)，通过将每种指标取出放在一张单独的图表中，从而分解汇总图表。
+
+
+gweb Compare Hosts
+=============================
+主机比较特性(Compare Hosts Feature)使得用户可以比较所有匹配指标的主机。它会创建不同主机的每种指标的汇总图表。当用户想要查出某台主机(或某些主机)与其他主机运转有差别的原因，该特性非常有用。
+
+
+gweb Events
+=============================
+事件(event)是用户自定义的叠加在图表上的“垂直标记”，在特定事件发生时为用户提供可视化的提示。
+Ganglia默认将事件以JSON哈希表的形式存放在events.json文件中。
+事件API(Events API)在/var/www/html/ganglia/api/events.php的gweb接口中可以找到。
+------------------------
+键				值
+action			add: 添加新事件；edit: 编辑；remove或delete：删除事件
+start_time		事件的起始时间。可用选项：now（使用当前系统时间）、UNIX时间戳或任意其他格式完好、PHP函数strtotime支持的时间
+end_time		可选，与start_time格式相同
+summary			事件概要，出现在图表图例中
+host_regex		主机正则表达式，如web-|app-
+------------------------
+示例
+从计划任务中添加事件时请执行类似下面的命令：
+curl "http://mygangliahost.com/ganglia/api/events.php? \
+  action=add&start_time=now&\
+  summary=Prod DB Backup&host_regex=db02"
+或
+curl -X POST --data "action=add&start_time=now&\
+  summary=Prod DB Backup&host_regex=db02"
+  http://mygangliahost.com/ganglia/api/events.php
+API将返回JSON编码的状态消息：status = ok或status = error。
+当添加事件时，用户可以获得该时间的event_id，以便用户以后编辑该事件，例如添加end_time。
+
+
+gweb Automatic Rotation
+=============================
+自动循环是面向数据中心管理员的一项特性，可以连续循环指标以帮助工作人员发现早期问题迹象。该特性与视图联合使用，浏览器关闭前指标将一直循环。
+自动循环另一个强大的方面表现为：当用户拥有多个监视器时，可以在不同的监视器上调用不同的视图进行循环。
+
+
+gweb Mobile
+=============================
+Mobile是为移动设备优化的Ganglia Web界面。gweb主机上的/ganglia/mobile.php路径下可以找到移动视图，适用于jQueryMobile工具包支持的任意移动浏览器。
+
+
+自定义复合图表
+=============================
+Ganglia包含若干内置复合图表，例如负荷报告中可以在同一张图表中显示当前负荷、进程个数和CPU个数。
+有两种自定义复合图表的方式：PHP或JSON。
+--通过PHP定义图表的方式更复杂，但是可以完全控制图表的各方面。请参见“PHP报告示例”(http://github.com/ganglia/ganglia-web/blob/master/graph.d/sample_report.php)。
+--对于大多数用例，JSON无疑是配置图表的最简单方式。文件放至gweb系统的graph.d子目录下。文件名必须包含_report.json，否则网络UI不会识别。如load_all_report.json。
+$ python -m json.tool /var/www/html/ganglia/graph.d/load_all_report.json
+JSON报告主要包括两个部分：第一部分是总体报告的配置集合；第二部分是一系列绘图所需的特定数据序列的选项。
+表：图表配置
+-----------------------------
+键				值
+report_name		网络UI使用的报告名称
+title			图表上显示的报告标题
+vertical_label	Y轴描述（可选）
+series			构成图表的指标
+-----------------------------
+表：series选项
+-----------------------------
+键				值
+metric			指标名称，如load_one
+color			6位十六进制颜色编码，如000000代表黑色
+label			指标标签，如Load 1
+type			属性类型，可以是line（线型）或stack（堆叠）
+line_width		如果type设置为line，则可以指定线宽；如果没有指定，则默认为2；如果type设置为stack，即使设置线宽，系统也会忽略
+-----------------------------
+
+
+其他特性
+=============================
+在gweb中还存在若干默认为关闭状态可以调整的特性。
+/var/www/html/ganglia/conf.php
+
+
+认证和授权
+=============================
+Ganglia包含一种简单的认证系统，可以选择性地允许或拒绝用户访问gweb应用的特定部分。我们一般使用Web服务器提供认证，任何Apache认证系统（htpasswd和LDAP等）都能支持。
+
+#配置
+认证系统有3种操作模式：
+$conf['auth_system'] = 'readonly';
+  允许任意用户查看任意资源，但不可以编辑任意内容，该设置为默认设置。
+$conf['auth_system'] = 'disabled';
+  允许任意用户查看或编辑任意资源。
+$conf['auth_system'] = 'enabled';
+  任意用户可以无需登录而查看公共集群。认证用户可以获得高级特权。
+
+如果需要关闭或开启认证，可以在conf.php文件中进行更改。
+
+用户成功认证后，根据用户名和密码将生成一个哈希值，存放在cookie文件中，其他的gweb也可以共用。如果已知密钥，攻击者可能假装为任意用户身份。
+
+用户可以随时更改密码，此时已登录用户需要重新登录。
+
+#开启认证
+开启认证需要两个步骤：
+1. 配置Web服务器，当访问gweb/login.php时需要认证，并且向gweb/login.php提供$_SERVER['REMOTE_USER']变量。
+2. 配置Web服务器以提供$_SERVER['ganglia_secret']。该值是用于通过散列算法加密已认证用户名的密值。
+如果login.php无需认证，用户将看到错误提示消息并无法认证。
+
+--Apache配置示例
+关于Apache上的认证配置的更多信息可以查看http://httpd.apache.org/docs/2.2/howto/auth.html。注意，Apache只需提供认证，授权是由gweb配置提供的。
+下面是Apache配置的一个示例：
+  SetEnv ganglia_secret yourSuperSecretValueGoesHere
+  <Files "login.php">
+    AuthType Basic
+	AuthName "Ganglia Access"
+	AuthUserFile /var/lib/ganglia/htpasswd
+	Require valid-user
+  </Files>
+
+--其他Web服务器
+其他Web服务器，如Nginx和Lighttpd的示例配置可以在gweb wiki上找到。(http://github.com/ganglia/ganglia-web/wiki/Authorization-System)
+
+#访问认证
+默认的访问控制设置有如下属性：
+--访客可以查看所有公共集群。
+--管理员可以查看所有公共和私有集群，并且可以编辑其配置（视图）。
+--访客不能查看私有集群。
+
+其他规则可能按照需求配置，这些配置应该在conf.php中进行。GangliaAcl配置属性基于Zend_Acl属性。更多文档参见http://framework.zend.com/manual/en/zend.acl.html。
+
+注意：在Zend_Acl中用户（user）和分组（group）之间没有内在差别，二者都以角色（role）的形式实现。系统支持ACL规则的分层集合配置。用户或分组的语义是通过将所有用户角色设置为GangliaAcl::GUEST角色的子角色，将所有集群设置为GangliaAcl::ALL的子角色而实现的，如下所示。
+Constants
+-----------------------------
+名称						意义
+GangliaAcl::ALL_CLUSTERS	所有集群都归属于该角色。访客可以对该值进行视图访问
+GangliaAcl::GUEST			所有用户都归属于该角色（用户也可能有其他角色，但是该角色拥有公共集群的全局视图特权）
+GangliaAcl::ADMIN			管理员可以访问私有集群，并且可以编辑每个集群的配置
+GangliaAcl::VIEW			该角色提供所有集群的guest权限，但是不能访问私有集群
+GangliaAcl::EDIT			该权限用于决定用户是否可以更新视图和执行其他任何配置任务
+-----------------------------
+
+动作
+目前只支持两种动作：查看（view）和编辑（edit）。这两种动作基于单机群应用，所以用户可能对所有集群都有查看权限，但是只能对一个集群进行编辑。
+
+#配置示例
+这些配置示例应该在conf.php文件中进行。使用的用户名必须是Apache上任意认证系统提供的用户名。如果想要明确地允许/拒绝对特定集群的访问，用户需要在此详细说明。
+
+本书后面内容中所有示例都假设用户以如下代码开始：
+  $acl = GangliaAcl::getInstance();
+将某个用户设置为管理员：
+  $acl->addRole( 'username', GangliaAcl::ADMIN );
+定义私有集群：
+  $acl->addPrivateCluster( 'clustername' );
+授权特定用户访问一个私有集群：
+  $acl->addPrivateCluster( 'clustername' );
+  $acl->addRole( 'username', GangliaAcl::GUEST );
+  $acl->allow( 'username', 'clustername', GangliaAcl::VIEW );
+授权用户访问并编辑某些集群：
+  $acl->addRole( 'username', GangliaAcl::GUEST );
+  $acl->add( new Zend_Acl_Resource( 'clustername' ), GangliaAcl::ALL_CLUSTERS );
+  $acl->allow( 'username', 'clustername', GangliaAcl::EDIT );
+  

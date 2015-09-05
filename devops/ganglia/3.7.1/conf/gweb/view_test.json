@@ -1,0 +1,19 @@
+{
+"view_name":"test",
+"items":[
+  { "hostname":"yumserver","graph":"cpu_report"},
+  { "hostname":"yumserver","graph":"load_report"},
+  { "aggregate_graph":"true",
+    "host_regex":[
+	  {"regex":"yumserver"},
+	  {"regex":"web[2-7]"}
+	],
+	"metric_regex":[
+	  {"regex":"load_one"}
+	],
+	"graph_type":"stack",
+	"title":"Test Web Servers load"
+  }
+],
+"view_type":"standard"
+}

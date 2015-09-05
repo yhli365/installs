@@ -1,0 +1,224 @@
+Version
+=============================
+#Ganglia(http://ganglia.info/)
+ganglia-3.7.1.tar.gz
+ganglia-web-3.6.2.tar.gz
+
+#依赖(libconfuse,rrdtool)
+http://www.nongnu.org/confuse/ [https://github.com/martinh/libconfuse]
+http://oss.oetiker.ch/rrdtool/
+
+
+Yum Client
+=============================
+[root@yum ~]# vi /etc/yum.repos.d/centos-yummy.repo
+[yummy]
+name=Yummy Repo
+baseurl=ftp://yumserver/yummy/centos$releasever/
+gpgcheck=0
+enabled=1
+
+[c6-my]
+name=CentOS-$releasever-$basearch
+baseurl=ftp://yumserver/yum/CentOS$releasever
+gpgcheck=0
+enabled=1
+# mount -t iso9660 -o loop CentOS-6.5-x86_64-bin-DVD1.iso /var/ftp/yum/CentOS6
+# mount -t iso9660 -o loop /dev/cdrom /var/ftp/yum/CentOS6
+# unmount /var/ftp/yum/CentOS6
+
+[root@yum ~]# yum clean all
+
+
+Yum Server
+=============================
+#查看系统版本
+[root@yum ~]# lsb_release -a
+[root@yum ~]# yum install createrepo
+
+#centos6
+[root@yum ~]# mkdir -p /var/ftp/yummy/centos6
+上传依赖包: ganglia/centos6
+[root@yum ~]# createrepo /var/ftp/yummy/centos6
+
+
+依赖包安装
+=============================
+#安装依赖(CentOS)
+rpm -q pcre-devel apr-devel httpd
+
+yum install pcre-devel
+yum install apr-devel
+yum install httpd
+
+#安装依赖(libconfuse)
+下载RPM包 http://rpm.pbone.net/
+libconfuse-devel
+libconfuse
+
+yum info libconfuse-devel
+yum install libconfuse-devel
+
+#安装依赖(rrdtool)
+rrdtool-devel
+rrdtool
+
+yum info rrdtool-devel
+yum install rrdtool-devel
+
+
+Build
+=============================
+#RPM编译环境搭建
+[root@yum ~]# yum install rpm-build
+[root@yum ~]# rpmbuild --version
+RPM version 4.8.0
+[root@yum ~]# mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCES,PECS,RPMS}}
+[root@yum ~]# echo "%_topdir%(echo $HOME)/rpmbuild" > ~/.rpmmacros
+
+#ganglia之RPM包制作
+[root@yum ~]# mkdir y;cd y
+[root@yum y]# rpmbuild -tb ganglia-3.7.1.tar.gz
+[root@yum y]# ll ~/rpmbuild/RPMS/x86_64/ | grep ganglia
+-rw-r--r-- 1 root root 602505 Aug 31 16:08 ganglia-debuginfo-3.7.1-1.x86_64.rpm
+-rw-r--r-- 1 root root  54844 Aug 31 16:08 ganglia-devel-3.7.1-1.x86_64.rpm
+-rw-r--r-- 1 root root  61751 Aug 31 16:08 ganglia-gmetad-3.7.1-1.x86_64.rpm
+-rw-r--r-- 1 root root 171349 Aug 31 16:08 ganglia-gmond-3.7.1-1.x86_64.rpm
+-rw-r--r-- 1 root root 157402 Aug 31 16:08 ganglia-gmond-modules-python-3.7.1-1.x86_64.rpm
+-rw-r--r-- 1 root root  47486 Aug 31 16:08 libganglia-3.7.1-1.x86_64.rpm
+
+#ganglia-web之RPM包制作
+[root@yum y]# cp /etc/httpd/conf/httpd.conf apache.conf
+[root@yum y]# rpmbuild -tb ganglia-web-3.6.2.tar.gz
+[root@yum y]# ll ~/rpmbuild/RPMS/noarch/ | grep ganglia
+-rw-r--r-- 1 root root 3619257 Aug 31 16:58 ganglia-web-3.6.2-1.noarch.rpm
+
+#更新YUM仓库
+[root@yum ~]# cd /var/ftp/yummy/centos6
+[root@yum centos6]# rm -rf ganglia-*.rpm
+[root@yum centos6]# rm -rf libganglia-*.rpm
+[root@yum centos6]# ll | grep ganglia
+[root@yum centos6]# cp -ru ~/rpmbuild/RPMS/x86_64/*ganglia*.rpm .
+[root@yum centos6]# cp -ru ~/rpmbuild/RPMS/noarch/*ganglia*.rpm .
+[root@yum centos6]# createrepo /var/ftp/yummy/centos6
+
+
+主节点部署gmetad
+=============================
+#安装
+yum clean all
+yum info httpd
+yum info ganglia*
+
+[yum install ganglia* -y]
+yum install ganglia-gmond -y
+yum install ganglia-gmetad -y
+yum install ganglia-web -y
+
+yum install httpd -y
+
+ll /etc/ganglia
+ll /var/lib/ganglia
+ll /var/lib/ganglia-web
+ll /var/www/html/ganglia
+ll /var/lib/ganglia/rrds
+
+#配置
+vi /etc/ganglia/gmetad.conf
+ 44) data_source "hbx1" localhost
+
+vi /etc/ganglia/gmond.conf
+  9) 将mute的值设成no
+ 10) 将deaf的值设成no
+ 21) 将send_metadata_interval的值设成30
+ 30) 将name的值设成上面my cluster更改之后的值
+ 31) 将owner的值设成nobody
+ 50) 将mcast_join = 239.2.11.71改成 host = 本机的IP地址(192.168.161.2)
+ 57) 将mcast_join = 239.2.11.71删除
+ 59) 将bind = 239.2.11.71删除
+ 60) 将retry_bind = true删除
+ 
+#配置apache
+ll /etc/httpd/conf.d
+lrwxrwxrwx 1 root root  28 Aug 31 18:06 ganglia-web.conf -> /etc/ganglia-web/apache.conf
+rm /etc/httpd/conf.d/ganglia-web.conf
+
+chown -R apache:apache /var/lib/ganglia-web/
+chown -R nobody:nobody /var/lib/ganglia/
+
+#查看PHP版本
+[root@yum ~]# php -v
+PHP 5.3.3 (cli)
+
+#启动服务
+service gmond restart
+service gmetad restart
+service httpd restart
+
+chkconfig --add gmond
+chkconfig --add gmetad
+chkconfig --add httpd
+chkconfig gmond on
+chkconfig gmetad on
+chkconfig httpd on
+chkconfig --list | grep gmetad
+
+#运行日志
+ll /var/lib/ganglia/rrds/
+
+tail -200f /var/log/httpd/access_log
+tail -200f /var/log/httpd/error_log
+
+#卸载
+yum remove ganglia-gmond -y
+yum remove ganglia-gmetad -y
+yum remove ganglia-web -y
+
+
+各监控节点部署gmond
+=============================
+#安装
+yum clean all
+yum info ganglia-gmond
+
+yum install ganglia-gmond -y
+
+ll /etc/ganglia
+ll /var/lib/ganglia
+
+#配置
+vi /etc/ganglia/gmond.conf
+  9) 将mute的值设成no
+ 10) 将deaf的值设成yes
+ 21) 将send_metadata_interval的值设成30
+ 30) 将name的值设成上面my cluster更改之后的值，如"nmst1hbx"
+ 31) 将owner的值设成"nobody"
+ 50) 将mcast_join = 239.2.11.71改成 host = ganglia主节点的ip地址(如"192.168.161.2")
+
+#启动服务
+service gmond restart
+
+chkconfig --add gmond
+chkconfig gmond on
+chkconfig --list | grep gmond
+
+#卸载
+yum remove ganglia* -y
+
+
+Web服务
+=============================
+http://192.168.161.2/ganglia/
+
+
+PSSH
+=============================
+pssh -p 1 -h ~/hadoop/conf/slaves -P "lsb_release -a | grep Description"
+
+pscp -A -l root -h ~/hadoop/conf/slaves /etc/yum.repos.d/centos-test.repo /etc/yum.repos.d/centos-test.repo
+pssh -A -l root -h ~/hadoop/conf/slaves -P "yum clean all"
+pssh -A -l root -h ~/hadoop/conf/slaves "yum install ganglia-gmond -y"
+pscp -A -l root -h ~/hadoop/conf/slaves /etc/ganglia/gmond.conf /etc/ganglia/gmond.conf
+
+pssh -A -l root -h ~/hadoop/conf/slaves -P "service gmond restart"
+
