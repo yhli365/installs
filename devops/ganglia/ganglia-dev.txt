@@ -1,0 +1,19 @@
+Python Module
+=============================
+#目录
+cd /etc/ganglia/conf.d/
+vi modpython.conf
+vi example.pyconf.disabled
+vi mem_stats.pyconf
+
+#测试
+cd /usr/lib64/ganglia/python_modules
+python example.py
+python mem_stats.py
+
+gmond
+=============================
+#调试命令
+gmond -m
+指定-m参数并不会启动一个新的gmond实例，但是该参数会指示gmond加载所有已知模块，读取相应配置文件，调用每种模块的metric_init()函数，然后在控制台上显示所有定义的指标。
+
