@@ -1,0 +1,135 @@
+Ganglia系统监控(Monitoring with Ganglia)
+ISBN: 978-7-111-43674-4
+
+第6章 Ganglia故障排查与处理
+
+
+有用的资源
+=============================
+-- 发布说明 http://ganglia.info
+-- 帮助页
+-- Wiki http://wiki.ganglia.info
+-- IRC http://freenode.net #ganglia
+-- 邮件列表 (普通用户和开发者用户)
+-- bug tracker http://bugs.ganglia.info
+
+
+对监控系统进行监控
+=============================
+-- 在gmond config文件中启用mod_gstatus。至少可以报告正在运行的ganglia版本，有助于发现还未更新的代理。
+-- 对于用作gmond数据包汇聚器的节点，可以考虑开启multicpu模块。gmond进程是单线程的，multicpu模块有助于识别总是处于满负荷状态的处理器。
+-- 对于gmetad服务器，可以考虑安装并开启mod_io模块来监控储存RRD文件的磁盘IO水平，同时也可以监控这些磁盘的文件系统容量。
+-- 考虑为本节提到的指标设置预警阀值。
+
+
+常见故障排查机制及工具
+=============================
+-- netcat和telnet
+gmond和gmetad都是使用XML语言，通过TCP套接字进行通信的。检测守护进程是否正常工作最简单的方法是对XML数据流进行测试，通过对守候进程所监听的端口（默认情况下，gmond使用8649端口，非交互式gmetad使用8651端口，交互式gmetad使用8652端口）运行netcat即可。如果netcat不可用，可以使用telnet工具，但是它的运行结果无法导出供进一步分析使用。
+下面是针对gmetad端口8651的几个常用netcat/grep命令，这些命令也适用于gmond实例的8649端口：
+# observe a list of CLUSTER tags only:
+$ netcat localhost 8651 | grep ^.C
+# observe a list of CLUSTER and HOST tags:
+$ netcat localhost 8651 | grep ^.[CH]
+# show all hosts and show which hosts have the multicpu module active:
+$ netcat localhost 8651 | egrep '^.H|^.M.*NAME=.multicpu_user'
+-- 日志
+tail -200f /var/log/httpd/access_log
+tail -200f /var/log/httpd/error_log
+
+
+在前台/调试模式下运行
+=============================
+-- 对于守护进程(gmond、gmetad)，可通过在命令行指定-d来触发调试模式。当调试值大于0时，守护进行将会再前台启动。
+$ gmond -d 10 > /tmp/gmond.log 2>&1
+-- 对于Web前端，可以通过在URL地址末尾添加&debug=n来指定调试模式，这里"n"可以是大于等于0的任意数据。(&debug=3)
+-- strace(Solaris系统中的truss)，可以使用户连接到正在运行的进程，并拦截进程执行时的系统调用和所接收信号。
+-- valgrind：内存泄露和内存损坏
+-- iostat: 检查gmetad的IOPS需求
+#查看dm-14逻辑卷
+$ iostat -k 1 -x dm-14
+-- 重启守护进程
+-- gstat
+gstat是与Ganglia配套的一款精致实用的命令行程序，该程序可以帮助用户快速确定一些事情，例如哪些主机崩溃了，每台主机拥有多少CPU内核，各自的负荷又怎样。
+#不带任何选项，将看到有关集群的快速摘要：
+$ gstat
+#可指定选项-a1来获得更多细节
+$ gstat -a1
+#如果获得同样的列表，但是使用主机的IP地址进行标识，可使用选项-an1
+$ gstat -a1n
+#如果只想列出故障主机，可使用-d选项
+$ gstat -d
+#默认情况下，gstat尝试与本地主机上运行的gmond进行通信，但是可以通过指定选项-i来指定另一个运行的gmond
+$ gstat -i 192.168.160.2
+
+
+常见的部署问题
+=============================
+-- 反向DNS查找 /etc/hosts
+-- 时间同步 NTP
+-- 将Ganglia V3.1之前版本与当前版本混合使用
+gmond V3.1及以上版本和gmond V3.0及以下版本在同一个集群内不能混合
+-- SELinux和防火墙
+
+
+典型问题及解决步骤
+=============================
+-- Web问题
+
+#浏览器显示空白页
+查看Apache访问日志
+查看Apache错误日志
+尝试在URL地址的末尾添加?debug=3，然后使用tail -f查看错误日志
+
+#浏览器显示带有错误信息的空白页
+查看Web服务器日志及syslog(使用grep检测任何与gmetad相关的错误)
+
+#集群视图显示大写的主机名，链接不可用
+Ganglia新版本提供了一个配置选项用于保留旧版本区分大小写的特性。(gmetad.conf或config.php)
+
+#主机出现在错误集群中
+gmond集群通过udp_send_channel定义的端口进行区分，而不是通过集群名称进行区分。
+
+#主机在网络中多次出现，而且主机名（或IP地址）有不同的变化
+可以使用bind_hostname参数将其锁定到正确的接口。
+
+#某些主机显示简称，而非全称域名（FQDN）
+考虑在/etc/hosts文件中对每个IP地址都添加其全称域名和简称。
+
+#Web界面中有一个或多个主机没有显示
+netcat和telnet
+如果使用多播，可以查看数据包发送的接口(tcpdump)。
+
+#UDP聚合器重启后主机不显示或数据不更新
+需要确认gmond.conf文件中的send_metadata_interval是否设为非零值。
+
+#故障/已更换的主机依然出现在网络中
+在单播模式下，只需要重启聚合器即可；然而对于多播节点，则需要重启集群中的所有节点，并重启gmetad，通过这一步骤可以将故障主机从系统中清除。
+另一种选择是将host_dmax设置为非零值，这样在一定时间后（以秒为单位）系统将自动清除故障节点。单播模式下，该值只需在聚合器中进行设置；多播模式下，该值需要在所有的gmond配置中进行设置。
+
+#CPU计数错误或其他指标丢失
+尝试重新加载这些主机的gmond；如果仍不奏效，可以将所有守护进程都进行系统性重启。
+
+#图表中的字体太大或太小
+图表默认是由RRDtool生成的。从RRDtool v1.3开始，使用fontconfig可以访问系统字体。
+
+#图表中的峰值
+如果确定这些峰值不正常，可以使用removespikes.pl脚本将其从RRDtool的数据库中移除。
+
+#不显示自定义指标
+gmond一般是由非特权用户执行的，比如nobody或ganglia，这些用户的访问权限是受限的。使用-m参数运行gmond测试。
+
+#自定义指标的值被删除
+指标值默认以32位字节的结构存储，任何超过此字节的值都会被删除。
+
+#图表中随机地出现一些缺口
+图表中随机出现一些缺口通常是某些部件负荷过重的标志。如果查证不存在其他网络拥堵问题，那么gmond发送的UDP数据包可能是被拥堵的路由器或交换机丢弃了。
+
+#部分主机在集群中完全消失
+确认主机已经开启，并且gmond进程正在运行中。gmond调试模式运行。
+使用数据包探测工具（tcpdump或wireshark）来验证主机是否正在传输数据包。
+尝试重启gmond，这将使gmond重新传输元数据。
+如果使用UDP单播，可以使用netcat查看集群的UDP汇聚器：是否在监听主机？
+如果使用多播，可以使用netcat检查集群中某台非单发主机的XML：是否含有关于消失主机的XML信息？
+
+
