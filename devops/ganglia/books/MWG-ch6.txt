@@ -24,15 +24,16 @@ ISBN: 978-7-111-43674-4
 
 常见故障排查机制及工具
 =============================
--- netcat和telnet
+-- netcat(centos:nc)和telnet
 gmond和gmetad都是使用XML语言，通过TCP套接字进行通信的。检测守护进程是否正常工作最简单的方法是对XML数据流进行测试，通过对守候进程所监听的端口（默认情况下，gmond使用8649端口，非交互式gmetad使用8651端口，交互式gmetad使用8652端口）运行netcat即可。如果netcat不可用，可以使用telnet工具，但是它的运行结果无法导出供进一步分析使用。
 下面是针对gmetad端口8651的几个常用netcat/grep命令，这些命令也适用于gmond实例的8649端口：
+netcat(centos:nc)
 # observe a list of CLUSTER tags only:
-$ netcat localhost 8651 | grep ^.C
+$ nc localhost 8651 | grep ^.C
 # observe a list of CLUSTER and HOST tags:
-$ netcat localhost 8651 | grep ^.[CH]
+$ nc localhost 8651 | grep ^.[CH]
 # show all hosts and show which hosts have the multicpu module active:
-$ netcat localhost 8651 | egrep '^.H|^.M.*NAME=.multicpu_user'
+$ nc localhost 8651 | egrep '^.H|^.M.*NAME=.multicpu_user'
 -- 日志
 tail -200f /var/log/httpd/access_log
 tail -200f /var/log/httpd/error_log
@@ -42,12 +43,14 @@ tail -200f /var/log/httpd/error_log
 =============================
 -- 对于守护进程(gmond、gmetad)，可通过在命令行指定-d来触发调试模式。当调试值大于0时，守护进行将会再前台启动。
 $ gmond -d 10 > /tmp/gmond.log 2>&1
+$ gmetad -d 10 > /tmp/gmetad.log 2>&1
 -- 对于Web前端，可以通过在URL地址末尾添加&debug=n来指定调试模式，这里"n"可以是大于等于0的任意数据。(&debug=3)
 -- strace(Solaris系统中的truss)，可以使用户连接到正在运行的进程，并拦截进程执行时的系统调用和所接收信号。
 -- valgrind：内存泄露和内存损坏
 -- iostat: 检查gmetad的IOPS需求
 #查看dm-14逻辑卷
 $ iostat -k 1 -x dm-14
+如果%util的取值接近100%，表示块设备已经饱和。在这种情况下，有必要减少工作负荷或增加块设备的I/O容量。(rrdcached)
 -- 重启守护进程
 -- gstat
 gstat是与Ganglia配套的一款精致实用的命令行程序，该程序可以帮助用户快速确定一些事情，例如哪些主机崩溃了，每台主机拥有多少CPU内核，各自的负荷又怎样。

@@ -43,7 +43,8 @@ $conf['default_metric'] = "load_one";
 # ----------[初始折叠指标组：当点击主机视图时，默认展开所有指标组]
 # The following property controls whether the graphs contained in metric
 # groups are initially displayed or collapsed
-$conf['metric_groups_initially_collapsed'] = false;
+# $conf['metric_groups_initially_collapsed'] = false;
+$conf['metric_groups_initially_collapsed'] = true;
 
 # ----------[默认刷新周期：主机视图和集群视图每5分钟(300秒)刷新一次。]
 # 
@@ -58,5 +59,14 @@ $conf['default_refresh'] = 300;
 #
 $conf['strip_domainname'] = false;
 
+# ----------[启用rrdcached]
+# If rrdcached is being used, this argument must specify the 
+# socket to use.
+#
+# ganglia-web only requires, and should use, the low-privilege socket
+# created with the -L option to rrdcached.  gmetad requires, and must use,
+# the fully privileged socket created with the -l option to rrdcached.
+# $conf['rrdcached_socket'] = "";
+$conf['rrdcached_socket'] = "unix:/var/run/rrdcached/rrdcached.limited.sock";
 
 ?>

@@ -144,7 +144,7 @@ lrwxrwxrwx 1 root root  28 Aug 31 18:06 ganglia-web.conf -> /etc/ganglia-web/apa
 rm /etc/httpd/conf.d/ganglia-web.conf
 
 chown -R apache:apache /var/lib/ganglia-web/
-chown -R nobody:nobody /var/lib/ganglia/
+chown -R nobody:nobody /var/lib/ganglia/rrds
 
 #查看PHP版本
 [root@yum ~]# php -v
@@ -166,6 +166,7 @@ chkconfig --list | grep gmetad
 #运行日志
 ll /var/lib/ganglia/rrds/
 
+tail -200f /var/log/messages
 tail -200f /var/log/httpd/access_log
 tail -200f /var/log/httpd/error_log
 
@@ -174,6 +175,50 @@ yum remove ganglia-gmond -y
 yum remove ganglia-gmetad -y
 yum remove ganglia-web -y
 
+#优化1: 启用rrdcached
+-----------------------------
+#1.配置rrdcached http://linux.die.net/man/1/rrdcached
+-- Your apache web server runs with owner and group set to 'apache'.
+-- Your RRD files are stored in /var/lib/ganglia/rrds (default location) with owner and group set to 'nobody'.
+$ vi /etc/sysconfig/rrdcached
+OPTIONS="-p /var/run/rrdcached/rrdcached.pid -s nobody -m 664 -l unix:/var/run/rrdcached/rrdcached.sock \
+      -s apache -m 777 -P FLUSH,STATS,HELP -l unix:/var/run/rrdcached/rrdcached.limited.sock \
+	  -b /var/lib/ganglia/rrds -B -w 300 -z 300"
+RRDC_USER=root
+$ chmod +x /etc/init.d/rrdcached
+$ rm -rf /var/run/rrdcached
+$ ll /var/run/rrdcached/
+
+#2.配置gmetad
+$ vi /etc/sysconfig/gmetad
+RRDCACHED_ADDRESS="unix:/var/run/rrdcached/rrdcached.sock"
+
+#3.配置gweb
+$ vi /var/www/html/ganglia/conf.php
+<?php
+$conf['metric_groups_initially_collapsed'] = true;
+$conf['rrdcached_socket'] = "unix:/var/run/rrdcached/rrdcached.limited.sock";
+?>
+
+#4.重启服务
+service httpd stop
+service gmetad stop
+service rrdcached stop
+
+service rrdcached start
+service gmetad start
+service httpd start
+
+tail -200f /var/log/messages | grep rrd
+
+#5.访问gweb一切正常
+#6.IOPS压力降低: iostat -k 2 -x /dev/sda3
+
+#优化2: 在RAM磁盘上存储RRD文件
+-----------------------------
+$ vi /etc/fstab
+tmpfs /var/lib/ganglia/rrds tmpfs size=8g 0 0
+$ mount -a
 
 各监控节点部署gmond
 =============================
