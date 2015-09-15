@@ -134,5 +134,48 @@ gmond一般是由非特权用户执行的，比如nobody或ganglia，这些用户的访问权限是受限的。
 尝试重启gmond，这将使gmond重新传输元数据。
 如果使用UDP单播，可以使用netcat查看集群的UDP汇聚器：是否在监听主机？
 如果使用多播，可以使用netcat检查集群中某台非单发主机的XML：是否含有关于消失主机的XML信息？
+使用netcat检查gmetad的XML信息：是否含有关于消失主机的XML信息？
+如果在/var/lib/ganglia/rrds路径下存在RRD文件，请确认没有大小为0的文件。如果文件系统已满，那么可能这些文件创建时大小为0.
 
+#gmetad分层与联合：在网络上不显示部分网格
+查看每个gmetad.conf文件中的trusted_host设置。通过在gmetad主机之间运行netcat可以测试ACL。要确保汇聚网格的gmetad可以正确轮询低层的gmetad端口：端口8651，而非8649或8652。
+
+-- gmetad问题
+
+#创建空RRD文件（大小为0）
+该问题通常发生在文件系统已满的情形下。
+
+#gmetad启动时间长
+如果网络规模很大，这可能是可扩展性的问题。
+
+#RRD写入时的gmetad分段故障
+堆栈跟踪或strace输出表明gmetad当时正在进行RRD文件的写入操作。可能是由于RRDtool版本存在缺陷引起。
+
+#gmetad不能轮询data_source中定义的全部节点
+在gmetad.conf文件中data_source定义一个集群中的多个节点，然后当第一个节点发生故障时，gmetad并不会自动进行故障切换。写个定时任务重启gmetad。
+
+#在gmetad.conf文件中修改了RRA定义，但是RRD文件中没有变化
+只有在创建新RRD文件时才会使用gmetad.conf文件中的RRA定义。如果RRA的定义发生了变化--例如增加了数据的保存时间--gmetad不会将其运用到已存在的RRD文件。
+如果需要对已存在的RRD文件的数据进行处理，可以采用两种方法：
+1.存档旧的RRD文件，然后gmetad根据已更新的RRA定义创建新RRD文件。
+2.使用rrddump将已存在的RRD文件转储为XML格式，并指示其遵守新的RRA定义，然后使用rrdrestore将其导回RRD文件中。
+
+-- rrdcached问题
+使用rrdcached时，最常见的错误与系统允许打开文件或文件描述符的数量有关。可以使用ulimit命令来增加rrdcached进程允许打开文件或文件描述符的数量。rrdcached进程必须可以同时对所有指标打开所有RRD文件。
+
+-- gmond问题
+
+#本地主机地址引起gmond启动失败
+当bind_hostname=true时，gmond将尝试把主机名和IP地址进行绑定。
+在部分主机上，/etc/hosts文件包含将主机名映射到本地主机地址（127.0.0.1）的入口。在这种情况下，gmond将出现故障。可以尝试修复主机文件。
+
+#gmond占用大量RAM
+gmond占用大量RAM并不一定是内存泄漏的问题。如果gmond使用的存储空间达到甚至超过2GB，然后gmond崩溃，这可能是内存泄漏或者向gmond发送指标的主机数量过于庞大，也可能是拒绝服务攻击（某人发送随机指标以填满内存）的标志。
+如果gmond占用的存储空间很多（大于100MB），但是比较稳定，那么很可能就是正常工作状态下，维持gmond从集群其他节点接收所有指标状态信息所需的存储空间。
+
+#启动阶段gmond未正常启动
+确认已安装init脚本且bit_set可执行；确认run-level状态下，/etc/rcX.d目录中存在symlink；确认在gmond的init脚本运行前，主机已有IP地址。配置选项：retry_bind可以让gmond等待IP地址（DHCP动态IP），而不会因为没有IP地址而中断启动。
+
+#UDP接收到运行gmond的主机的缓存错误
+在UDP收到某台运行gmond的主机的缓存错误或丢弃的数据包时，用户可能会发现，gmond本身就是肇事者。可以检查目录/proc/net/udp，确认gmond进程丢弃了多少数据包。可以通过增加UDP的接收缓存容量（udp_recv_channel.buffer）的办法解决gmond丢弃数据包的问题。如果这个办法不奏效，gmond进程仍然处于满负荷状态（CPU内核使用率为100%），可以考虑降低集群中所有gmond进程发送指标数据包的速率，或者将该集群拆分为多个集群。
 

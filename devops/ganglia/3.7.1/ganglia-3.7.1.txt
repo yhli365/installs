@@ -217,7 +217,7 @@ tail -200f /var/log/messages | grep rrd
 #优化2: 在RAM磁盘上存储RRD文件
 -----------------------------
 $ vi /etc/fstab
-tmpfs /var/lib/ganglia/rrds tmpfs size=8g 0 0
+tmpfs /var/lib/ganglia/rrds tmpfs defaults,size=8g 0 0
 $ mount -a
 
 各监控节点部署gmond
