@@ -1,0 +1,32 @@
+dnsmasq
+=============================
+http://www.thekelleys.org.uk/dnsmasq/doc.html
+http://www.thekelleys.org.uk/dnsmasq/
+
+Install by code
+=============================
+- dnsmasq-2.75.tar.gz
+[root@yum ~]# tar -xzf dnsmasq-2.75.tar.gz 
+[root@yum ~]# cd dnsmasq-2.75
+[root@yum dnsmasq-2.75]# make clean
+[root@yum dnsmasq-2.75]# make install
+[root@yum dnsmasq-2.75]# ll /usr/local/sbin/dnsmasq
+[root@yum dnsmasq-2.75]# cp dnsmasq.conf.example /etc/dnsmasq.conf
+
+- config
+[root@yum ~]# vi /etc/dnsmasq.conf
+addn-hosts=/etc/addion_hosts
+cache-size=150
+
+[root@yum ~]# vi /etc/addion_hosts
+15.44.6.26		testhost
+
+- start
+[root@yum ~]# dnsmasq
+[root@yum ~]# netstat -tunlp|grep 53
+[root@yum ~]# ps -aux | grep dnsmasq
+
+- test
+[root@yum ~]# dig testhost
+[root@yum ~]# dig www.baidu.com
+
