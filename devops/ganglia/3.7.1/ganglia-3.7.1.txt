@@ -125,7 +125,8 @@ ll /var/lib/ganglia/rrds
 
 #配置
 vi /etc/ganglia/gmetad.conf
- 44) data_source "hbx1" localhost
+ 44) data_source "nmst1hbx" localhost /*每一行data_source描述一个gmetad收集信息的gmond集群或gmetad网格。*/
+128) rrd_rootdir "/var/lib/ganglia/rrds" /*指定RRD文件在本地文件系统存储的基本目录。*/
 
 vi /etc/ganglia/gmond.conf
   9) 将mute的值设成no
@@ -137,6 +138,34 @@ vi /etc/ganglia/gmond.conf
  57) 将mcast_join = 239.2.11.71删除
  59) 将bind = 239.2.11.71删除
  60) 将retry_bind = true删除
+
+globals {
+  mute = no /*单收，当值为true时，gmond将不能发送数据，但仍然会响应诸如gmetad的外部轮询器。*/
+  deaf = no /*当值为true时，gmond将不能接收数据*/
+  host_dmax = 86400 /*秒，dmax是delete max的缩写。如果为正值, 当gmond在host_dmax秒内接收不到某台主机的数据，gmond将删除该主机。*/
+  host_tmax = 20 /*秒，tmax是timeout max的缩写。代表gmond等待一台主机更新的最长时间。因为消息可能在网络中丢失，所以如果在4倍的host_tmax时间内接收不到某台主机的任何消息，gmond就认为该主机已经崩溃。*/
+  cleanup_threshold = 300 /*秒，gmond清除过期数据的最小时间间隔。*/
+  send_metadata_interval = 60 /*秒，设置gmond两次发送元数据包的时间间隔。在单播模式下必须设置。*/
+}
+
+cluster {
+  name = "nmst1hbx" /*设置gmond集群名称，和gmetad中data_source一致。*/
+  owner = "nobody"
+}
+
+udp_send_channel {
+  #mcast_join = 239.2.11.71 /*多播设置*/
+  host = 192.168.161.2 /*单播设置本机的IP地址*/
+  port = 8649
+}
+
+udp_recv_channel {
+  #mcast_join = 239.2.11.71 /*多播设置*/
+  port = 8649
+  #bind = 239.2.11.71 /*IP；可选；多播或单播；指定时gmond将捆绑到指定的本地地址。*/
+  retry_bind = true
+  #buffer = 10485760 /*UDP缓存区大小*/
+}
  
 #配置apache
 ll /etc/httpd/conf.d
@@ -239,6 +268,22 @@ vi /etc/ganglia/gmond.conf
  30) 将name的值设成上面my cluster更改之后的值，如"nmst1hbx"
  31) 将owner的值设成"nobody"
  50) 将mcast_join = 239.2.11.71改成 host = ganglia主节点的ip地址(如"192.168.161.2")
+
+globals {
+  mute = no
+  deaf = yes
+  send_metadata_interval = 30 /*secs */
+}
+
+cluster {
+  name = "nmst1hbx"
+  owner = "nobody"
+}
+
+udp_send_channel {
+  host = 192.168.161.2 #mcast_join = 239.2.11.71
+  port = 8649
+}
 
 #启动服务
 service gmond restart
