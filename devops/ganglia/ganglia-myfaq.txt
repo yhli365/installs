@@ -29,7 +29,11 @@ in /var/www/html/ganglia/eval_conf.php on line 126
 [root@yum ~]# tail -200f /var/log/httpd/error_log
 [Tue Sep 01 09:53:20 2015] [error] [client 192.168.170.173] PHP Fatal error:  Call to undefined function filter_input() in /var/www/html/ganglia/header.php on line 289, referer: http://192.168.161.2/ganglia/
 --------------
+屏蔽相关行
 
+[Fri Oct 09 20:45:31 2015] [error] [client 192.168.170.173] PHP Fatal error:  Call to undefined function filter_input() in /var/www/html/ganglia/footer.php on line 6
+--------------
+屏蔽相关行
 
 安装依赖(rrdtool)编译方式
 =============================

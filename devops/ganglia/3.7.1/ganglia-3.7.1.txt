@@ -180,9 +180,9 @@ chown -R nobody:nobody /var/lib/ganglia/rrds
 PHP 5.3.3 (cli)
 
 #启动服务
-service gmond restart
 service gmetad restart
 service httpd restart
+service gmond restart
 
 chkconfig --add gmond
 chkconfig --add gmetad
