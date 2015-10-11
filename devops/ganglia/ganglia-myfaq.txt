@@ -9,6 +9,49 @@ Books
 出版：2013-09-01
 
 
+检查数据流
+=============================
+--检查gmond是否有数据发送过来
+$ nc localhost 8649 (telnet localhost 8649 )
+看是否有xml数据返回，没有就是gmond的问题；8649是默认端口
+
+--检查gmetad
+$ nc localhost 8651 | grep ^.C
+$ nc localhost 8651 | grep ^.[CH]
+$ nc localhost 8651 | egrep '^.H|^.M.*NAME="load_one"'
+
+--使用RRDTool检查数据
+$ ll /var/lib/ganglia/rrds/
+$ ll /usr/bin/rrdtool
+#查看文件结构信息
+$ rrdtool info load_one.rrd
+#查看最近一次更新
+$ rrdtool last load_one.rrd |xargs -i date -d '@{}'
+$ rrdtool lastupdate load_one.rrd
+#查看第一次更新
+$ rrdtool first load_one.rrd |xargs -i date -d '@{}'
+$ rrdtool first load_one.rrd --rraindex 1 |xargs -i date -d '@{}'
+#查看一下RRD数据库更新的数据
+$ rrdtool fetch load_one.rrd AVERAGE --start '-1200' --end N //过去20分钟的时间
+#绘图
+--start '-3600' --end N // 过去一小时的时间
+--width 385 --height 190 // 图片大小
+--title 'Load last hour' --vertical-label 'Loads' // 标题
+--upper-limit 20 --lower-limit 0 // 上下限
+$ rrdtool graph /tmp/load_one.png \
+--start '-3600' --end N \
+--width 385 --height 190 \
+--title 'Load last hour' --vertical-label 'Loads' \
+--upper-limit 20 --lower-limit 0 \
+DEF:myload=load_one.rrd:sum:AVERAGE \
+LINE2:myload#FF0000
+
+--检查gweb
+对于Web前端，可以通过在URL地址末尾添加&debug=n(3)来指定调试模式
+http://15.8.64.24/ganglia/?debug=3
+http://15.8.64.24/ganglia/graph.php?m=load_one&z=small&c=hbx1&h=bjxx5hdm0&l=e2ecff&v=0.09&r=hour&su=1&st=1444545454&x=0.35&n=0&vl=+&debug=3
+
+
 错误处理
 =============================
 #gweb访问页面报错如下
@@ -29,11 +72,17 @@ in /var/www/html/ganglia/eval_conf.php on line 126
 [root@yum ~]# tail -200f /var/log/httpd/error_log
 [Tue Sep 01 09:53:20 2015] [error] [client 192.168.170.173] PHP Fatal error:  Call to undefined function filter_input() in /var/www/html/ganglia/header.php on line 289, referer: http://192.168.161.2/ganglia/
 --------------
-屏蔽相关行
+filter_input() 函数不支持，需升级php或屏蔽相关行
 
 [Fri Oct 09 20:45:31 2015] [error] [client 192.168.170.173] PHP Fatal error:  Call to undefined function filter_input() in /var/www/html/ganglia/footer.php on line 6
 --------------
-屏蔽相关行
+filter_input() 函数不支持，需升级php或屏蔽相关行
+
+#web页面的metric不能显示，图片是叉叉，其他能正常显示，另外在apache的error日志里会报：
+ERROR: invalid rpn expression in: 0
+--------------
+
+
 
 安装依赖(rrdtool)编译方式
 =============================

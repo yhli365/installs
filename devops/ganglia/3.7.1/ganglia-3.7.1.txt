@@ -138,14 +138,14 @@ vi /etc/ganglia/gmond.conf
  57) 将mcast_join = 239.2.11.71删除
  59) 将bind = 239.2.11.71删除
  60) 将retry_bind = true删除
-
+具体如下：
 globals {
   mute = no /*单收，当值为true时，gmond将不能发送数据，但仍然会响应诸如gmetad的外部轮询器。*/
   deaf = no /*当值为true时，gmond将不能接收数据*/
   host_dmax = 86400 /*秒，dmax是delete max的缩写。如果为正值, 当gmond在host_dmax秒内接收不到某台主机的数据，gmond将删除该主机。*/
   host_tmax = 20 /*秒，tmax是timeout max的缩写。代表gmond等待一台主机更新的最长时间。因为消息可能在网络中丢失，所以如果在4倍的host_tmax时间内接收不到某台主机的任何消息，gmond就认为该主机已经崩溃。*/
   cleanup_threshold = 300 /*秒，gmond清除过期数据的最小时间间隔。*/
-  send_metadata_interval = 60 /*秒，设置gmond两次发送元数据包的时间间隔。在单播模式下必须设置。*/
+  send_metadata_interval = 30 /*秒，设置gmond两次发送元数据包的时间间隔。在单播模式下必须设置。*/
 }
 
 cluster {
@@ -175,14 +175,24 @@ rm /etc/httpd/conf.d/ganglia-web.conf
 chown -R apache:apache /var/lib/ganglia-web/
 chown -R nobody:nobody /var/lib/ganglia/rrds
 
-#查看PHP版本
+#配置操作系统相关(CentOS 5)
+[root@yum ~]# lsb_release -a
+Description:    CentOS release 5.5 (Final)
+[root@yum ~]# cat /proc/version
+Linux version 2.6.18-194.el5xen
+[root@yum ~]# getenforce
+Disabled
 [root@yum ~]# php -v
-PHP 5.3.3 (cli)
+PHP 5.1.6 (cli) (built: Mar 31 2010 02:39:17) 
+[root@yum ~]# python -V
+Python 2.4.3
+[root@yum ~]# rrdtool -v
+RRDtool 1.4.7
 
 #启动服务
+service gmond restart
 service gmetad restart
 service httpd restart
-service gmond restart
 
 chkconfig --add gmond
 chkconfig --add gmetad
@@ -193,11 +203,11 @@ chkconfig httpd on
 chkconfig --list | grep gmetad
 
 #运行日志
-ll /var/lib/ganglia/rrds/
-
-tail -200f /var/log/messages
 tail -200f /var/log/httpd/access_log
 tail -200f /var/log/httpd/error_log
+tail -200f /var/log/messages
+tail -1000f /var/log/messages | grep gmetad
+tail -1000f /var/log/messages | grep gmond
 
 #卸载
 yum remove ganglia-gmond -y
@@ -248,6 +258,7 @@ tail -200f /var/log/messages | grep rrd
 $ vi /etc/fstab
 tmpfs /var/lib/ganglia/rrds tmpfs defaults,size=8g 0 0
 $ mount -a
+
 
 各监控节点部署gmond
 =============================
