@@ -318,8 +318,10 @@ pssh -p 1 -h ~/hadoop/conf/slaves -P "lsb_release -a | grep Description"
 
 pscp -A -l root -h ~/hadoop/conf/slaves /etc/yum.repos.d/centos-test.repo /etc/yum.repos.d/centos-test.repo
 pssh -A -l root -h ~/hadoop/conf/slaves -P "yum clean all"
-pssh -A -l root -h ~/hadoop/conf/slaves "yum install ganglia-gmond -y"
-pscp -A -l root -h ~/hadoop/conf/slaves /etc/ganglia/gmond.conf /etc/ganglia/gmond.conf
+pssh -A -l root -h ~/hadoop/conf/slaves -t 180 "yum install ganglia-gmond -y"
+
+pscp -A -l root -h ~/hadoop/conf/slaves /etc/ganglia/gmond2.conf /etc/ganglia/gmond.conf
+pssh -A -l root -h ~/hadoop/conf/slaves -P "md5sum /etc/ganglia/gmond.conf"
 
 pssh -A -l root -h ~/hadoop/conf/slaves -P "service gmond restart"
 
