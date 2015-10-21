@@ -219,12 +219,19 @@ yum remove ganglia-web -y
 #1.配置rrdcached http://linux.die.net/man/1/rrdcached
 -- Your apache web server runs with owner and group set to 'apache'.
 -- Your RRD files are stored in /var/lib/ganglia/rrds (default location) with owner and group set to 'nobody'.
+$ yum install rrdtool-cached -y
+$ rrdcached -h
+RRDCacheD 1.4.7
+$ cat /etc/init.d/rrdcached
+(如果存在"Please enable rrdcached in /etc/default/rrdcached"，则替换该脚本)
+$ chmod +x /etc/init.d/rrdcached
+
 $ vi /etc/sysconfig/rrdcached
 OPTIONS="-p /var/run/rrdcached/rrdcached.pid -s nobody -m 664 -l unix:/var/run/rrdcached/rrdcached.sock \
       -s apache -m 777 -P FLUSH,STATS,HELP -l unix:/var/run/rrdcached/rrdcached.limited.sock \
 	  -b /var/lib/ganglia/rrds -B -w 300 -z 300"
 RRDC_USER=root
-$ chmod +x /etc/init.d/rrdcached
+
 $ rm -rf /var/run/rrdcached
 $ ll /var/run/rrdcached/
 
@@ -242,7 +249,7 @@ $conf['rrdcached_socket'] = "unix:/var/run/rrdcached/rrdcached.limited.sock";
 #4.重启服务
 service httpd stop
 service gmetad stop
-service rrdcached stop
+service rrdcached stop (ps -aux | grep rrdcached)
 
 service rrdcached start
 service gmetad start
@@ -316,7 +323,6 @@ PSSH
 =============================
 pssh -p 1 -h ~/hadoop/conf/slaves -P "lsb_release -a | grep Description"
 
-pscp -A -l root -h ~/hadoop/conf/slaves /etc/yum.repos.d/centos-test.repo /etc/yum.repos.d/centos-test.repo
 pssh -A -l root -h ~/hadoop/conf/slaves -P "yum clean all"
 pssh -A -l root -h ~/hadoop/conf/slaves -t 180 "yum install ganglia-gmond -y"
 
