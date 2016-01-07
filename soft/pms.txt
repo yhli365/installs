@@ -1,4 +1,10 @@
 
+Git
+=============================
+--git
+http://git-scm.com/download/
+
+
 SVN
 =============================
 --Apache Subversion
@@ -6,6 +12,8 @@ http://subversion.apache.org/
 
 --CentOS RPMS
 http://repoforge.org/use/
+#可从下面安装下载最新版本
+http://opensource.wandisco.com/
 
 --VisualSVN Server (Windows platform)
 https://www.visualsvn.com/server/

@@ -1,0 +1,25 @@
+Apache Subversion
+=============================
+-- subversion-1.8.14
+-- CentOS 6.4 x86_64
+
+INSTALL(YUM)
+=============================
+--下载并配置YUM仓库
+http://opensource.wandisco.com/centos/6/svn-1.8/RPMS/x86_64/
+[root@yum ~]# createrepo /var/ftp/yum/YCentOS6
+
+--配置YUM客户端
+[root@vm ~]# vi /etc/yum.repos.d/yhli.repo
+[YHLI]
+name=YHLI Repository
+baseurl=ftp://15.8.50.222/yum/YCentOS6
+gpgcheck=0
+enabled=1
+
+--使用yum命令下载安装svn软件包
+[root@vm ~]# yum clean all
+[root@vm ~]# yum info subversion mod_dav_svn
+[root@vm ~]# yum install subversion
+[root@vm ~]# yum install mod_dav_svn
+
