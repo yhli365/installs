@@ -1,0 +1,13 @@
+﻿
+CentOS
+=============================
+--查看文件
+$ rpm -qpl jdk-*-linux-x64.rpm | more
+$ rpm -qp --scripts jdk-*-linux-x64.rpm | more
+--安装
+$ rpm -ivh jdk-*-linux-x64.rpm
+--检查
+$ java -version
+$ rpm -qa | grep jdk
+$ ll /usr/java | grep jdk
+

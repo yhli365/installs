@@ -1,0 +1,42 @@
+
+#挂载ISO
+mkdir -p /var/ftp/yum/CentOS6.4
+mount -t iso9660 -o loop /iso/CentOS/CentOS-6.4-x86_64-bin-DVD1.iso /var/ftp/yum/CentOS6.4
+
+#安装vftp
+rpm -ivh /var/ftp/yum/CentOS6.4/Packages/vsftpd-*.rpm
+rpm -q vsftpd
+service vsftpd restart
+chkconfig vsftpd on
+
+#安装createrepo
+rpm -ivh /var/ftp/yum/CentOS6.4/Packages/libxml2-python-*.rpm
+rpm -ivh /var/ftp/yum/CentOS6.4/Packages/deltarpm-*.rpm
+rpm -ivh /var/ftp/yum/CentOS6.4/Packages/python-deltarpm-*.rpm
+rpm -ivh /var/ftp/yum/CentOS6.4/Packages/createrepo-*.rpm
+
+#配置YUM仓库(run)
+mkdir -p /var/ftp/yum/run
+#mount --bind /data1/run /var/ftp/yum/run
+find /var/ftp/yum/run -name *.rpm
+createrepo /var/ftp/yum/run
+
+#配置YUM客户端
+rm -rf /etc/yum.repos.d/*.repo
+vi /etc/yum.repos.d/centos-run.repo
+[CentOS6.4]
+name=CentOS 6.4 Repository
+baseurl=ftp://192.168.5.11/yum/CentOS6.4
+gpgcheck=0
+enabled=1
+
+[RunSoft]
+name=RunSoft Repository
+baseurl=ftp://192.168.5.11/yum/run
+gpgcheck=0
+enabled=1
+
+#测试YUM客户端
+yum clean all
+yum install unzip -y
+
