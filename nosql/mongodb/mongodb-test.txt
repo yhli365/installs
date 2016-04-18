@@ -1,0 +1,22 @@
+$ mongo
+$ mongo 127.0.0.1:27017/test
+
+show dbs
+use test
+show collections
+db.dropDatabase()
+
+db.users.save({"name":"lecaf"})
+db.users.insert({"name":"ghost", "age":10})
+
+db.users.find()
+db.users.findOne()
+
+db.users.update({"name":"lecaf"}, {"name":"lecaf", "age":15})
+db.users.update({"name":"lecaf"}, {"name":"lecaf", "sex":1, "height":168})
+
+db.users.remove({"name":"lecaf"})
+db.users.drop()
+
+db.users.find().count(true)
+

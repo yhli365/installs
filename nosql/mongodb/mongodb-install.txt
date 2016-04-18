@@ -1,0 +1,153 @@
+https://www.mongodb.org/
+
+
+INSTALL Tarball (CentOS6 x86_64)
+=============================
+Install MongoDB Community Edition From Tarball
+https://docs.mongodb.org/master/tutorial/install-mongodb-on-linux/
+
+--Install for 64-bit Linux
+#1. Download the binary files for the desired release of MongoDB.
+mongodb-linux-x86_64-rhel62-3.2.4.gz
+
+#2. Extract the files from the downloaded archive.
+$ tar -zxvf mongodb-linux-x86_64-rhel62-3.2.4.gz
+
+#3. Copy the extracted archive to the target directory.
+$ ln -s /usr/yht/mongodb-linux-x86_64-rhel62-3.2.4 /usr/local/mongodb
+
+#4. Ensure the location of the binaries is in the PATH variable.
+$ vi ~/.bash_profile
+export MONGODB_HOME=/usr/local/mongodb
+export PATH=$MONGODB_HOME/bin:$PATH
+$ source ~/.bash_profile
+
+--Run MongoDB Community Edition
+#1. Create the data directory.
+$ mkdir -p /var/mongodb/{db,log}
+
+#2. Set permissions for the data directory.
+#3. Run MongoDB.
+$ mongod --dbpath /var/mongodb/db
+
+#4. Begin using MongoDB.
+$ mongo
+
+--Configure a Service for MongoDB Community Edition
+#1. Create the data directory.
+$ mkdir -p /var/mongodb/{db,log}
+
+#2. Create a configuration file.
+https://docs.mongodb.org/master/administration/configuration/#configure-the-database
+$ vi /var/mongodb/mongod.conf
+processManagement:
+   fork: true
+net:
+   bindIp: 127.0.0.1,123.57.140.3
+   port: 27017
+storage:
+   dbPath: /var/mongodb/db
+systemLog:
+   destination: file
+   path: "/var/mongodb/log/mongod.log"
+   logAppend: true
+storage:
+   journal:
+      enabled: true
+
+#3. Install the MongoDB service.
+$ vi /etc/rc.d/init.d/mongod
+$ chmod +x /etc/rc.d/init.d/mongod
+$ chkconfig mongod on
+
+#4. Start or stop the MongoDB service.
+$ service mongod status
+$ service mongod start
+$ service mongod stop
+
+#5. Begin using MongoDB.
+$ mongo
+$ mongo 127.0.0.1:27017/admin
+> db.serverStatus().version
+> db.shutdownServer()
+
+--设置远程访问，即对外开发端口27017,28017
+MongoDB 的 Web 界面访问端口比服务的端口多1000, 如果你的MongoDB运行端口使用默认的27017，你可以在端口号为28017访问web用户界面。 
+
+#1. 编辑iptables文件, 增加如下内容
+$ vi /etc/sysconfig/iptables
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 27017 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 28017 -j ACCEPT
+
+#2. 重启iptables服务
+$ service iptables restart
+
+#3. 通过浏览器访问mongodb web用户界面 
+http://123.57.140.3:28017
+
+
+INSTALL (Windows 7 x86_64)
+=============================
+Install MongoDB Community Edition on Windows
+https://docs.mongodb.org/master/tutorial/install-mongodb-on-windows/
+
+--Get MongoDB Community Edition
+#1. Determine which MongoDB build you need.
+cmd> wmic os get caption
+Caption
+Microsoft Windows 7 Ultimate
+cmd> wmic os get osarchitecture
+OSArchitecture
+64-bit
+
+#2. Download MongoDB for Windows.
+mongodb-win32-x86_64-3.2.4-signed.msi
+
+--Install MongoDB Community Edition
+#1. Install MongoDB for Windows.
+These instructions assume that you have installed MongoDB to "C:\Program Files\MongoDB\Server\3.2".
+
+--Run MongoDB Community Edition
+#1. Set up the MongoDB environment.
+MONGODB_HOME = C:\Program Files\MongoDB\Server\3.2
+PATH = %MONGODB_HOME%/bin;%PATH%
+
+cmd> mkdir d:\ydata\mongodb\db
+
+#2. Start MongoDB.
+cmd> mongod --dbpath d:\ydata\mongodb\db
+
+#3. Connect to MongoDB.
+cmd> mongo
+
+#4. Begin using MongoDB.
+
+#5. Stop MongoDB.
+Later, to stop MongoDB, press Control+C in the terminal where the mongod instance is running.
+
+--Configure a Windows Service for MongoDB Community Edition
+#1. Open an Administrator command prompt.
+Press the Win key, type cmd.exe, and press Ctrl + Shift + Enter to run the Command Prompt as Administrator.
+
+#2. Create directories.
+cmd> mkdir d:\ydata\mongodb\db
+cmd> mkdir d:\ydata\mongodb\log
+
+#3. Create a configuration file.
+cmd> vi d:\ydata\mongodb\mongod.cfg
+systemLog:
+    destination: file
+    path: d:\ydata\mongodb\log\mongod.log
+storage:
+    dbPath: d:\ydata\mongodb\db
+
+#4. Install the MongoDB service.
+cmd> mongod.exe --config "d:\ydata\mongodb\mongod.cfg" --install
+
+#5. Start the MongoDB service.
+cmd> net start MongoDB
+
+#6. Stop or remove the MongoDB service as needed.
+cmd> net stop MongoDB
+cmd> mongod.exe --remove
+

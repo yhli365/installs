@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# mongod		Start up the MongoDB server daemon
+#
+# chkconfig: - 64 36
+# description: mongod
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+ulimit -SHn 655350
+
+RETVAL=0
+prog="mongod"
+lockfile=/var/lock/subsys/$prog
+
+# Some functions to make the below more readable
+MONGOD=/usr/local/mongodb/bin/mongod
+MONGO=/usr/local/mongodb/bin/mongo
+
+start()
+{
+	[ -x $MONGOD ] || exit 5
+	[ -f /var/mongodb/mongod.conf ] || exit 6
+
+	echo -n $"Starting $prog: "
+	$MONGOD --maxConns 20000 --config /var/mongodb/mongod.conf && success || failure
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+stop()
+{
+	echo -n $"Stopping $prog: "
+	$MONGO 127.0.0.1:27017/admin --eval "db.shutdownServer()"
+	RETVAL=$?
+	echo
+}
+
+restart() {
+	stop
+	start
+}
+
+status() {
+	$MONGO 127.0.0.1:27017/admin --eval "db.stats()"
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		restart
+		;;
+	status)
+		status
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart|status}"
+		RETVAL=2
+esac
+exit $RETVAL
