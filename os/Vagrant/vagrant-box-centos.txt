@@ -1,0 +1,119 @@
+制作自己的Vagrant Box
+=============================
+
+前置条件
+=============================
+1. 安装VirtualBox
+2. 安装Vagrant
+3. 在VirtualBox中安装操作系统，例如 CentOS
+
+CentOS基本配置
+--Root Password: "vagrant"
+[root@develop ~]# passwd root
+vagrant
+
+--network
+NAT (虚拟机设置：网络->NAT/高级/端口转发 ssh TCP 127.0.0.1 2222 - 22)
+[root@develop ~]# vi /etc/sysconfig/network-scripts/ifcfg-eth0
+ONBOOT=yes
+[root@develop ~]# service network restart
+[root@develop ~]# ssh 127.0.0.1
+
+--hostname
+[root@develop ~]# vi /etc/sysconfig/network
+HOSTNAME=develop
+
+--service
+[root@develop ~]# service iptables stop
+[root@develop ~]# chkconfig iptables off
+[root@develop ~]# vi /etc/selinux/config
+SELINUX=disabled
+
+--安装依赖包(gcc,kernel-devel等)
+在VirtualBox界面中CDROM加载CentOS ISO文件
+[root@develop ~]# mount -t iso9660 -o loop /dev/cdrom /media
+[root@develop ~]# rm -rf /etc/yum.repos.d/*.repo
+[root@develop ~]# vi /etc/yum.repos.d/centos-media.repo
+[c6-media]
+name=CentOS
+baseurl=file:///media/
+gpgcheck=0
+enabled=1
+[root@develop ~]# yum install gcc -y
+[root@develop ~]# yum install kernel-devel -y
+[root@develop ~]# yum install unzip -y
+[root@develop ~]# yum clean all
+[root@develop ~]# umount /media
+
+--Install virtual box guest additions（为了共享文件夹，端口转发等）
+在VirtualBox界面中选择"设备->安装增强功能"
+[root@develop ~]# mount -t iso9660 -o loop /dev/cdrom /media
+[root@develop ~]# /media/VBoxLinuxAdditions.run
+[root@develop ~]# umount /media
+
+
+将操作系统打包为可用的Vbox镜像
+=============================
+1. 创建vagrant用户和用户目录，密码为vagrant
+[root@develop ~]# useradd vagrant
+[root@develop ~]# passwd vagrant
+vagrant
+
+--Password-less Sudo
+[root@develop ~]# visudo
+# This can be done with the following line at the end of the configuration file:
+vagrant ALL=(ALL) NOPASSWD: ALL
+# You will need to make sure there is no line that has requiretty in it. Remove that if it exists. 
+# Defaults    requiretty
+
+2. 添加vagrant用户的公共密钥，文件为/home/vagrant/.ssh/authorized_keys
+[root@develop ~]# su - vagrant
+[vagrant@develop ~]$ mkdir ~/.ssh
+[vagrant@develop ~]$ cd ~/.ssh
+[vagrant@develop ~]$ wget http://github.com/mitchellh/vagrant/raw/master/keys/vagrant.pub --no-check-certificate
+[vagrant@develop ~]$ mv vagrant.pub authorized_keys
+[vagrant@develop ~]$ sudo -u vagrant chmod 700 .ssh
+[vagrant@develop ~]$ sudo -u vagrant chmod 600 .ssh/authorized_keys
+[vagrant@develop ~]$ sudo -u vagrant chown -R vagrant:vagrant .ssh
+[vagrant@develop ~]$ sudo poweroff
+
+--可以通过SSH客户端连接测试(SecureCRT->SSH2), 用户名: vagrant, 鉴权: 公钥 -> 属性: 使用全局公钥设置，使用身份或证书文件keys/vagrant
+
+3. 在真实操作系统中执行vagrant package --base 虚拟机名称，这样会创建指定虚拟机的box
+$ cd boxes
+$ vagrant package --base CentOS-6.4-x86_64 --output CentOS-6.4-x86_64-yhli.box
+
+
+测试打包好的Vbox镜像
+=============================
+1. 将制作好的Box添加到Vagrant环境中，vagrant box add name package.box
+$ vagrant box remove yhli/centos-6.4-dev
+$ vagrant box add yhli/centos-6.4-dev file:///F:/ISO/boxes/CentOS-6.4-x86_64-yhli.box
+$ vagrant box list
+
+2. 初始化运行环境,vagrant init name
+$ cd test
+$ vagrant init yhli/centos-6.4-dev
+
+$ vi Vagrantfile
+Vagrant.configure(2) do |config|
+  config.vm.box = "yhli/centos-6.4-dev"
+  config.vm.hostname = "test"
+  config.vm.network "private_network", ip: "192.168.5.201"
+  
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "test-centos-6.4"
+    vb.memory = 1024
+    vb.cpus = 2
+  end
+  config.vm.synced_folder "F:/downloads", "/share"
+end
+
+3. 运行Vagrant虚拟机，vagrant up
+$ vagrant up
+
+4. 管理Vagrant虚拟机
+$ vagrant status
+$ vagrant halt
+$ vagrant destroy
+
