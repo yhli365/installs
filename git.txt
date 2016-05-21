@@ -1,0 +1,65 @@
+
+Git repos
+=============================
+GitHub     - https://github.com/
+Bitbucket  - https://bitbucket.org/
+
+
+Git config
+=============================
+git config --global user.email "yhli365@126.com"
+git config --global user.name "yhli365"
+git config --global push.default simple
+
+git config core.autocrlf true
+
+
+Git clone
+=============================
+--GitHub
+git clone https://yhli365@github.com/yhli365/ygit-test.git
+
+--Bitbucket
+git clone https://yhli365@bitbucket.org/yhli365/ygit-test.git
+git clone https://yhli365@bitbucket.org/ayena/ygit-orgtest.git
+
+
+Git tag/branch
+=============================
+--查看标签
+$ git tag
+--查看本地和远程分支
+$ git branch -a
+--查看当前分支
+$ git branch
+
+a.首次使用新建分支
+--从已有的标签或分支创建新的本地分支 git checkout -b <new_branch> [<start point>]
+$ git checkout -b V4.2.3.GA_BR V4.2.3.GA
+--创建关联远程分支
+$ git push --set-upstream origin V4.2.3.GA_BR
+
+b.如果远程分支已存在则复制远程分支
+--checkout远程分支，创建本地分支，并切换到本地分支
+$ git checkout -b V4.2.3.GA_BR origin/V4.2.3.GA_BR
+
+--切换到指定标签或分支
+$ git checkout V4.2.3.GA_BR
+$ git checkout master
+$ git branch
+
+
+MAVEN
+=============================
+mvn clean
+mvn eclipse:eclipse -DdownloadSources=true
+mvn jetty:run
+mvn package
+
+--手动添加JAR包到本地仓库
+mvn install:install-file -Dpackaging=jar \
+  -DgroupId=net.spy \
+  -DartifactId=spymemcached \
+  -Dversion=2.11.2 \
+  -Dfile=spymemcached-2.11.2.jar
+

@@ -1,0 +1,158 @@
+MySQL Database
+@site http://www.cloudera.com/documentation/enterprise/latest/topics/cm_ig_mysql.html#cmig_topic_5_5_2
+CentOS 6.4
+
+
+Installing the MySQL Server
+=============================
+# yum install mysql mysql-server
+# rpm -q mysql mysql-server
+
+
+Configuring and Starting the MySQL Server
+=============================
+1. Determine the version of MySQL.
+# mysql -V
+mysql  Ver 14.14 Distrib 5.1.66
+
+2. Stop the MySQL server if it is running.
+# service mysqld stop
+
+3. Move old InnoDB log files /var/lib/mysql/ib_logfile0 and /var/lib/mysql/ib_logfile1 out of /var/lib/mysql/ to a backup location.
+
+4. Determine the location of the option file, my.cnf.
+
+5. Update my.cnf so that it conforms to the following requirements:
+# vi /etc/my.cnf
+[mysqld]
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+user=mysql
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links=0
+
+# modified by CDH START-----------
+character-set-server = utf8
+transaction-isolation = READ-COMMITTED
+key_buffer = 16M
+key_buffer_size = 32M
+max_allowed_packet = 32M
+thread_stack = 256K
+thread_cache_size = 64
+query_cache_limit = 8M
+query_cache_size = 64M
+query_cache_type = 1
+
+max_connections = 550
+#expire_logs_days = 10
+#max_binlog_size = 100M
+
+#log_bin should be on a disk with enough free space. Replace '/var/lib/mysql/mysql_binary_log' with an appropriate path for your system
+#and chown the specified folder to the mysql user.
+log_bin=/var/lib/mysql/mysql_binary_log
+
+# For MySQL version 5.1.8 or later. Comment out binlog_format for older versions.
+binlog_format = mixed
+
+read_buffer_size = 2M
+read_rnd_buffer_size = 16M
+sort_buffer_size = 8M
+join_buffer_size = 8M
+
+# InnoDB settings
+innodb_file_per_table = 1
+innodb_flush_log_at_trx_commit  = 2
+innodb_log_buffer_size = 64M
+innodb_buffer_pool_size = 4G
+innodb_thread_concurrency = 8
+innodb_flush_method = O_DIRECT
+innodb_log_file_size = 512M
+# modified by CDH END-----------
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+
+# modified by CDH START-----------
+sql_mode=STRICT_ALL_TABLES
+# modified by CDH END-----------
+
+6. If AppArmor is running on the host where MySQL is installed, you might need to configure AppArmor to allow MySQL to write to the binary.
+
+7. Ensure the MySQL server starts at boot.
+# chkconfig mysqld on
+# chkconfig --list mysqld
+
+8. Start the MySQL server:
+# service mysqld start
+
+9. Set the MySQL root password.
+# mysql_secure_installation
+[...]
+Enter current password for root (enter for none):
+OK, successfully used password, moving on...
+[...]
+Set root password? [Y/n] y
+New password:
+Re-enter new password:
+Remove anonymous users? [Y/n] Y
+[...]
+Disallow root login remotely? [Y/n] N
+[...]
+Remove test database and access to it [Y/n] Y
+[...]
+Reload privilege tables now? [Y/n] Y
+All done!
+
+
+Installing the MySQL JDBC Driver
+=============================
+1. Download the MySQL JDBC driver from http://dev.mysql.com/downloads/connector/j/
+mysql-connector-java-5.1.38.tar.gz
+
+2. Extract the JDBC driver JAR file from the downloaded file. 
+# tar zxvf mysql-connector-java-5.1.38.tar.gz
+
+3. Copy the JDBC driver, renamed, to the relevant host.
+# mkdir -p /usr/share/java/
+# cp mysql-connector-java-5.1.38/mysql-connector-java-5.1.38-bin.jar /usr/share/java/mysql-connector-java.jar
+# ll /usr/share/java/ | grep mysql
+
+
+Cloudera Manager
+=============================
+[root@dev5s1 ~]# mysql -u root -proot
+mysql> show databases;
+mysql> drop database if exists scm;
+mysql> exit;
+
+[root@dev5s1 ~]# /usr/share/cmf/schema/scm_prepare_database.sh --help
+[root@dev5s1 ~]# /usr/share/cmf/schema/scm_prepare_database.sh -h localhost -uroot -proot --scm-host localhost mysql scm scm scm
+[root@dev5s1 ~]# cat /etc/cloudera-scm-server/db.properties
+[root@yw ~]# mysql -h 192.168.5.51 -uscm -pscm scm
+mysql> show tables;
+Empty set (0.00 sec)
+mysql> quit;
+
+
+Cloudera Management Service
+=============================
+
+
+Oozie Server
+=============================
+[root@dev5s1 ~]# mysql -u root -proot
+mysql> 
+create database oozie;
+grant all privileges on oozie.* to 'oozie'@'localhost' identified by 'oozie';
+grant all privileges on oozie.* to 'oozie'@'%' identified by 'oozie';
+exit;
+
+
+*************************************************
+http://www.cloudera.com/downloads/cdh/5-7-0.html
+http://www.cloudera.com/documentation/enterprise/latest/topics/cm_ig_install_path_b.html#id_qpq_lnm_25
+http://www.cloudera.com/documentation/enterprise/latest/topics/cm_ig_installing_configuring_dbs.html#cmig_topic_5
+http://www.cloudera.com/documentation/enterprise/latest/topics/cm_ig_mysql.html#cmig_topic_5_5_3
+
+-----------------------

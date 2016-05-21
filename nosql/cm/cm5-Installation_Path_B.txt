@@ -1,0 +1,225 @@
+Cloudera Manager 5 和 CDH5 本地（离线）安装指南
+=================================================
+@site Installation Path B - Installation Using Cloudera Manager Parcels or Packages
+http://www.cloudera.com/documentation/enterprise/latest/topics/cm_ig_install_path_b.html#cmig_topic_6_6
+
+
+CM Server系统环境（虚拟机）
+=============================
+--查看版本
+[root@dev5s1 ~]# cat /etc/redhat-release
+[root@dev5s1 ~]# lsb_release -a
+CentOS release 6.4 (Final)
+
+--关闭防火墙
+[root@dev5s1 ~]# service iptables stop
+[root@dev5s1 ~]# chkconfig iptables off
+[root@dev5s1 ~]# service iptables status
+iptables: Firewall is not running.
+
+--关闭SELinux
+[root@dev5s1 ~]# sed -i '/^SELINUX=/ s/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+[root@dev5s1 ~]# cat /etc/sysconfig/selinux
+SELINUX=disabled
+[root@dev5s1 ~]# setenforce 0
+[root@dev5s1 ~]# getenforce
+Disabled
+
+--配置Hostname
+[root@dev5s1 ~]# vi /etc/hosts
+192.168.5.51  dev5s1
+
+
+1. Before You Begin
+=============================
+//a. Perform Configuration Required by Single User Mode
+<ignore>
+
+b. (CDH 5 only) On RHEL 5 and CentOS 5, Install Python 2.6 or 2.7
+[root@dev5s1 ~]# python -V
+Python 2.6.6
+
+c. Install and Configure External Databases
+@see cm5-MySQL_Database.txt
+[root@dev5s1 ~]# mysql -V
+mysql  Ver 14.14 Distrib 5.1.66
+
+
+2. Establish Your Cloudera Manager Repository Strategy
+=============================
+a. RHEL-compatible
+--下载cm5-repo: http://archive.cloudera.com/cm5/repo-as-tarball/5.7.0/
+cm5.7.0-centos6.tar.gz
+
+--下载cdh5-parcels: http://archive.cloudera.com/cdh5/parcels/5.7.0/
+CDH-5.7.0-1.cdh5.7.0.p0.45-el6.parcel
+CDH-5.7.0-1.cdh5.7.0.p0.45-el6.parcel.sha1
+manifest.json
+
+--配置YUM仓库
+#)Create a Local Repository(CM)
+[root@dev5s1 ~]# tar xvzf cm5.7.0-centos6.tar.gz -C /var/ftp/yum
+[root@dev5s1 ~]# chown -R root:root /var/ftp/yum/cm
+[root@dev5s1 ~]# chmod -R ugo+rX /var/ftp/yum/cm
+
+--配置YUM客户端
+[root@dev5s1 ~]# vi /etc/yum.repos.d/cloudera-manager.repo
+[cm5]
+name=cm5
+baseurl=ftp://192.168.5.51/yum/cm/5
+gpgkey=ftp://192.168.5.51/yum/cm/RPM-GPG-KEY-cloudera
+gpgcheck=1
+enabled=1
+
+[root@dev5s1 ~]# yum clean all
+[root@dev5s1 ~]# yum list | grep cloudera-manager
+
+
+3. Install Cloudera Manager Server Software
+=============================
+a. Install the Oracle JDK on the Cloudera Manager Server Host
+[root@dev5s1 ~]# yum install oracle-j2sdk1.7
+
+b. Install the Cloudera Manager Server Packages
+[root@dev5s1 ~]# yum install cloudera-manager-daemons cloudera-manager-server
+
+--create database
+[root@dev5s1 ~]# mysql -u root -proot
+mysql> show databases;
+mysql> drop database if exists scm;
+mysql> exit;
+[root@dev5s1 ~]# /usr/share/cmf/schema/scm_prepare_database.sh --help
+[root@dev5s1 ~]# /usr/share/cmf/schema/scm_prepare_database.sh -h localhost -uroot -proot --scm-host localhost mysql scm scm scm
+[root@dev5s1 ~]# cat /etc/cloudera-scm-server/db.properties
+[root@yw ~]# mysql -h 192.168.5.51 -uscm -pscm scm
+mysql> show tables;
+Empty set (0.00 sec)
+mysql> quit;
+
+
+4. (Optional) Manually Install the Oracle JDK, Cloudera Manager Agent, and CDH and Managed Service Packages
+=============================
+<ignore>
+
+
+5. Start the Cloudera Manager Server
+=============================
+[root@dev5s1 ~]# rm -rf /var/log/cloudera-scm-server/*.log
+[root@dev5s1 ~]# service cloudera-scm-server status
+[root@dev5s1 ~]# service cloudera-scm-server start
+
+
+6. Start and Log into the Cloudera Manager Admin Console
+=============================
+1. Wait several minutes for the Cloudera Manager Server to complete its startup.
+[root@dev5s1 ~]# tail -100f /var/log/cloudera-scm-server/cloudera-scm-server.log
+
+2. In a web browser, enter
+http://192.168.5.51:7180
+
+3. Log into Cloudera Manager Admin Console.
+Username: admin Password: admin
+
+4. After logging in, the Cloudera Manager End User License Terms and Conditions page displays. Read the terms and conditions and then select Yes to accept them.
+
+5. Click Continue.
+The Welcome to Cloudera Manager page displays.
+
+
+7. Choose Cloudera Manager Edition
+=============================
+Cloudera Express
+Cloudera Enterprise Data Hub Edition Trial
+Cloudera Enterprise with one of the following license types: Basic Edition, Flex Edition, Data Hub Edition
+
+
+8. Choose Cloudera Manager Hosts
+=============================
+10.1.1.[1-4]
+host[07-10].company.com
+
+
+9. Choose the Software Installation Type and Install Software
+=============================
+1. Choose the software installation type and CDH and managed service version:
+--选择方法
+使用 Parcel (建议) To specify the parcel directory, click the More Options button
+部署Parcel存储库, 上传CDH以下文件到本地 Parcel 默认存储库路径: /opt/cloudera/parcel-repo
+ CDH-5.7.0-1.cdh5.7.0.p0.45-el6.parcel
+ CDH-5.7.0-1.cdh5.7.0.p0.45-el6.parcel.sha1
+ manifest.json
+[root@dev5s1 ~]# cp /opt/cloudera/parcel-repo/CDH-5.7.0-1.cdh5.7.0.p0.45-el6.parcel.sha1 /opt/cloudera/parcel-repo/CDH-5.7.0-1.cdh5.7.0.p0.45-el6.parcel.sha
+(可能需重启cloudera-scm-server服务以生效)
+
+--选择 CDH 的版本
+CDH-5.7.0-1.cdh5.7.0.p0.45
+
+--选择您要安装在主机上的 Cloudera Manager Agent 特定发行版。
+自定义存储库: ftp://192.168.5.51/yum/cm/5
+自定义 GPG 主要 URL: ftp://192.168.5.51/yum/cm/RPM-GPG-KEY-cloudera
+
+2. If you installed the Agent and JDK manually on all cluster hosts: Click Continue.
+
+3. Select Install Oracle Java SE Development Kit (JDK) to allow Cloudera Manager to install the JDK on each cluster host. 
+
+4. (Optional) Select Single User Mode to configure the Cloudera Manager Agent and all service processes to run as the same user. 
+--单用户模式 : false
+
+5. If you chose to have Cloudera Manager install software, specify host installation properties:
+root/password
+
+6. Click Continue. If you chose to have Cloudera Manager install software, Cloudera Manager installs the Oracle JDK, Cloudera Manager Agent, packages and CDH and managed service parcels or packages. During parcel installation, progress is indicated for the phases of the parcel installation process in separate progress bars. If you are installing multiple parcels, you see progress bars for each parcel. When the Continue button at the bottom of the screen turns blue, the installation process is completed.
+
+7. Click Continue.
+The Host Inspector runs to validate the installation and provides a summary of what it finds, including all the versions of the installed components. If the validation is successful, click Finish.
+
+
+****************************************
+
+#)Install the Cloudera Manager Server Packages
+[root@yw ~]# userdel cloudera-scm
+[root@yw ~]# yum remove cloudera-manager-daemons cloudera-manager-server enterprise-debuginfo -y
+[root@yw ~]# yum install cloudera-manager-daemons cloudera-manager-server -y
+[root@yw ~]# yum install enterprise-debuginfo -y
+
+#)Set up a Database for the Cloudera Manager Server
+1.Run the scm_prepare_database.sh script on the host where the Cloudera Manager Server package is installed:
+[root@yw ~]# ln -s mysql-connector-java-5.1.32.jar /usr/share/java/mysql-connector-java.jar
+[root@yw ~]# /usr/share/cmf/schema/scm_prepare_database.sh mysql -h localhost -uroot -proot --scm-host localhost scm scm scm
+[root@yw ~]# cat /etc/cloudera-scm-server/db.properties
+[root@yw ~]# mysql -h localhost -uscm -pscm scm
+mysql> show tables;
+mysql> quit;
+2.Remove the embedded PostgreSQL properties file if it exists:
+[root@yw ~]# rm -rf /etc/cloudera-scm-server/db.mgmt.properties
+
+#)Start the Cloudera Manager Server
+[root@yw ~]# sudo service cloudera-scm-server start
+
+#)Start and Log into the Cloudera Manager Admin Console
+1.Wait several minutes for the Cloudera Manager Server to complete its startup. 
+[root@yw ~]# rm -rf /var/log/cloudera-scm-server/*.log
+[root@yw ~]# tail -100f /var/log/cloudera-scm-server/cloudera-scm-server.log
+2.In a web browser, enter
+http://yw:7180
+
+--)部署Parcel存储库
+#)上传CDH以下文件到本地 Parcel 存储库路径: /opt/cloudera/parcel-repo
+CDH-5.2.1-1.cdh5.2.1.p0.12-el6.parcel
+CDH-5.2.1-1.cdh5.2.1.p0.12-el6.parcel.sha1
+manifest.json
+#)如果Parcel文件不在默认存储库路径，需要在登陆web安装时修改本地 Parcel 存储库路径
+
+--)WEB安装
+#)启动CM Server端
+[root@yw cm-5.2.1]# etc/init.d/cloudera-scm-server start
+#)登陆WEB，默认账户和密码都是admin
+http://192.168.56.251:7180
+#)Choose Cloudera Manager Edition and Hosts
+安装时选择免费版
+192.168.56.[261-4]
+#)Choose the Software Installation Method and Install Software
+1.Install CDH and managed service software using either packages or parcels:
+2.Install Cloudera Manager Agent Packages
+3.Install Oracle Java SE Development Kit (JDK)
+

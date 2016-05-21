@@ -10,10 +10,16 @@
 CentOS基本配置
 --VM
 CentOS-6.4-x86_64-bin-DVD1.iso
-DISK: 200G
-CPU: 1核
+CPU: 
 MEM: 512M
-NET: NAT
+系统: 主板内存大小: 512MB; 处理器: 1核; 硬件加速: 启动VT-x/AMD-V
+显示: 显存大小: 12MB, 显示器数量: 1, 硬件加速: 无
+存储: 200G
+声音: 无
+网络: NAT
+串口: 无
+USB设备: 无
+
 
 --Root Password: "vagrant"
 [root@develop ~]# passwd root
@@ -39,6 +45,7 @@ SELINUX=disabled
 
 --安装依赖包(gcc,kernel-devel等)
 在VirtualBox界面中CDROM加载CentOS ISO文件
+[root@develop ~]# umount /media
 [root@develop ~]# mount -t iso9660 -o loop /dev/cdrom /media
 [root@develop ~]# rm -rf /etc/yum.repos.d/*.repo
 [root@develop ~]# vi /etc/yum.repos.d/centos-media.repo
@@ -51,13 +58,19 @@ enabled=1
 [root@develop ~]# yum install kernel-devel -y
 [root@develop ~]# yum install unzip -y
 [root@develop ~]# yum clean all
-[root@develop ~]# umount /media
+
+--卸载不需要的安装包(openjdk等)
+[root@develop ~]# yum list | grep openjdk
+[root@develop ~]# yum remove java-1.7.0-openjdk -y
+[root@develop ~]# yum remove java-1.6.0-openjdk -y
+[root@develop ~]# java -version
+[root@develop ~]# ll /usr/bin | grep java
 
 --Install virtual box guest additions（为了共享文件夹，端口转发等）
 在VirtualBox界面中选择"设备->安装增强功能"
+[root@develop ~]# umount /media
 [root@develop ~]# mount -t iso9660 -o loop /dev/cdrom /media
 [root@develop ~]# /media/VBoxLinuxAdditions.run
-[root@develop ~]# umount /media
 
 
 将操作系统打包为可用的Vbox镜像
