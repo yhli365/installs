@@ -1,0 +1,47 @@
+ImageMagick
+http://www.imagemagick.org/script/index.php
+
+ImageMagick® is a software suite to create, edit, compose, or convert bitmap images. It can read and write images in a variety of formats (over 200) including PNG, JPEG, JPEG-2000, GIF, TIFF, DPX, EXR, WebP, Postscript, PDF, and SVG. Use ImageMagick to resize, flip, mirror, rotate, distort, shear and transform images, adjust image colors, apply various special effects, or draw text, lines, polygons, ellipses and Bézier curves.
+
+
+Install from Unix Source
+=============================
+--编译ImageMagick
+$ tar xvzf ImageMagick.tar.gz
+$ cd ImageMagick-7.0.2-9
+$ ./configure
+$ make
+$ sudo make install
+$ sudo ldconfig /usr/local/lib
+
+
+解码JPEG错误
+=============================
+convert: no decode delegate for this image format `JPEG'
+convert: no decode delegate for this image format `JPG'
+--下载jpegsrc.v9a.tar.gz http://www.imagemagick.org/download/delegates/
+$ tar xzvf jpegsrc.v9a.tar.gz
+$ cd jpeg-9a/
+$ ./configure
+$ make
+$ sudo make install
+
+--重新编译ImageMagick
+
+$ convert -list format | grep JPEG
+
+
+Test
+=============================
+$ convert -list format
+$ convert logo: logo.gif
+
+--批量改变图片大小
+$ mkdir chg1/
+$ cp -r org/* chg1/
+$ cd chg1/
+$ find ./ -name '*.jpg' -type f -size +500k -exec convert -resize "800x600^" {} {} \;
+$ ll ./ | more
+--移除未转换成功的文件
+$ mkdir chg2/
+$ find chg1/ -name '*.jpg' -type f -size +500k -exec mv {} chg2 \;
