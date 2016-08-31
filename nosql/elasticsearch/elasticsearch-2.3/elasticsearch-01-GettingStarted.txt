@@ -1,0 +1,367 @@
+Elasticsearch Reference
+=============================
+https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
+
+Getting Started
+$ bin/elasticsearch -d
+
+
+Exploring Your Cluster
+=============================
+--Cluster Health
+curl 'localhost:9200/_cat/health?v'
+curl 'localhost:9200/_cat/nodes?v'
+
+--List All Indices
+curl 'localhost:9200/_cat/indices?v'
+
+--Create an Index
+curl -XPUT 'localhost:9200/customer?pretty'
+curl 'localhost:9200/_cat/indices?v'
+
+--Index and Query a Document
+curl -XPUT 'localhost:9200/customer/external/1?pretty' -d '
+{
+  "name": "John Doe"
+}'
+
+curl -XGET 'localhost:9200/customer/external/1?pretty'
+
+--Delete an Index
+curl -XDELETE 'localhost:9200/customer?pretty'
+curl 'localhost:9200/_cat/indices?v'
+
+--REST access pattern in Elasticsearch
+curl -X<REST Verb> <Node>:<Port>/<Index>/<Type>/<ID>
+
+
+Modifying Your Data
+=============================
+--Indexing/Replacing Documents
+curl -XPUT 'localhost:9200/customer/external/1?pretty' -d '
+{
+  "name": "John Doe"
+}'
+
+curl -XPUT 'localhost:9200/customer/external/1?pretty' -d '
+{
+  "name": "Jane Doe"
+}'
+
+curl -XPUT 'localhost:9200/customer/external/2?pretty' -d '
+{
+  "name": "Jane Doe"
+}'
+
+# The actual ID Elasticsearch generates
+curl -XPOST 'localhost:9200/customer/external?pretty' -d '
+{
+  "name": "Jane Doe"
+}'
+
+--Updating Documents
+curl -XPOST 'localhost:9200/customer/external/1/_update?pretty' -d '
+{
+  "doc": { "name": "Jane Doe" }
+}'
+
+curl -XPOST 'localhost:9200/customer/external/1/_update?pretty' -d '
+{
+  "doc": { "name": "Jane Doe", "age": 20 }
+}'
+
+# Updates can also be performed by using simple scripts.
+curl -XPOST 'localhost:9200/customer/external/1/_update?pretty' -d '
+{
+  "script" : "ctx._source.age += 5"
+}'
+
+--Deleting Documents
+curl -XDELETE 'localhost:9200/customer/external/2?pretty'
+
+--Batch Processing
+curl -XPOST 'localhost:9200/customer/external/_bulk?pretty' -d '
+{"index":{"_id":"1"}}
+{"name": "John Doe" }
+{"index":{"_id":"2"}}
+{"name": "Jane Doe" }
+'
+
+curl -XPOST 'localhost:9200/customer/external/_bulk?pretty' -d '
+{"update":{"_id":"1"}}
+{"doc": { "name": "John Doe becomes Jane Doe" } }
+{"delete":{"_id":"2"}}
+'
+
+Exploring Your Data
+=============================
+--Loading the Sample Dataset (https://github.com/bly2k/files/blob/master/accounts.zip?raw=true)
+curl -XPOST 'localhost:9200/bank/account/_bulk?pretty' --data-binary "@accounts.json"
+curl 'localhost:9200/_cat/indices?v'
+
+--The Search API
+# REST request URI
+curl 'localhost:9200/bank/_search?q=*&pretty'
+
+# REST request body
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": { "match_all": {} }
+}'
+
+--Introducing the Query Language
+# Query DSL (JSON-style domain-specific language)
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": { "match_all": {} },
+  "size": 1
+}'
+
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": { "match_all": {} },
+  "from": 10,
+  "size": 10
+}'
+
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": { "match_all": {} },
+  "sort": { "balance": { "order": "desc" } }
+}'
+
+--Executing Searches
+# This example shows how to return two fields, account_number and balance (inside of _source)
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": { "match_all": {} },
+  "_source": ["account_number", "balance"]
+}'
+
+# This example returns the account numbered 20:
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": { "match": { "account_number": 20 } }
+}'
+
+# This example returns all accounts containing the term "mill" in the address:
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": { "match": { "address": "mill" } }
+}'
+
+# This example returns all accounts containing the term "mill" or "lane" in the address:
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": { "match": { "address": "mill lane" } }
+}'
+
+# This example is a variant of match (match_phrase) that returns all accounts containing the phrase "mill lane" in the address:
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": { "match_phrase": { "address": "mill lane" } }
+}'
+
+# This example composes two match queries and returns all accounts containing "mill" and "lane" in the address:
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": {
+    "bool": {
+      "must": [
+        { "match": { "address": "mill" } },
+        { "match": { "address": "lane" } }
+      ]
+    }
+  }
+}'
+
+# In contrast, this example composes two match queries and returns all accounts containing "mill" or "lane" in the address:
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": {
+    "bool": {
+      "should": [
+        { "match": { "address": "mill" } },
+        { "match": { "address": "lane" } }
+      ]
+    }
+  }
+}'
+
+# This example composes two match queries and returns all accounts that contain neither "mill" nor "lane" in the address:
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": {
+    "bool": {
+      "must_not": [
+        { "match": { "address": "mill" } },
+        { "match": { "address": "lane" } }
+      ]
+    }
+  }
+}'
+
+# This example returns all accounts of anybody who is 40 years old but don’t live in ID(aho):
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": {
+    "bool": {
+      "must": [
+        { "match": { "age": "40" } }
+      ],
+      "must_not": [
+        { "match": { "state": "ID" } }
+      ]
+    }
+  }
+}'
+
+--Executing Filters
+# This example uses a bool query to return all accounts with balances between 20000 and 30000, inclusive.
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "query": {
+    "bool": {
+      "must": { "match_all": {} },
+      "filter": {
+        "range": {
+          "balance": {
+            "gte": 20000,
+            "lte": 30000
+          }
+        }
+      }
+    }
+  }
+}'
+
+--Executing Aggregations
+# This example groups all the accounts by state, and then returns the top 10 (default) states sorted by count descending (also default):
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "size": 0,
+  "aggs": {
+    "group_by_state": {
+      "terms": {
+        "field": "state"
+      }
+    }
+  }
+}'
+
+# In SQL, the above aggregation is similar in concept to:
+SELECT state, COUNT(*) FROM bank GROUP BY state ORDER BY COUNT(*) DESC
+
+# Building on the previous aggregation, this example calculates the average account balance by state (again only for the top 10 states sorted by count in descending order):
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "size": 0,
+  "aggs": {
+    "group_by_state": {
+      "terms": {
+        "field": "state"
+      },
+      "aggs": {
+        "average_balance": {
+          "avg": {
+            "field": "balance"
+          }
+        }
+      }
+    }
+  }
+}'
+
+# Building on the previous aggregation, let’s now sort on the average balance in descending order:
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "size": 0,
+  "aggs": {
+    "group_by_state": {
+      "terms": {
+        "field": "state",
+        "order": {
+          "average_balance": "desc"
+        }
+      },
+      "aggs": {
+        "average_balance": {
+          "avg": {
+            "field": "balance"
+          }
+        }
+      }
+    }
+  }
+}'
+
+# This example demonstrates how we can group by age brackets (ages 20-29, 30-39, and 40-49), then by gender, and then finally get the average account balance, per age bracket, per gender:
+
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "size": 0,
+  "aggs": {
+    "group_by_state": {
+      "terms": {
+        "field": "state",
+        "order": {
+          "average_balance": "desc"
+        }
+      },
+      "aggs": {
+        "average_balance": {
+          "avg": {
+            "field": "balance"
+          }
+        }
+      }
+    }
+  }
+}'
+
+# This example demonstrates how we can group by age brackets (ages 20-29, 30-39, and 40-49), then by gender, and then finally get the average account balance, per age bracket, per gender:
+curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
+{
+  "size": 0,
+  "aggs": {
+    "group_by_age": {
+      "range": {
+        "field": "age",
+        "ranges": [
+          {
+            "from": 20,
+            "to": 30
+          },
+          {
+            "from": 30,
+            "to": 40
+          },
+          {
+            "from": 40,
+            "to": 50
+          }
+        ]
+      },
+      "aggs": {
+        "group_by_gender": {
+          "terms": {
+            "field": "gender"
+          },
+          "aggs": {
+            "average_balance": {
+              "avg": {
+                "field": "balance"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+
+
+Conclusion
+=============================
+Elasticsearch is both a simple and complex product.
+
