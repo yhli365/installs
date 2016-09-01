@@ -1,0 +1,26 @@
+https://curl.haxx.se/download.html
+
+
+download
+=============================
+https://curl.haxx.se/dlwiz/
+Select Type of Package: curl executable
+Select Operating System: Win64
+Select for What Flavour: Generic
+Select which Win64 Version: Unspecified
+Select for What CPU: x86_64
+
+curl executable > Win64 > Generic > Unspecified Version > x86_64
+
+For Win64 on x86_64 curl executable
+curl version: 7.50.1 - SSL enabled SSH enabled
+URL: https://bintray.com/artifact/download/vszakats/generic/curl-7.50.1-win64-mingw.7z
+Provided by: Viktor Szakáts 
+
+
+Install
+=============================
+unzip curl-7.50.1-win64-mingw.7z
+set env: PATH=D:\yapp\curl-7.50.1-win64-mingw\bin;%PATH%
+
+cmd> curl www.baidu.com
