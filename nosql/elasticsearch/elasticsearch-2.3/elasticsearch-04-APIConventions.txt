@@ -1,0 +1,73 @@
+Elasticsearch Reference
+=============================
+https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
+
+
+API Conventions
+=============================
+# The elasticsearch REST APIs are exposed using JSON over HTTP.
+
+
+Multiple Indices
+=============================
+# Most APIs that refer to an index parameter support execution across multiple indices, using simple test1,test2,test3 notation (or _all for all indices). It also support wildcards, for example: test* or *test or te*t or *test*, and the ability to "add" (+) and "remove" (-), for example: +test*,-test3.
+
+# All multi indices API support the following url query string parameters:
+ignore_unavailable
+allow_no_indices
+expand_wildcards
+# The defaults settings for the above parameters depend on the api being used.
+
+# Single index APIs such as the Document APIs and the single-index alias APIs do not support multiple indices.
+
+
+Date math support in index names
+=============================
+# Date math index name resolution enables you to search a range of time-series indices, rather than searching all of your time-series indices and filtering the results or maintaining aliases. 
+
+# A date math index name takes the following form:
+<static_name{date_math_expr{date_format|time_zone}}>
+
+# The following example shows a search request that searches the Logstash indices for the past three days
+curl -XGET 'localhost:9200/<logstash-{now%2Fd-2d}>,<logstash-{now%2Fd-1d}>,<logstash-{now%2Fd}>/_search' {
+  "query" : {
+    ...
+  }
+}
+
+
+Common options
+=============================
+Pretty Results
+Human readable output
+Date Math
+Response Filtering
+Flat Settings
+Parameters
+Boolean Values
+Number Values
+Time units
+Data size units
+Distance Units
+Fuzziness
+Result Casing
+Request body in query string
+
+--Response Filtering
+# All REST APIs accept a filter_path parameter that can be used to reduce the response returned by elasticsearch.
+curl -XGET 'localhost:9200/_search?pretty&filter_path=took,hits.hits._id,hits.hits._score'
+
+# It also supports the * wildcard character to match any field or part of a field’s name:
+curl -XGET 'localhost:9200/_nodes/stats?filter_path=nodes.*.ho*'
+
+# And the ** wildcard can be used to include fields without knowing the exact path of the field. 
+curl 'localhost:9200/_segments?pretty&filter_path=indices.**.version'
+
+# Note that elasticsearch sometimes returns directly the raw value of a field, like the _source field.
+curl -XGET 'localhost:9200/_search?pretty&filter_path=hits.hits._source&_source=title'
+
+
+URL-based access control
+=============================
+rest.action.multi.allow_explicit_index: false
+
