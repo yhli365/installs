@@ -1,0 +1,17 @@
+
+CentOS 6 IPv6 关闭方法1
+=============================
+# 1、查看系统是否开启ipv6
+# a) 通过网卡属性查看
+$ ifconfig | grep 'inet6 addr'
+注释：有 "inet6 addr：......" 内容表示开启了ipv6功能
+# b) 通过内核模块加载信息查看
+$ lsmod | grep ipv6
+
+# 2、ipv6关闭方法
+# 在/etc/modprobe.d/dist.conf结尾添加, 然后重启系统
+$ sudo vi /etc/modprobe.d/dist.conf
+alias net-pf-10 off
+alias ipv6 off
+$ sudo reboot
+
