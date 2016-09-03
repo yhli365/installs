@@ -1,0 +1,70 @@
+Elasticsearch Reference
+=============================
+https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
+
+
+Document APIs
+=============================
+This section describes the following CRUD APIs:
+
+Single document APIs
+    Index API
+    Get API
+    Delete API
+    Update API 
+
+Multi-document APIs
+    Multi Get API
+    Bulk API 
+
+
+Index API
+=============================
+$ curl -XPUT 'http://localhost:9200/twitter/tweet/1' -d '{
+    "user" : "kimchy",
+    "post_date" : "2009-11-15T14:12:12",
+    "message" : "trying out Elasticsearch"
+}'
+
+--Automatic Index Creation
+action.auto_create_index = false
+index.mapper.dynamic = false
+action.auto_create_index = +aaa*,-bbb*,+ccc*,-* (+ meaning allowed, and - meaning disallowed)
+
+--Versioning
+curl -XPUT 'localhost:9200/twitter/tweet/1?version=2' -d '{
+    "message" : "elasticsearch now has versioning support, double cool!"
+}'
+
+--Operation Type
+$ curl -XPUT 'http://localhost:9200/twitter/tweet/1?op_type=create' -d '{
+    "user" : "kimchy",
+    "post_date" : "2009-11-15T14:12:12",
+    "message" : "trying out Elasticsearch"
+}'
+
+$ curl -XPUT 'http://localhost:9200/twitter/tweet/1/_create' -d '{
+    "user" : "kimchy",
+    "post_date" : "2009-11-15T14:12:12",
+    "message" : "trying out Elasticsearch"
+}'
+
+--Automatic ID Generation
+$ curl -XPOST 'http://localhost:9200/twitter/tweet/' -d '{
+    "user" : "kimchy",
+    "post_date" : "2009-11-15T14:12:12",
+    "message" : "trying out Elasticsearch"
+}'
+
+--Routing
+
+
+Parents & Children
+Timestamp
+TTL
+Distributed
+Write Consistency
+Refresh
+Noop Updates
+Timeout
+
