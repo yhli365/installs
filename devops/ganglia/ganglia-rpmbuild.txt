@@ -1,0 +1,99 @@
+Ganglia
+=============================
+http://ganglia.info/
+
+--ganglia
+ganglia-3.7.1.tar.gz
+
+--ganglia-web
+ganglia-web-3.7.2.tar.gz
+ganglia-web-3.6.2.tar.gz
+
+
+Yum Server
+=============================
+--查看系统版本
+$ lsb_release -a | grep Description
+Description:    CentOS release 6.4 (Final)
+$ sudo sh /tool/shell/yumserver.sh
+
+--更新依赖包YUM仓库
+$ cp -r /share/soft/rpms/CentOS6_x86_64/ganglia-3.7.1/*.rpm /var/ftp/yum/myrepo/6
+$ rm -rf /var/ftp/yum/myrepo/6/repodata
+$ createrepo /var/ftp/yum/myrepo/6
+$ yum clean all
+
+
+依赖包安装(CentOS6)
+=============================
+--安装依赖: libconfuse,rrdtool
+# 下载RPM包 https://pkgs.org/
+# 源码 https://github.com/martinh/libconfuse
+libconfuse-2.7
+
+$ yum info libconfuse-devel
+$ yum install libconfuse-devel -y
+
+--安装依赖: rrdtool
+# 下载RPM包 https://pkgs.org/
+# 源码 http://oss.oetiker.ch/rrdtool/
+rrdtool-1.4.8
+
+$ yum info rrdtool-devel
+$ yum install rrdtool-devel -y
+
+--安装其他依赖
+$ rpm -q pcre-devel apr-devel httpd
+$ yum install pcre-devel apr-devel httpd -y
+
+$ rpm -q libpng-devel libart_lgpl-devel gcc-c++ python-devel autoconf automake libtool expat-devel freetype-devel
+$ yum install libpng-devel libart_lgpl-devel gcc-c++ python-devel autoconf automake libtool expat-devel freetype-devel
+
+
+Build (by root)
+=============================
+--RPM编译环境搭建
+$ yum install rpm-build
+$ rpmbuild --version
+RPM version 4.8.0
+$ mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCES,PECS,RPMS}}
+$ echo "%_topdir%(echo $HOME)/rpmbuild" > ~/.rpmmacros
+$ mkdir source;cd source
+
+--ganglia之RPM包制作
+$ rpmbuild -tb ganglia-3.7.1.tar.gz
+$ ll ~/rpmbuild/RPMS/x86_64/ | grep ganglia
+-rw-r--r-- 1 root root  54160 Sep  3 16:03 ganglia-devel-3.7.1-1.x86_64.rpm
+-rw-r--r-- 1 root root  66788 Sep  3 16:03 ganglia-gmetad-3.7.1-1.x86_64.rpm
+-rw-r--r-- 1 root root 349865 Sep  3 16:03 ganglia-gmond-3.7.1-1.x86_64.rpm
+-rw-r--r-- 1 root root 168377 Sep  3 16:03 ganglia-gmond-modules-python-3.7.1-1.x86_64.rpm
+-rw-r--r-- 1 root root 101181 Sep  3 16:03 libganglia-3.7.1-1.x86_64.rpm
+
+--ganglia-web之RPM包制作(ganglia-web-3.7.2.tar.gz)
+# bugfixed
+$ tar xzvf ganglia-web-3.7.2.tar.gz
+$ vi ganglia-web-3.7.2/ganglia-web.spec
+Version: 3.7.2
+$ rm -rf ganglia-web-3.7.2.tar.gz
+$ tar czvf ganglia-web-3.7.2.tar.gz ganglia-web-3.7.2/
+
+$ cp /etc/httpd/conf/httpd.conf apache.conf
+$ rpmbuild -tb ganglia-web-3.7.2.tar.gz
+$ ll ~/rpmbuild/RPMS/noarch/ | grep ganglia
+-rw-r--r-- 1 root root 744869 Sep  3 16:04 ganglia-web-3.7.2-1.noarch.rpm
+
+--ganglia-web之RPM包制作(ganglia-web-3.6.2.tar.gz)
+$ cp /etc/httpd/conf/httpd.conf apache.conf
+$ rpmbuild -tb ganglia-web-3.7.2.tar.gz
+$ ll ~/rpmbuild/RPMS/noarch/ | grep ganglia
+-rw-r--r-- 1 root root 3619257 Aug 31 16:58 ganglia-web-3.6.2-1.noarch.rpm
+
+
+更新YUM仓库
+=============================
+$ mkdir -p /var/ftp/yum/myrepo/6/ganglia
+$ cp -ru ~/rpmbuild/RPMS/x86_64/*ganglia*.rpm /var/ftp/yum/myrepo/6/ganglia
+$ cp -ru ~/rpmbuild/RPMS/noarch/*ganglia*.rpm /var/ftp/yum/myrepo/6/ganglia
+$ ll /var/ftp/yum/myrepo/6/ganglia | grep ganglia
+$ createrepo /var/ftp/yum/myrepo/6/
+
