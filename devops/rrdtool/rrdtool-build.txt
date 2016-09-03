@@ -1,0 +1,91 @@
+RRDTool compile
+=============================
+--OS
+$ lsb_release -a | grep Description
+Description:    CentOS release 6.4 (Final)
+
+--下载rrdtool http://oss.oetiker.ch/rrdtool/pub/?M=D
+rrdtool-1.6.0.tar.gz
+
+--编译准备
+$ BUILD_DIR=/root/rrdbuild
+$ INSTALL_DIR=/opt/rrdtool-1.6.0
+$ mkdir -p $BUILD_DIR
+$ cd $BUILD_DIR
+$ ll $INSTALL_DIR
+
+--初次编译rrdtool
+$ tar xzvf rrdtool-1.6.0.tar.gz
+$ cd rrdtool-1.6.0
+$ ./configure --prefix=$INSTALL_DIR
+根据错误信息提示下载依赖项
+$ vi doc/rrdbuild.txt
+
+--编译依赖项
+$ export PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig
+$ export PATH=$INSTALL_DIR/bin:$PATH
+$ export LDFLAGS="-Wl,--rpath -Wl,${INSTALL_DIR}/lib"
+
+$ tar xzf pkg-config-0.23.tar.gz && cd pkg-config-0.23
+$ ./configure --prefix=$INSTALL_DIR CFLAGS="-O3 -fPIC"
+$ make
+$ make install
+$ export PKG_CONFIG=$INSTALL_DIR/bin/pkg-config
+
+$ tar xzf zlib-1.2.3.tar.gz && cd zlib-1.2.3
+$ ./configure --prefix=$INSTALL_DIR --shared
+$ make 
+$ make install
+
+$ tar xzf libpng-1.2.18.tar.gz && cd libpng-1.2.18
+$ env CFLAGS="-O3 -fPIC" ./configure --prefix=$INSTALL_DIR
+$ make 
+$ make install
+
+$ tar xzf freetype-2.3.5.tar.gz && cd freetype-2.3.5
+$ ./configure --prefix=$INSTALL_DIR CFLAGS="-O3 -fPIC"
+$ make && make install
+
+$ tar xzf libxml2-2.6.32.tar.gz && cd libxml2-2.6.32
+$ ./configure --prefix=$INSTALL_DIR CFLAGS="-O3 -fPIC"
+$ make && make install
+
+$ tar xzf fontconfig-2.4.2.tar.gz && cd fontconfig-2.4.2
+$ ./configure --prefix=$INSTALL_DIR CFLAGS="-O3 -fPIC" --with-freetype-config=$INSTALL_DIR/bin/freetype-config
+$ make && make install
+
+$ tar xzf pixman-0.10.0.tar.gz && cd pixman-0.10.0
+$ ./configure --prefix=$INSTALL_DIR CFLAGS="-O3 -fPIC"
+$ make && make install
+
+$ tar xzf cairo-1.6.4.tar.gz && cd cairo-1.6.4
+$ ./configure --prefix=$INSTALL_DIR \
+           --enable-xlib=no \
+           --enable-xlib-render=no \
+           --enable-win32=no \
+           CFLAGS="-O3 -fPIC"
+$ make && make install
+
+$ tar xzf glib-2.15.4.tar.gz && cd glib-2.15.4
+$ ./configure --prefix=$INSTALL_DIR CFLAGS="-O3 -fPIC"
+$ make && make install
+
+$ bunzip2 -c pango-1.21.1.tar.bz2 | tar xf - && cd pango-1.21.1
+$ ./configure --prefix=$INSTALL_DIR CFLAGS="-O3 -fPIC" --without-x
+$ make && make install
+
+--再次编译rrdtool
+$ cd $BUILD_DIR/rrdtool-1.6.0
+$ ./configure --prefix=$INSTALL_DIR --disable-tcl --disable-python
+$ make clean
+$ make
+$ make install
+
+$ cd $INSTALL_DIR
+$ bin/rrdtool -v
+RRDtool 1.6.0 
+$ bin/rrdcached -h
+RRDCacheD 1.6.0
+
+--环境设置
+$ 
