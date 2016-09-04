@@ -1,0 +1,13 @@
+Zabbix
+=============================
+http://www.zabbix.com/
+Zabbix is the ultimate enterprise-level software designed for real-time monitoring of millions of metrics collected from tens of thousands of servers, virtual machines and network devices.
+Zabbix is Open Source and comes at no cost.
+
+
+download
+=============================
+http://www.zabbix.com/download.php
+zabbix-*.el6.x86_64.rpm
+
+

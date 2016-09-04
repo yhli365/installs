@@ -1,0 +1,7 @@
+
+gweb bugfixed
+=============================
+--filter_input() 函数不支持，需升级php或屏蔽相关行
+/var/www/html/ganglia/header.php
+/var/www/html/ganglia/footer.php
+

@@ -6,8 +6,9 @@ http://ganglia.info/
 ganglia-3.7.1.tar.gz
 
 --ganglia-web
-ganglia-web-3.7.2.tar.gz
-ganglia-web-3.6.2.tar.gz
+ganglia-web-3.7.2.tar.gz (bugfixed)
+ganglia-web-3.7.1.tar.gz
+ganglia-web-3.6.2.tar.gz (bugfixed)
 
 
 Yum Server
@@ -70,17 +71,55 @@ $ ll ~/rpmbuild/RPMS/x86_64/ | grep ganglia
 -rw-r--r-- 1 root root 101181 Sep  3 16:03 libganglia-3.7.1-1.x86_64.rpm
 
 --ganglia-web之RPM包制作(ganglia-web-3.7.2.tar.gz)
-# bugfixed
-$ tar xzvf ganglia-web-3.7.2.tar.gz
-$ vi ganglia-web-3.7.2/ganglia-web.spec
-Version: 3.7.2
-$ rm -rf ganglia-web-3.7.2.tar.gz
-$ tar czvf ganglia-web-3.7.2.tar.gz ganglia-web-3.7.2/
+#下载CDN中文件放在本地目录
+$ tar xzf ganglia-web-3.7.2.tar.gz && cd ganglia-web-3.7.2
+$ vi conf_default.php --根据以下地址下载
+$conf['jquery_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js";
+$conf['jquerymobile_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.js";
+$conf['jqueryui_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js";
+$conf['rickshaw_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/rickshaw/1.5.1/rickshaw.min.js";
+$conf['cubism_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/cubism/1.6.0/cubism.v1.min.js";
+$conf['d3_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js";
+$conf['protovis_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/protovis/3.3.1/protovis.min.js";
+$conf['jstree_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js";
+$conf['jstree_css_path'] = "https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css";
 
+$conf['jquery_flot_base_path'] = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot";
+
+$ 下载后上传到js/cdnjs目录下
+$ vi conf_default.php
+$conf['jquery_js_path'] = "js/cdnjs/jquery.min.js";
+$conf['jquerymobile_js_path'] = "js/cdnjs/jquery.mobile.min.js";
+$conf['jqueryui_js_path'] = "js/cdnjs/jquery-ui.min.js";
+$conf['rickshaw_js_path'] = "js/cdnjs/rickshaw.min.js";
+$conf['cubism_js_path'] = "js/cdnjs/cubism.v1.min.js";
+$conf['d3_js_path'] = "js/cdnjs/d3.min.js";
+$conf['protovis_js_path'] = "js/cdnjs/protovis.min.js";
+$conf['jstree_js_path'] = "js/cdnjs/jstree/jstree.min.js";
+$conf['jstree_css_path'] = "js/cdnjs/jstree/themes/default/style.min.css";
+
+$conf['jquery_flot_base_path'] = "js/cdnjs/jquery.flot.min.js";
+
+# bugfixed: 编译RPM报错修复
+$ vi ganglia-web.spec
+Version: 3.7.2
+
+# 重新打包
+$ rm -rf ganglia-web-3.7.2.tar.gz
+$ tar czf ganglia-web-3.7.2.tar.gz ganglia-web-3.7.2/
+
+# 编译RPM
 $ cp /etc/httpd/conf/httpd.conf apache.conf
 $ rpmbuild -tb ganglia-web-3.7.2.tar.gz
 $ ll ~/rpmbuild/RPMS/noarch/ | grep ganglia
 -rw-r--r-- 1 root root 744869 Sep  3 16:04 ganglia-web-3.7.2-1.noarch.rpm
+$ rpm -qpl ~/rpmbuild/RPMS/noarch/ganglia-web-3.7.2-1.noarch.rpm
+
+--ganglia-web之RPM包制作(ganglia-web-3.7.1.tar.gz)
+$ cp /etc/httpd/conf/httpd.conf apache.conf
+$ rpmbuild -tb ganglia-web-3.7.1.tar.gz
+$ ll ~/rpmbuild/RPMS/noarch/ | grep ganglia
+-rw-r--r-- 1 root root 891969 Sep  4 12:22 ganglia-web-3.7.1-1.noarch.rpm
 
 --ganglia-web之RPM包制作(ganglia-web-3.6.2.tar.gz)
 $ cp /etc/httpd/conf/httpd.conf apache.conf

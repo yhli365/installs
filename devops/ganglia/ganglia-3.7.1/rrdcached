@@ -18,7 +18,7 @@
 
 prog=rrdcached
 rrdcached=/usr/bin/rrdcached
-pidfile=/var/rrdtool/rrdcached/rrdcached.pid
+pidfile=/var/run/rrdcached/rrdcached.pid
 
 [ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
 

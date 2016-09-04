@@ -1,0 +1,14 @@
+gweb 3.7.1
+
+bugfixed
+=============================
+--下载需要的js文件并在conf.php中设置本地路径
+$ vi /var/www/html/ganglia/conf_default.php
+$conf['jquery_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js";
+$conf['jquerymobile_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.js";
+$conf['jqueryui_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js";
+$conf['rickshaw_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/rickshaw/1.5.1/rickshaw.min.js";
+$conf['cubism_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/cubism/1.6.0/cubism.v1.min.js";
+$conf['d3_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js";
+$conf['protovis_js_path'] = "https://cdnjs.cloudflare.com/ajax/libs/protovis/3.3.1/protovis.min.js";
+$ vi /var/www/html/ganglia/conf.php
