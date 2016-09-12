@@ -1,0 +1,73 @@
+Huawei S5700 交换机
+
+S5700 V200R001C00 产品文档 02.zip
+
+
+CLI
+=============================
+--显示系统配置信息
+<Huawei>
+#显示系统版本
+display version
+#显示系统时钟
+display clock
+display clock utc
+#显示起始配置信息
+display saved-configuration
+#显示当前配置信息
+display current-configuration
+#显示历史命令
+display history-command
+#显示CPU利用率
+display cpu-usage
+
+--显示系统运行状态
+display this
+
+--收集系统诊断信息
+display diagnostic-information logfile1
+
+--检查接口配置
+#显示接口列表
+display interface
+display interface brief
+#查看接口当前运行状态和统计信息
+display interface MEth 0/0/1
+display interface GigabitEthernet 0/0/1
+#查看接口的描述信息
+display interface description
+#查看接口IP的主要配置信息
+display ip interface MEth 0/0/1
+display ip interface GigabitEthernet 0/0/1
+#查看接口IP的简要状态信息
+display ip interface brief MEth 0/0/1
+#清除接口统计信息(清除后不能恢复)
+reset counters interface MEth 0/0/1
+
+--配置VTY用户界面
+#查看用户界面的使用信息
+display users
+display users all
+#查看VTY类型用户界面的最大个数
+display user-interface maximum-vty
+#查看用户界面的物理属性和配置
+display user-interface vty 0
+display user-interface vty 0 summary
+#查看本地用户列表
+display local-user
+#查看VTY模式
+display vty mode
+
+--设置设备名称
+<Huawei>system-view
+[Huawei]sysname hw5700x1
+
+--
+[Huawei]quit
+
+
+--保存配置
+<hw5700x1>save all
+
+<hw5700x1>save 20160906a.cfg
+
