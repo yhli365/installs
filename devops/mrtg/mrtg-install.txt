@@ -1,0 +1,45 @@
+MRTG - The Multi Router Traffic Grapher
+=============================
+http://oss.oetiker.ch/mrtg/
+
+
+What it does
+=============================
+You have a router, you want to know what it does all day long? Then MRTG is for you. It will monitor SNMP network devices and draw pretty pictures showing how much traffic has passed through each interface.
+
+Routers are only the beginning. MRTG is being used to graph all sorts of network devices as well as everything else from weather data to vending machines.
+
+MRTG is written in perl and works on Unix/Linux as well as Windows and even Netware systems. MRTG is free software licensed under the Gnu GPL.
+
+
+Install (CentOS 6.4)
+=============================
+--download
+mrtg-2.17.4.tar.gz 
+
+--LIBRARY
+[root@cdh5 ~]# yum clean all
+[root@cdh5 ~]# yum install zlib libpng gd-devel -y
+[root@cdh5 ~]# rpm -q zlib libpng gd-devel
+zlib-1.2.3-29.el6.x86_64
+libpng-1.2.49-1.el6_2.x86_64
+gd-devel-2.0.35-11.el6.x86_64
+
+#gd-devel
+[root@cdh5 ~]# yum install gd-devel
+[root@cdh5 ~]# yum install fontconfig-devel libX11-devel libXau-devel libXpm-devel libjpeg-turbo-devel libxcb-devel xorg-x11-proto-devel
+[root@cdh5 ~]# mkdir -p /media/cdrom
+[root@cdh5 ~]# mount -t iso9660 -o loop /iso/CentOS/CentOS-6.4-x86_64-bin-DVD2.iso /media/cdrom
+[root@cdh5 ~]# ll /media/cdrom/Packages/ | grep gd-devel
+[root@cdh5 ~]# rpm -ivh /media/cdrom/Packages/gd-devel-2.0.35-11.el6.x86_64.rpm
+
+--MRTG COMPILATION
+[root@cdh5 ~]# tar xzf mrtg-2.17.4.tar.gz -C /data1/local
+[root@cdh5 ~]# cd /data1/local/mrtg-2.17.4
+[root@cdh5 mrtg-2.17.4]# ./configure --prefix=/usr/local/mrtg-2
+[root@cdh5 mrtg-2.17.4]# make
+[root@cdh5 mrtg-2.17.4]# make install
+[root@cdh5 mrtg-2.17.4]# ll /usr/local/mrtg-2
+
+--CONFIGURATION 
+
