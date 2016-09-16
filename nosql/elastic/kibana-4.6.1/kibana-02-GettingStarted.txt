@@ -1,0 +1,134 @@
+Getting Started with Kibana
+
+
+Before You Start: Loading Sample Data
+=============================
+$ cd /data1/test/elk/data/
+$ unzip accounts.zip
+$ gunzip logs.jsonl.gz
+
+--Use the following command to set up a mapping for the Shakespeare data set:
+$ curl -XPUT http://localhost:9200/shakespeare -d '
+{
+ "mappings" : {
+  "_default_" : {
+   "properties" : {
+    "speaker" : {"type": "string", "index" : "not_analyzed" },
+    "play_name" : {"type": "string", "index" : "not_analyzed" },
+    "line_id" : { "type" : "integer" },
+    "speech_number" : { "type" : "integer" }
+   }
+  }
+ }
+}
+';
+
+--Use the following commands to establish geo_point mapping for the logs:
+$ curl -XPUT http://localhost:9200/logstash-2015.05.18 -d '
+{
+  "mappings": {
+    "log": {
+      "properties": {
+        "geo": {
+          "properties": {
+            "coordinates": {
+              "type": "geo_point"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+';
+
+$ curl -XPUT http://localhost:9200/logstash-2015.05.19 -d '
+{
+  "mappings": {
+    "log": {
+      "properties": {
+        "geo": {
+          "properties": {
+            "coordinates": {
+              "type": "geo_point"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+';
+
+$ curl -XPUT http://localhost:9200/logstash-2015.05.20 -d '
+{
+  "mappings": {
+    "log": {
+      "properties": {
+        "geo": {
+          "properties": {
+            "coordinates": {
+              "type": "geo_point"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+';
+
+--Use the Elasticsearch bulk API to load the data sets with the following commands:
+curl -XPOST 'localhost:9200/bank/account/_bulk?pretty' --data-binary @accounts.json
+curl -XPOST 'localhost:9200/shakespeare/_bulk?pretty' --data-binary @shakespeare.json
+curl -XPOST 'localhost:9200/_bulk?pretty' --data-binary @logs.jsonl
+
+--Verify successful loading with the following command:
+curl 'localhost:9200/_cat/indices?v'
+
+
+Defining Your Index Patterns
+=============================
+Each set of data loaded to Elasticsearch has an index pattern. 
+
+--Web: Settings->Indices  Click Add New
+Index contains time-based events box is unchecked
+shakes*
+ba*
+
+Index contains time-based events box is checked 
+logstash-* @timestamp
+
+--Discovering Your Data
+Click the Discover tab to display Kibana’s data discovery functions:
+
+# ba*
+account_number:<100 AND balance:>47500
+
+# To narrow the display to only the specific fields of interest, highlight each field in the list that displays under the index pattern and click the Add button.
+
+
+Data Visualization: Beyond Discovery
+=============================
+Visualizations depend on Elasticsearch aggregations in two different types: bucket aggregations and metric aggregations. 
+
+--Click on Pie chart, then From a new search. Select the ba* index pattern.
+bank-pie01
+bank-pie02
+
+--Click on New Visualization, then Vertical bar chart. Select From a new search and the shakes* index pattern. 
+shakes-bar01
+shakes-bar02
+
+--Click on New Visualization, then Tile map. Select From a new search and the logstash-* index pattern.
+logstash-map01
+
+--Click on New Visualization, then Markdown widget, to display a very simple Markdown entry field:
+markdown01
+
+
+Putting it all Together with Dashboards
+=============================
+--A Kibana dashboard is a collection of visualizations that you can arrange and share. 
+dashboard01
+

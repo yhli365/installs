@@ -1,0 +1,66 @@
+Elasticsearch
+=============================
+Search and analyze data in real time. 
+Elasticsearch is a distributed, open source search and analytics engine, designed for horizontal scalability, reliability, and easy management. 
+
+#Elasticsearch Reference
+https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
+
+#Elasticsearch: The Definitive Guide
+https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html
+
+#Elasticsearch 权威指南（中文版）
+http://es.xiaoleilu.com/
+
+
+Install (CentOS 6.4)
+=============================
+--download
+https://www.elastic.co/downloads
+
+--检查依赖
+$ java -version
+$ echo $JAVA_HOME
+
+--解压部署
+$ tar xzf elasticsearch-2.4.0.tar.gz -C /data1/apps
+$ cd /data1/apps/elasticsearch-2.4.0
+
+$ bin/elasticsearch --help
+
+--配置文件
+$ vi config/elasticsearch.yml
+network.host: 127.0.0.1,192.168.5.5
+
+--启动
+$ bin/elasticsearch -d
+$ tail -100f logs/elasticsearch.log
+
+--关闭
+$ jps -l
+$ ps -ef |grep Elasticsearch|grep -v grep|awk '{print $2}'|xargs kill -9
+
+--验证
+$ curl -XGET http://localhost:9200/
+{
+  "status" : 200,
+  "name" : "Citizen V",
+  "version" : {
+    "number" : "1.0.1",
+    "build_hash" : "5c03844e1978e5cc924dab2a423dc63ce881c42b",
+    "build_timestamp" : "2014-02-25T15:52:53Z",
+    "build_snapshot" : false,
+    "lucene_version" : "4.6"
+  },
+  "tagline" : "You Know, for Search"
+}
+
+
+front ends
+=============================
+elasticsearch-head: A web front end for an Elasticsearch cluster.
+Hammer: Web front-end for elasticsearch
+
+http://192.168.5.5:9200/_plugin/head
+http://192.168.5.5:9200/_plugin/hammer
+

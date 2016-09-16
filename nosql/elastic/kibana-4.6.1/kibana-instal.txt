@@ -1,0 +1,38 @@
+Kibana
+=============================
+Explore and visualize your data. 
+Kibana is an open source data visualization platform that allows you to interact with your data through stunning, powerful graphics that can be combined into custom dashboards that help you share insights from your data far and wide. 
+
+https://www.elastic.co/guide/en/kibana/current/index.html
+
+Install
+=============================
+--download
+https://www.elastic.co/downloads
+
+--解压部署
+$ tar xzf kibana-4.6.1-linux-x86_64.tar.gz -C /data1/apps
+$ cd /data1/apps/kibana-4.6.1-linux-x86_64
+
+$ bin/kibana --help
+$ bin/kibana help serve
+$ bin/kibana plugin -l
+
+--配置文件
+$ vi config/kibana.yml
+elasticsearch.url: "http://localhost:9200"
+
+
+Service
+=============================
+--启动
+$ bin/kibana
+
+$ nohup bin/kibana serve >> kibana.log 2>&1 &
+$ tail -100f kibana.log
+
+$ ps aux | grep node | grep serve |awk '{print $2}'|xargs kill -9
+
+--Web
+http://cdh5:5601/
+

@@ -1,0 +1,73 @@
+Getting Started with Logstash
+
+
+Installing Logstash
+=============================
+Logstash requires Java 7 or later.
+$ java -version
+--Installing from a Downloaded Binary
+
+--Installing from Package Repositories
+$ yum install logstash
+
+
+Stashing Your First Event: Basic Logstash Example
+=============================
+$ bin/logstash -e 'input { stdin { } } output { stdout {} }'
+Settings: Default pipeline workers: 2
+Pipeline main started
+hello world
+2016-09-15T06:12:57.530Z cdh5 hello world
+<CTRL-D>
+Pipeline main has been shutdown
+stopping pipeline {:id=>"main"}
+$ 
+
+
+Parsing Logs with Logstash
+=============================
+--Verify your configuration
+$ vi conf/first-pipeline.conf
+$ bin/logstash -f conf/first-pipeline.conf --configtest
+$ bin/logstash -f conf/first-pipeline.conf
+
+$ curl -XGET 'localhost:9200/<logstash-\{now%2Fd\}>/_search?pretty&q=response=200'
+$ curl -XGET 'localhost:9200/<logstash-\{now%2Fd\}>/_search?pretty&q=geoip.city_name=Buffalo'
+
+--Stitching Together Multiple Input and Output Plugins
+
+
+Stalled Shutdown Detection
+=============================
+--Shutting down a running Logstash instance involves the following steps:
+Stop all input, filter and output plugins
+Process all in-flight events
+Terminate the Logstash process 
+
+--Stall Detection Example
+$ bin/logstash -e 'input { generator { } } filter { ruby { code => "sleep 10000" } } output { stdout { codec => dots } }' \
+	-w 1 --allow-unsafe-shutdown
+<Ctrl+C>
+
+
+Logstash Processing Pipeline
+=============================
+--Inputs
+file, syslog, redis, beats
+
+--Filters
+grok, mutate, drop, clone, geoip
+
+--Outputs
+elasticsearch, file, graphite, statsd
+
+--Codecs
+json, multiline
+
+--Fault Tolerance
+use the --allow-unsafe-shutdown flag.
+
+--Execution Model
+input threads | pipeline worker threads
+There are three configurable options in the pipeline, --pipeline-workers, --pipeline-batch-size, and --pipeline-batch-delay.
+

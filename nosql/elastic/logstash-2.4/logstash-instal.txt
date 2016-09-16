@@ -1,0 +1,20 @@
+Logstash
+=============================
+Collect, enrich, and transport data.
+Logstash is a flexible, open source, data collection, enrichment, and transport pipeline designed to efficiently process a growing list of log, event, and unstructured data sources for distribution into a variety of outputs, including Elasticsearch. 
+
+https://www.elastic.co/guide/en/logstash/current/index.html
+
+
+Install (CentOS 6.4)
+=============================
+--download
+https://www.elastic.co/downloads
+
+--解压部署
+$ tar xzf logstash-2.4.0.tar.gz -C /data1/apps
+$ cd /data1/apps/logstash-2.4.0
+
+$ bin/logstash version
+$ bin/logstash help
+
