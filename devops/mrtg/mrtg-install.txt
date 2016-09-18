@@ -12,7 +12,7 @@ Routers are only the beginning. MRTG is being used to graph all sorts of network
 MRTG is written in perl and works on Unix/Linux as well as Windows and even Netware systems. MRTG is free software licensed under the Gnu GPL.
 
 
-Install (CentOS 6.4)
+Install by source (CentOS 6.4)
 =============================
 --download
 mrtg-2.17.4.tar.gz 
@@ -41,5 +41,74 @@ gd-devel-2.0.35-11.el6.x86_64
 [root@cdh5 mrtg-2.17.4]# make install
 [root@cdh5 mrtg-2.17.4]# ll /usr/local/mrtg-2
 
---CONFIGURATION 
+
+Install by YUM (CentOS 6.4)
+=============================
+[root@cdh5 ~]# yum install net-snmp* -y
+[root@cdh5 ~]# yum install mrtg -y
+[root@cdh5 ~]# rpm -q mrtg
+mrtg-2.16.2-7.el6.x86_64
+
+
+CentOS开启SNMP
+=============================
+[root@cdh5 ~]# yum install net-snmp -y
+[root@cdh5 ~]# vi /etc/snmp/snmpd.conf
+#1.可选修改com2sec，community值public
+com2sec notConfigUser  default       public
+#2.查找view mib2,将其前面"#"注释去掉.
+view mib2   included  .iso.org.dod.internet.mgmt.mib-2 fc
+#3.查找 access  notConfigGroup,将read值systemview修改为mib2.
+access  notConfigGroup ""      any       noauth    exact  mib2 none none
+
+--重启snmp服务
+[root@cdh5 ~]# service snmpd restart
+[root@cdh5 ~]# service snmpd status
+[root@cdh5 ~]# iptables -L -n |grep 161
+[root@cdh5 ~]# netstat -anop |grep 161
+
+--开机自动启动snmpd服务.
+[root@cdh5 ~]# chkconfig --level 2345 snmpd on
+[root@cdh5 ~]# chkconfig --list |grep snmpd
+
+
+CONFIG
+=============================
+--MRTG配置文件
+#ifref用来指示用什么选项来标识设备接口, 可以指定为nr、ip、eth、descr、name。
+[root@cdh5 ~]# cfgmaker --global 'WorkDir: /var/www/mrtg' \
+	--global "Options[_]: growright,bits" \
+	--ifref=nr \
+	--output /etc/mrtg/mrtg.cfg \
+	public@127.0.0.1 \
+	public@192.168.56.251
+	
+[root@cdh5 ~]# vi /etc/mrtg/mrtg.cfg
+
+--创建索引页
+#你可以将以下指令加到crontab内，或者在每次修改mrtg.cfg后执行它。
+[root@cdh5 ~]# indexmaker --output=/var/www/mrtg/index.html /etc/mrtg/mrtg.cfg
+[root@cdh5 ~]# ll /var/www/mrtg/index.html
+
+--修改MRTG的Apache设置
+[root@cdh5 ~]# vi /etc/httpd/conf.d/mrtg.conf
+<Location /mrtg>
+    Order deny,allow
+    #Deny from all
+    #Allow from 127.0.0.1
+	#Allow from ::1
+	Allow from all
+</Location>
+[root@cdh5 ~]# service httpd restart
+
+--通过WEB访问
+http://cdh5/mrtg
+
+--调试
+[root@cdh5 ~]# LANG=C LC_ALL=C /usr/bin/mrtg /etc/mrtg/mrtg.cfg --lock-file /var/lock/mrtg/mrtg_l --confcache-file /var/lib/mrtg/mrtg.ok
+
+--生成环境配置Crontab
+[root@cdh5 ~]# crontab -e
+*/5 * * * *  LANG=C LC_ALL=C /usr/bin/mrtg /etc/mrtg/mrtg.cfg --logging /var/log/mrtg.log
+[root@cdh5 ~]# tail -100f /var/log/cron
 

@@ -68,6 +68,7 @@ display vty mode
 <hw5700x1>save
 <hw5700x1>save all
 
+
 --配置设备名称和管理IP
 <Huawei>system-view
 [Huawei]sysname hw5700x1
