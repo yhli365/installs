@@ -44,7 +44,7 @@ display ip interface brief MEth 0/0/1
 #清除接口统计信息(清除后不能恢复)
 reset counters interface MEth 0/0/1
 
---配置VTY用户界面
+--查看VTY用户界面
 #查看用户界面的使用信息
 display users
 display users all
@@ -58,16 +58,56 @@ display local-user
 #查看VTY模式
 display vty mode
 
---设置设备名称
-<Huawei>system-view
-[Huawei]sysname hw5700x1
-
---
-[Huawei]quit
-
 
 --保存配置
+<hw5700x1>display current-configuration
+<hw5700x1>display saved-configuration
+
+<hw5700x1>dir
+<hw5700x1>save 20160906a.cfg
+<hw5700x1>save
 <hw5700x1>save all
 
-<hw5700x1>save 20160906a.cfg
+--配置设备名称和管理IP
+<Huawei>system-view
+[Huawei]sysname hw5700x1
+[hw5700x1]quit
+
+--配置设备管理IP
+[Huawei]interface vlanif 1
+[Huawei-Vlanif1]ip address 192.168.56.251 24
+[Huawei-Vlanif1]display this
+[Huawei-Vlanif1]undo ip address 192.168.56.251 24
+
+[Huawei]interface meth 0/0/1
+[Huawei-MEth0/0/1]ip address 192.168.56.250 255.255.255.0
+[Huawei-MEth0/0/1]display this
+
+--配置AAA及用户管理
+[Huawei]aaa
+[Huawei-aaa]local-user admin password cipher admin
+[Huawei-aaa]local-user admin password irreversible-cipher admin
+[Huawei-aaa]local-user admin privilege level 15
+[Huawei-aaa]local-user admin service-type http ssh telnet
+[Huawei-aaa]display this
+
+<Huawei>display aaa configuration
+<Huawei>display local-user
+
+--配置VTY用户界面的用户级别和验证方式
+[Huawei]user-interface vty 0 4
+[Huawei-ui-vty0-4]user privilege level 15
+[Huawei-ui-vty0-4]authentication-mode aaa
+[Huawei-ui-vty0-4]display this
+
+--配置telnet服务
+[Huawei]telnet server enable
+[Huawei]display telnet-client
+
+--配置SNMP服务
+[Huawei]snmp-agent community read public
+[Huawei]snmp-agent community write private
+[Huawei]snmp-agent sys-info version all
+[Huawei]display snmp-agent sys-info
+[Huawei]display snmp-agent statistics
 
