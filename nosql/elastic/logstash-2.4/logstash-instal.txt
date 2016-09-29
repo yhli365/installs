@@ -18,3 +18,23 @@ $ cd /data1/apps/logstash-2.4.0
 $ bin/logstash version
 $ bin/logstash help
 
+
+Log4j配置
+=============================
+--log4j应用配置文件
+$ vi log4j.properties
+log4j.rootLogger=INFO,stdout,file,logstash
+#logstash
+log4j.appender.logstash=org.apache.log4j.net.SocketAppender
+log4j.appender.logstash.remoteHost=127.0.0.1
+log4j.appender.logstash.port=4560
+log4j.appender.logstash.Threshold=INFO
+log4j.appender.logstash.ReconnectionDelay=60000
+log4j.appender.logstash.LocationInfo=true
+
+--logstash配置文件
+$ vi conf/logstash-log4j.conf
+
+--启动logstash
+$ bin/logstash -f conf/logstash-log4j.conf --configtest
+$ bin/logstash -f conf/logstash-log4j.conf
