@@ -1,0 +1,37 @@
+Fiddler
+=============================
+The free web debugging proxy for any browser, system or platform.
+http://www.telerik.com/fiddler
+
+
+Install
+=============================
+--下载
+https://www.telerik.com/download/fiddler
+--安装
+
+
+调试Android APP
+=============================
+--配置Fiddler
+1. 启动Fiddler，打开菜单栏中的 Tools > Telerik Fiddler Options，打开“Fiddler Options”对话框。
+2. 配置Fiddler允许远程连接: 在“Fiddler Options”对话框切换到“Connections”选项卡
+Fiddler listens on port: 8888
+勾选“Allow romote computers to connect”后面的复选框；
+3. 可选配置Fiddler允许监听https: 在“Fiddler Options”对话框切换到“HTTPS”选项卡
+勾选“Capture HTTPS Connections”
+勾选“Decrypt HTTPS Traffic”
+勾选“ignore server certificate errors”
+4. 然后点击“OK”按钮。
+5. 在本机命令行输入：ipconfig，找到本机的ip地址。
+IPv4 地址 . . . . . . . . . . . . : 192.168.1.122
+
+--配置Android手机
+1. 设置WLAN代理服务器
+如打开android设备的“设置”->“WLAN”，找到你要连接的网络，在上面长按，选择“修改网络”，弹出网络设置对话框，然后勾选“显示高级选项”。
+在“代理”后面的输入框选择“手动”，
+在“主机名”后面的输入框输入电脑的ip地址，
+在“端口”后面的输入框输入8888，
+然后点击“保存”按钮。
+
+2. 启动android设备中的浏览器，访问百度的首页，在fiddler中可以看到完成的请求和响应数据。
