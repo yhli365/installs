@@ -1,0 +1,63 @@
+Android开发环境搭建
+=============================
+http://www.android-studio.org/
+
+2.0.0 android-studio-ide-143.2739321-windows.zip /jdk-1.8
+2.2.0 android-studio-ide-145.3276617-windows.zip /jdk-1.8
+
+Android Studio
+=============================
+Android Studio is the official IDE for Android application development, based on IntelliJ IDEA.
+--下载
+--解压
+--设置环境变量
+JAVA_HOME=D:\yapp\jdk1.8.0_65
+GRADLE_USER_HOME=D:\yrepo\gradle_repo
+
+PATH=%JAVA_HOME%/bin;%PATH%
+
+--配置(idea.properties)
+idea.config.path=
+idea.system.path=
+idea.max.intellisense.filesize=2500
+idea.cycle.buffer.size=1024
+#idea.cycle.buffer.size=disabled
+
+--32位
+#配置studio.exe.vmoptions
+1. 如果启动时报错：Failed to create JVM:error code -4，则减少内存配置
+-XX:MaxPermSize=256m
+
+2. 首次启动配置
+注意：
+如果不想下载或网速不行，可以在idea.properties增加一行：disable.android.first.run=true
+
+双击studio.exe启动
+--Install Type
++ Custom (Darcula)
+--SDK Components Setup
++ Performance(Intel HAXM)
+Android SDK Location: D:\yadt\android-sdk-windows
+--Emulator Settings
+HAXM Recommended: 1GiB
+--Verify Settings
+--Downloading Components (建议禁用)
+Android SDK is up to date.
+可以打开SDK Manager下载或查看更新
+--Finish
+
+
+开启新项目: TestIt
+=============================
+--设置Gradle内存
+$ vi gradle.properties
+org.gradle.jvmargs=-Xmx1024m
+--可选设置SDK路径
+选择项目，然后选择"File->Project Structure...=>SDK Location"
+Android SDK Location: D:\yadt\android-sdk-windows
+JDK Location: Use embedded JDK
+--可选设置SDK版本
+选择项目，然后选择"File->Project Structure...=>Modules/app->Properties"
+Compiled Sdk Version: API 24
+Build Tools Version: 24.0.3
+

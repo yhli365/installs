@@ -1,0 +1,111 @@
+Android开发环境搭建
+=============================
+http://www.android-studio.org/
+http://www.androiddevtools.cn/
+
+
+SDK Tools
+=============================
+--下载
+android-sdk_r24.4.1-windows.zip
+--解压
+$ unzip android-sdk_r24.4.1-windows.zip -d D:\yadt
+
+
+SDK Manager
+=============================
+--下载SDK
+1. 打开SDK Manager.exe
+2. 如果有墙，可以选择通过国内镜像来下载sdk数据，在打开的sdk管理窗口选择tool > options，填写镜像地址
+HTTP Proxy Server: mirrors.neusoft.edu.cn
+HTTP Proxy Port: 80
+勾选 Force https://... sources to be fetched using http://...
+关闭配置对话框，然后重新启动
+3. 选择自己想要的sdk版本进行下载，如“6.0-API 23”
+#注意事项
+使用Genymotion模拟器时，可以不下载image文件。
+使用AVD模拟器时，只选择需要的image文件即可。
+
+--当使用Eclipse集成ADT时，配置SDK目录
+1. 打开eclipse
+2. 点击菜单栏Window > Preferences > Android，设置SDK所在的路径
+默认为: D:\yadt\adt-bundle-windows-x86-20140702\sdk
+可更改为: D:\yadt\android-sdk-windows
+
+
+AVD模拟器
+=============================
+--下载安装intel HAX（仅当使用AVD模拟器时需要）
+1. 打开sdk manager
+2. 在Packages -> Extras，勾选Intel x86 Emulator Accelerator（HAXM installer），并点击install packages。
+3. 打开cmd>
+$ cd D:\yadt\android-sdk-windows\extras\intel\Hardware_Accelerated_Execution_Manager
+$ silent_install.bat
+$ haxm_check
+
+--配置存储目录
+1. 设置环境变量
+ANDROID_SDK_HOME=D:\yadt\data\avds
+2. 重启eclipse，打开"Window > Android Virtual Device(AVD) Manager"确认
+
+--AVD管理命令
+cmd> cd D:\yadt\android-sdk-windows\tools
+
+android list avd
+android list target
+android list device
+android list sdk
+
+emulator -verbose -avd AVD_for_Galaxy_Nexus_by_Google
+
+
+Genymotion模拟器
+=============================
+--下载
+https://www.genymotion.com/
+https://www.virtualbox.org/
+
+genymotion-2.8.0.exe / virtualbox-5.0.12
+
+--安装
+Genymotion
+Virtualbox
+
+--配置
+1. 启动Genymotion
+2. 设置虚拟机存储目录
+Settings->VirtualBox->Virtual devices: D:/yadt/data/Genymotion/deployed/
+3. 设置ADB
+Settings->ADB->Use Custom Android SDK tools: D:/yadt/android-sdk-windows
+
+--下载虚拟机(选择型号后从网络下载并按需更改配置)
+#Google Nexus 6P-6.0.0-API23-1440x2560
+Processors: 4 [2]
+Base Memory: 3072 [2048]
+Screen Size: 1440x2560-560dpi [720x1280-240dpi]
+
+
+--安装eclipse下的genymotion插件
+https://www.genymotion.com/plugins/
+1. 打开eclipse，依次点击Help—>Install New Software…—>add，在弹出的Add Repository对话框中Name框输入：
+Name：Genymotion
+Location：https://dl.genymotion.com/eclipse
+点击ok后, 去除选项"Group items by category"后选择相关组件，然后下载安装即可。
+或者手工本地安装：选择下载好的 genymotion-eclipse-plugin相关jar包，放入plugins目录后并重启eclipse即可。
+2. 安装好后可以在eclipse中看到如下的插件图标
+3. 还需要在该插件配置Genymotion的安装路径：依次点击Window—>Preferences—>Genymobile—>Genymotion，在Genymotion directory框中选择刚才装好的genymotion的路径，如我这里是默认安装路径：C:\Program Files\Genymobile\Genymotion
+4. 选择项目，运行调试
+
+--安装Android Studio下的genymotion插件
+1. 打开android studio
+2. 菜单选择 File->Settings
+找到plugins设置项，点击右侧的“Browser Repositories”按钮
+3. 在搜索栏里输入"genymotion"关键字，可以看到右侧已经搜索到插件，点击install安装。
+4. 开始下载，速度很快。
+5. 安装后重新启动Android Studio，我们就可以工具栏看到genymotion插件的图标。
+6. 初次点开需要我们设置一下genymotion的安装目录。
+7. 设置好目录，我们再次点击工具栏的图标就可以进行虚拟机的配置和启动了。
+菜单选择 File->Settings
+找到设置项: Other Settings -> Genymotion
+D:\Program Files\Genymobile\Genymotion
+

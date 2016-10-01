@@ -1,0 +1,24 @@
+Android开发环境搭建
+=============================
+http://www.androiddevtools.cn/
+
+
+ADT Bundle
+===========================
+ADT Bundle包含了Eclipse、ADT插件和SDK Tools，是已经集成好的IDE，只需安装好Jdk即可开始开发，推荐初学者下载ADT Bundle，不用再折腾开发环境。
+--下载
+23.0.2	adt-bundle-windows-x86-20140702.zip
+
+--解压
+D:\yadt\adt-bundle-windows-x86-20140702
+
+--配置eclipse.ini
+#在-vmargs行上增加以下配置项指定JDK版本
+-vm
+D:\yapp\jdk1.8.0_65\bin
+
+
+ADT Plugin
+=============================
+ADT-23.0.7.zip
+
