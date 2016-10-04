@@ -1,13 +1,126 @@
 Zabbix
 =============================
-http://www.zabbix.com/
 Zabbix is the ultimate enterprise-level software designed for real-time monitoring of millions of metrics collected from tens of thousands of servers, virtual machines and network devices.
 Zabbix is Open Source and comes at no cost.
+
+http://www.zabbix.com/
+https://www.zabbix.com/documentation/3.2/
+
+@testos: CentOS-6-x86_64
 
 
 download
 =============================
 http://www.zabbix.com/download.php
-zabbix-*.el6.x86_64.rpm
 
+--使用yum-downloadonly下载
+$ rpm -ivh http://repo.zabbix.com/zabbix/3.2/rhel/6/x86_64/zabbix-release-3.2-1.el6.noarch.rpm
+$ cat /etc/yum.repos.d/zabbix.repo
+
+$ yum install yum-downloadonly
+$ mkdir -p /tmp/zabbix-3.2.0
+$ yum install --downloadonly --downloaddir=/tmp/zabbix-3.2.0 zabbix-server-mysql zabbix-web-mysql zabbix-agent
+$ ll /tmp/zabbix-3.2.0
+$ mv /etc/yum.repos.d/zabbix.repo /etc/yum.repos.d/bak/zabbix.repo
+
+
+CentOS Install: YUM
+=============================
+$ cp -r zabbix-3.2.0/ /var/ftp/yum/myrepo/6/
+$ createrepo /var/ftp/yum/myrepo/6/
+
+
+CentOS Install: zabbix-server
+=============================
+--Requirements
+$ uname -r
+2.6.32-358.el6.x86_64
+$ lsb_release -a
+Description:    CentOS release 6.4 (Final)
+# MySQL 5.0.3 or later 
+$ rpm -q mysql
+mysql-5.1.66-2.el6_3.x86_64
+# Apache 1.3.12 or later
+$ rpm -q httpd
+httpd-2.2.15-26.el6.centos.x86_64
+# PHP 5.4.0 or later
+$ php -v
+PHP 5.3.3 (cli) (需升级)
+#升级php5.6
+php-install.txt
+$ yum clean all
+$ yum install php56w.x86_64 php56w-cli.x86_64 php56w-common.x86_64 php56w-gd.x86_64 php56w-ldap.x86_64 php56w-mbstring.x86_64 php56w-mcrypt.x86_64 php56w-mysql.x86_64 php56w-pdo.x86_64 php56w-bcmath.x86_64 php56w-xml.x86_64
+
+--zabbix-server
+$ yum clean all
+$ yum install zabbix-server-mysql zabbix-web-mysql
+
+--Creating initial database
+$ service mysqld status
+$ mysql -uroot -proot
+> show databases;
+> create database zabbix character set utf8 collate utf8_bin;
+> grant all privileges on zabbix.* to zabbix@localhost identified by 'zabbix';
+> quit;
+$ cd /usr/share/doc/zabbix-server-mysql-3.2.0
+$ zcat create.sql.gz | mysql -uroot -proot zabbix
+
+--Edit database configuration
+$ vi /etc/zabbix/zabbix_server.conf
+DBHost=localhost
+DBName=zabbix
+DBUser=zabbix
+DBPassword=zabbix
+
+--Starting Zabbix server process
+$ service zabbix-server start
+$ tail -100f /var/log/zabbix/zabbix_server.log
+
+--Editing PHP configuration for Zabbix frontend
+$ vi /etc/httpd/conf.d/zabbix.conf
+php_value max_execution_time 300
+php_value memory_limit 128M
+php_value post_max_size 16M
+php_value upload_max_filesize 2M
+php_value max_input_time 300
+php_value always_populate_raw_post_data -1
+php_value date.timezone Asia/Shanghai
+# It's necessary to uncomment the “date.timezone” setting and set the right timezone for you. After changing the configuration file restart the apache web server. 
+
+--拷贝网页文件
+$ cp -R /usr/share/zabbix/ /var/www/html/
+$ ls /var/www/html/
+$ service httpd restart
+http://zabbix-frontend-hostname/zabbix
+Default username/password is Admin/zabbix. 
+
+--首次Web配置
+# Check of pre-requisites
+OK
+# Configure DB connection
+Database type: MySQL
+Database host: localhost
+Database port: 0 - use default port
+Database name: zabbix
+User: zabbix
+Password: zabbix
+# Zabbix server details
+Host: localhost
+Port: 10051
+Name: 
+# Pre-installation summary
+# Install
+# Finish
+
+
+CentOS Install: zabbix-agent
+=============================
+$ yum install zabbix-agent
+$ vi /etc/zabbix/zabbix_agentd.conf
+Hostname=Zabbix server
+Server=127.0.0.1
+ServerActive=127.0.0.1
+$ service zabbix-agent status
+$ service zabbix-agent restart
+$ tail -100f /var/log/zabbix/zabbix_agentd.log
 

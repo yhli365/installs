@@ -1,0 +1,116 @@
+CentOS下PHP版本升级
+
+
+检查PHP版本
+=============================
+$ uname -r
+2.6.32-358.el6.x86_64
+$ lsb_release -a
+Description:    CentOS release 6.4 (Final)
+$ rpm -q php
+php-5.3.3-22.el6.x86_64
+
+# PHP版本
+$ php -v
+PHP 5.3.3 (cli) (built: Feb 22 2013 02:51:11) 
+Copyright (c) 1997-2010 The PHP Group
+Zend Engine v2.3.0, Copyright (c) 1998-2010 Zend Technologies
+
+# PHP安装模块
+$ php -m
+$ vi /tmp/phpinfo.php
+<?php
+    phpinfo();
+?>
+> php /tmp/phpinfo.php
+
+
+下载PHP版本(通过webtatic)
+=============================
+1. 检查当前安装的PHP包
+$ yum list installed | grep php
+php.x86_64              5.3.3-22.el6    @CentOS6.4                              
+php-cli.x86_64          5.3.3-22.el6    @CentOS6.4                              
+php-common.x86_64       5.3.3-22.el6    @CentOS6.4                              
+php-gd.x86_64           5.3.3-22.el6    @CentOS6.4 
+#如果有安装的PHP包，先删除他们
+$ yum remove php.x86_64 php-cli.x86_64 php-common.x86_64 php-gd.x86_64 php-ldap.x86_64 php-mbstring.x86_64 php-mcrypt.x86_64 php-mysql.x86_64 php-pdo.x86_64
+
+2. 配置本地YUM源
+# Centos 5.X
+$ rpm -Uvh http://mirror.webtatic.com/yum/el5/latest.rpm
+
+# CentOs 6.x
+$ rpm -Uvh http://mirror.webtatic.com/yum/el6/latest.rpm
+
+# CentOs 7.X
+$ rpm -Uvh https://mirror.webtatic.com/yum/el7/epel-release.rpm
+$ rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+
+# 查看配置
+$ ll /etc/yum.repos.d/
+$ cat /etc/yum.repos.d/webtatic.repo
+$ curl https://mirror.webtatic.com/yum/el6/x86_64/mirrorlist
+https://us-east.repo.webtatic.com/yum/el6/x86_64/
+
+# 如果想删除上面安装的包，重新安装
+$ rpm -qa | grep webtatic
+$ rpm -e 上面搜索到的包即可
+
+3. 使用yum-downloadonly下载php指定版本
+$ yum install yum-downloadonly
+
+# php56
+$ mkdir -p /tmp/php56
+$ yum clean all
+$ yum install --downloadonly --downloaddir=/tmp/php56 php56w.x86_64 php56w-cli.x86_64 php56w-common.x86_64 php56w-gd.x86_64 php56w-ldap.x86_64 php56w-mbstring.x86_64 php56w-mcrypt.x86_64 php56w-mysql.x86_64 php56w-pdo.x86_64 \
+php56w-bcmath.x86_64 php56w-devel.x86_64 php56w-enchant php56w-fpm php56w-imap php56w-intl php56w-opcache php56w-pear php56w-snmp php56w-soap php56w-xml.x86_64 php56w-xmlrpc
+# php56w-mysqlnd
+
+# php70
+$ mkdir -p /tmp/php70
+$ yum install --downloadonly --downloaddir=/tmp/php70 php70w.x86_64 php70w-cli.x86_64 php70w-common.x86_64 php70w-gd.x86_64 php70w-ldap.x86_64 php70w-mbstring.x86_64 php70w-mcrypt.x86_64 php70w-mysql.x86_64 php70w-pdo.x86_64
+
+4. 如果在第3步报错，处理如下，然后再次执行步骤3.
+>>>>> libmcrypt.so不存在
+--> Finished Dependency Resolution
+Error: Package: php56w-mcrypt-5.6.26-1.w6.x86_64 (webtatic)
+           Requires: libmcrypt.so.4()(64bit)
+$ ldconfig -v |grep libmcrypt.so.4
+a) 安装EPEL源
+$ rpm -qa | grep epel
+$ yum remove epel-release
+$ rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+$ yum install --downloadonly --downloaddir=/tmp/php56 libmcrypt-devel
+# 处理EPEL源错误 Error: Cannot retrieve metalink for repository: epel. Please verify its path and try again
+$ vi /etc/yum.repos.d/epel.repo
+[epel]
+baseurl=
+#mirrorlist=
+$ yum install --downloadonly --downloaddir=/tmp/php56 libmcrypt-devel
+b) 安装libmcrypt-devel
+$ yum install libmcrypt-devel
+c) 确认
+$ rpm -qa | grep libmcrypt
+libmcrypt-2.5.8-9.el6.x86_64
+libmcrypt-devel-2.5.8-9.el6.x86_64
+$ ldconfig -v |grep libmcrypt.so.4
+libmcrypt.so.4 -> libmcrypt.so.4.4.8
+
+5. 移除本地YUM源
+$ mv /etc/yum.repos.d/webtatic* /etc/yum.repos.d/bak
+$ mv /etc/yum.repos.d/epel* /etc/yum.repos.d/bak
+
+
+更新PHP版本(webtatic)
+=============================
+$ cp -R /tmp/php56 /var/ftp/yum/myrepo/6/
+$ createrepo /var/ftp/yum/myrepo/6/
+
+# 安装PHP
+$ yum clean all
+$ yum install php56w.x86_64 php56w-cli.x86_64 php56w-common.x86_64 php56w-gd.x86_64 php56w-ldap.x86_64 php56w-mbstring.x86_64 php56w-mcrypt.x86_64 php56w-mysql.x86_64 php56w-pdo.x86_64
+
+# 安装PHP FPM
+$ yum install php56w-fpm
+
