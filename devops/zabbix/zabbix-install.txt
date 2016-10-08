@@ -48,7 +48,13 @@ $ php -v
 PHP 5.3.3 (cli) (需升级)
 #升级php5.6
 php-install.txt
+$ cp -R openssl-1.0.1e/ php-5.6/ /var/ftp/yum/myrepo/6/
+$ createrepo /var/ftp/yum/myrepo/6/
 $ yum clean all
+#检查当前安装的PHP包
+$ yum list installed | grep php
+#如果有安装的PHP包，先删除他们
+$ yum remove php.x86_64 php-cli.x86_64 php-common.x86_64 php-gd.x86_64
 $ yum install php56w.x86_64 php56w-cli.x86_64 php56w-common.x86_64 php56w-gd.x86_64 php56w-ldap.x86_64 php56w-mbstring.x86_64 php56w-mcrypt.x86_64 php56w-mysql.x86_64 php56w-pdo.x86_64 php56w-bcmath.x86_64 php56w-xml.x86_64
 
 --zabbix-server
@@ -56,7 +62,9 @@ $ yum clean all
 $ yum install zabbix-server-mysql zabbix-web-mysql
 
 --Creating initial database
+$ chkconfig mysqld on
 $ service mysqld status
+$ service mysqld restart
 $ mysql -uroot -proot
 > show databases;
 > create database zabbix character set utf8 collate utf8_bin;
@@ -73,6 +81,8 @@ DBUser=zabbix
 DBPassword=zabbix
 
 --Starting Zabbix server process
+$ chkconfig zabbix-server on
+$ service zabbix-server status
 $ service zabbix-server start
 $ tail -100f /var/log/zabbix/zabbix_server.log
 
@@ -90,6 +100,7 @@ php_value date.timezone Asia/Shanghai
 --拷贝网页文件
 $ cp -R /usr/share/zabbix/ /var/www/html/
 $ ls /var/www/html/
+$ chkconfig httpd on
 $ service httpd restart
 http://zabbix-frontend-hostname/zabbix
 Default username/password is Admin/zabbix. 
@@ -117,10 +128,92 @@ CentOS Install: zabbix-agent
 =============================
 $ yum install zabbix-agent
 $ vi /etc/zabbix/zabbix_agentd.conf
-Hostname=Zabbix server
-Server=127.0.0.1
-ServerActive=127.0.0.1
+#Hostname=Zabbix server
+Server=192.168.5.2
+ServerActive=192.168.5.2
+$ sed -i "/^Server=/c\Server=192.168.5.2" /etc/zabbix/zabbix_agentd.conf
+$ sed -i "/^ServerActive=/c\ServerActive=192.168.5.2" /etc/zabbix/zabbix_agentd.conf
+
+$ chkconfig zabbix-agent on
 $ service zabbix-agent status
 $ service zabbix-agent restart
 $ tail -100f /var/log/zabbix/zabbix_agentd.log
+
+
+Zabbix-web Config (Auto registration)
+=============================
+Active agent auto-registration
+1. 客户端安装agent
+为网段内的Linux主机安装好zabbix agent，zabbix_agentd.conf正确配置，启动agent服务。
+#Hostname=
+ServerActive=192.168.5.2
+HostMetadataItem=system.uname
+$ service zabbix-agent restart
+
+2. 创建Action规则
+选择[Configuration]->[Actions], 在右边“Event source”选择“Auto registration”
+Action)
+	Name: auto-reg
+	Conditions: Host metadata like Linux
+	Enabled: checked
+Operations)
+	Add host
+	Add to host groups: Linux servers
+	Link to templates: Template OS Linux
+3. 查看结果
+# tail -100f /var/log/zabbix/zabbix_server.log
+enabling Zabbix agent checks on host "cdh5": host became available
+# 选择[Configuration]->[Hosts]到主机列表里可以看到客户端已经自动创建好了，监控状态也是正常的。
+
+
+Zabbix-web Config (Discovery)
+=============================
+zabbix应用之discovery批量添加主机并实现自定义主机名
+1. 客户端安装agent
+为网段内的Linux主机安装好zabbix agent，zabbix_agentd.conf正确配置server的IP和端口，启动agent服务。
+2. 创建Discovery规则
+选择[Configuration]->[Discovery], 创建发现规则。
+Name: auto-discovery
+IP range: 192.168.5.1-254
+Delay: 发现周期，单位秒
+Checks: 选择“Zabbix agent”检测类型、端口10050、Key填写“system.uname”
+Enabled: checked
+选择[Monitoring]->[Discovery], 查看自动发现结果。
+3. 创建Action规则
+选择[Configuration]->[Actions], 在右边“Event source”选择“Discovery”, 启用默认的“Auto discovery. Linux servers.”
+Action)
+	Type of calculation: And/Or
+	Conditions:
+	A	Received value like Linux	
+	B	Discovery status = Up	
+	C	Service type = Zabbix agent
+Operations)
+	Add to host groups: Linux servers
+	Link to templates: Template OS Linux
+4. 查看最后的结果
+稍等一段时间，选择[Configuration]->[Hosts]到主机列表里可以看到客户端已经自动创建好了，监控状态也是正常的。
+
+
+Zabbix-web Config (SNMP)
+=============================
+zabbix snmp监控华为交换机流量
+1. 配置华为交换机的snmp
+<Huawei>system-view
+[Huawei]snmp-agent community read runpublic
+[Huawei]snmp-agent community write runprivate
+[Huawei]quit
+<Huawei>save
+2. 在linux上安装snmp包，测试snmp访问
+$ yum install net-snmp net-snmp-utils
+$ snmpwalk -v 2c -c runpublic 192.168.5.201 1.3.6.1.2.1.1.5
+3. 创建主机使用snmp监控
+Host)
+	Host name: hw5700x1
+	Groups: Switches
+	SNMP interfaces: 192.168.5.201 161 "Use bulk requests checked"
+	Enabled: checked
+Templates)
+	Template SNMP Interfaces
+OK，配置完成，zabbix就可以完成自动监控。
+4. 稍等一段时间，选择[Configuration]->[Hosts]可以查看图形啦。
 

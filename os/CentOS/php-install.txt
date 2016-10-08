@@ -74,6 +74,19 @@ $ yum install --downloadonly --downloaddir=/tmp/php70 php70w.x86_64 php70w-cli.x
 4. 如果在第3步报错，处理如下，然后再次执行步骤3.
 >>>>> libmcrypt.so不存在
 --> Finished Dependency Resolution
+Error: Package: php56w-5.6.26-1.w6.x86_64 (myrepo)
+           Requires: libssl.so.10(libssl.so.10)(64bit)
+Error: Package: php56w-5.6.26-1.w6.x86_64 (myrepo)
+           Requires: libcrypto.so.10(OPENSSL_1.0.1)(64bit)
+Error: Package: php56w-5.6.26-1.w6.x86_64 (myrepo)
+           Requires: libcrypto.so.10(OPENSSL_1.0.1_EC)(64bit)
+$ cp -R openssl-1.0.1e /var/ftp/yum/myrepo/6/
+$ createrepo /var/ftp/yum/myrepo/6/
+$ yum clean all
+$ yum install openssl-devel
+
+>>>>> libmcrypt.so不存在
+--> Finished Dependency Resolution
 Error: Package: php56w-mcrypt-5.6.26-1.w6.x86_64 (webtatic)
            Requires: libmcrypt.so.4()(64bit)
 $ ldconfig -v |grep libmcrypt.so.4
