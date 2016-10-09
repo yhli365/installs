@@ -56,11 +56,121 @@ $ curl -XGET http://localhost:9200/
 }
 
 
-front ends
+Plugin: elasticsearch-head
 =============================
-elasticsearch-head: A web front end for an Elasticsearch cluster.
-Hammer: Web front-end for elasticsearch
+https://github.com/mobz/elasticsearch-head
+A web front end for an Elasticsearch cluster.
 
+--Download as zip
+elasticsearch-head-master-20161009.zip
+
+--Install
+$ unzip elasticsearch-head-master-20161009.zip -d /data1/apps/elasticsearch-2.4.0/plugins
+$ cd /data1/apps/elasticsearch-2.4.0
+$ mv plugins/elasticsearch-head-master plugins/head
+
+--Web
 http://192.168.5.5:9200/_plugin/head
-http://192.168.5.5:9200/_plugin/hammer
+
+
+Plugin: elasticsearch-head
+=============================
+https://github.com/lmenezes/elasticsearch-kopf/
+web admin interface for elasticsearch.
+
+--Download as zip (选定版本)
+elasticsearch-kopf-2.1.2.zip
+
+--Install
+$ unzip elasticsearch-kopf-2.1.2.zip -d /data1/apps/elasticsearch-2.4.0/plugins
+$ cd /data1/apps/elasticsearch-2.4.0
+$ mv plugins/elasticsearch-kopf-2.1.2 plugins/kopf
+
+--Web
+http://192.168.5.5:9200/_plugin/kopf
+
+
+Plugin: elasticsearch-analysis-ik
+=============================
+https://github.com/medcl/elasticsearch-analysis-ik
+The IK Analysis plugin integrates Lucene IK analyzer (http://code.google.com/p/ik-analyzer/) into elasticsearch, support customized dictionary.
+
+--Download
+$ git clone https://github.com/medcl/elasticsearch-analysis-ik.git
+$ cd elasticsearch-analysis-ik
+$ git tag
+$ git checkout v1.10.0
+$ git branch
+* (HEAD detached at v1.10.0)
+
+--Compile
+$ mvn package
+$ ls target/releases
+
+--Install
+1. Unzip
+$ mkdir /data1/apps/elasticsearch-2.4.0/plugins/ik
+$ unzip elasticsearch-analysis-ik-1.10.0.zip -d /data1/apps/elasticsearch-2.4.0/plugins/ik
+2. Restart elasticsearch
+
+--Quick Example
+1.create a index
+curl -XPUT http://localhost:9200/index
+2.create a mapping
+curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
+{
+	"fulltext": {
+		"_all": {
+			"analyzer": "ik_max_word",
+			"search_analyzer": "ik_max_word",
+			"term_vector": "no",
+			"store": "false"
+		},
+		"properties": {
+			"content": {
+				"type": "string",
+				"store": "no",
+				"term_vector": "with_positions_offsets",
+				"analyzer": "ik_max_word",
+				"search_analyzer": "ik_max_word",
+				"include_in_all": "true",
+				"boost": 8
+			}
+		}
+	}
+}'
+curl -XGET http://localhost:9200/index/fulltext/_mapping?pretty
+3.index some docs
+curl -XPOST http://localhost:9200/index/fulltext/1 -d'
+{"content":"美国留给伊拉克的是个烂摊子吗"}
+'
+
+curl -XPOST http://localhost:9200/index/fulltext/2 -d'
+{"content":"公安部：各地校车将享最高路权"}
+'
+
+curl -XPOST http://localhost:9200/index/fulltext/3 -d'
+{"content":"中韩渔警冲突调查：韩警平均每天扣1艘中国渔船"}
+'
+
+curl -XPOST http://localhost:9200/index/fulltext/4 -d'
+{"content":"中国驻洛杉矶领事馆遭亚裔男子枪击 嫌犯已自首"}
+'
+4.query with highlighting
+curl -XPOST http://localhost:9200/index/fulltext/_search?pretty  -d'
+{
+	"query": {
+		"term": {
+			"content": "中国"
+		}
+	},
+	"highlight": {
+		"pre_tags": ["<tag1>", "<tag2>"],
+		"post_tags": ["</tag1>", "</tag2>"],
+		"fields": {
+			"content": {}
+		}
+	}
+}
+'
 
