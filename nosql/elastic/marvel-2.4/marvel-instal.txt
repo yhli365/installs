@@ -1,0 +1,105 @@
+Marvel Monitor Elasticsearch
+=============================
+Marvel helps you keep a pulse on the state of your Elasticsearch deployment. As a window into your cluster, Marvel is a tool for optimizing your Elasticsearch performance and diagnosing issues quickly.  
+
+https://www.elastic.co/guide/en/marvel/current/index.html
+
+
+Install offline(CentOS 6.4)
+=============================
+--To install Marvel on a machine that doesn’t have Internet access:
+1. Manually download the License and Marvel binaries: 
+license-2.4.0.zip
+marvel-agent-2.4.0.zip
+marvel-2.4.0.tar.gz
+
+2. Transfer the archive files to a temporary directory on the offline machine. (Do NOT put the archive files in the Elasticsearch plugins directory.) 
+
+3. Install Marvel into Elasticsearch: 
+$ cd /data1/apps/elasticsearch-2.4.0
+$ bin/plugin list
+$ bin/plugin install file:////data1/apps/tmp/license-2.4.0.zip
+$ bin/plugin install file:///data1/apps/tmp/marvel-agent-2.4.0.zip
+
+4. Install Marvel into Kibana:
+$ cd /data1/apps/kibana-4.6.1-linux-x86_64
+$ bin/kibana plugin -l
+$ bin/kibana plugin --install marvel --url file:///data1/apps/tmp/marvel-2.4.0.tar.gz
+
+5. Start Elasticsearch and Kibana:
+$ bin/elasticsearch -d
+$ bin/kibana (nohup bin/kibana serve >> kibana.log 2>&1 &)
+
+6. Navigate to http://192.168.5.5:5601/app/marvel
+to open Kibana, click the App Switcher icon in the Kibana menu bar, and select Marvel. 
+
+7. Stop Elasticsearch and Kibana:
+$ ps aux |grep Elasticsearch|grep -v grep|awk '{print $2}'|xargs kill -9
+$ ps aux | grep node | grep serve |awk '{print $2}'|xargs kill -9
+
+
+Configuring Marvel (可选)
+=============================
+--If you have disabled automatic index creation in Elasticsearch:
+$ vi conf/elasticsearch.yml
+action.auto_create_index: .marvel-*
+
+--Controlling Marvel Data Collection
+$ vi conf/elasticsearch.yml
+marvel.agent.indices: +test*,-test3
+marvel.agent.exporters:
+marvel.agent.interval: 10s
+marvel.history.duration: 7d
+
+--Configuring Marvel’s Indices
+# Marvel uses an index template to configure the indices used to store the data collected from a cluster.
+GET /_template/.marvel-es
+
+PUT /_template/custom_marvel
+{
+    "template": ".marvel*",
+    "order": 1,
+    "settings": {
+        "number_of_shards": 5,
+        "number_of_replicas": 2
+    }
+}
+
+--Configuring Marvel in Kibana
+$ vi config/kibana.yml
+marvel.max_bucket_size: 10000
+marvel.min_interval_seconds: 10
+marvel.node_resolver: transport_address [name]
+marvel.report_stats: true
+
+--Configuring a Tribe Node to Work with Marvel
+
+
+Managing Your License
+=============================
+--Updating Your License
+curl -XPUT -u admin 'http://<host>:<port>/_license' -d @license.json
+curl -XPUT -u admin 'http://<host>:<port>/_license?acknowledge=true' -d @license.json
+$ 
+
+--Viewing the Installed License
+curl -XGET -u admin:password 'http://<host>:<port>/_license'
+$ curl -XGET -u admin:password 'http://localhost:9200/_license'
+
+--License Expiration
+# Warnings are also displayed on startup and written to the Elasticsearch log starting 30 days from the expiration date. 
+# You should update your license as soon as possible. 
+$ tail -100f logs/elasticsearch.log
+# License will expire on [Thursday, November 12, 2015].
+
+
+Uninstalling Marvel
+=============================
+--To uninstall Marvel:
+1. Shut down Elasticsearch and Kibana.
+2. Remove the Marvel agent plugin from Elasticsearch:
+$ bin/plugin remove marvel-agent
+3. Remove the Marvel Kibana app:
+$ bin/kibana plugin --remove marvel
+4. Restart Elasticsearch and Kibana. 
+
