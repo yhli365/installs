@@ -38,6 +38,28 @@ $ ps aux |grep Elasticsearch|grep -v grep|awk '{print $2}'|xargs kill -9
 $ ps aux | grep node | grep serve |awk '{print $2}'|xargs kill -9
 
 
+Setting up a Separate Monitoring Cluster
+=============================
+--To store Marvel data in a separate monitoring cluster:
+1. Set up the Elasticsearch cluster you want to use for monitoring and start Elasticsearch. 
+You do not need to install the Marvel agent plugin on the nodes in the monitoring cluster, only on the production nodes you’ll be monitoring.
+2. Configure the nodes in your production cluster to send Marvel data to your monitoring cluster by configuring an HTTP exporter settings in elasticsearch.yml: 
+marvel.agent.exporters:
+  id1:
+    type: http
+    host: ["http://es-mon-1:9200", "http://es-mon2:9200"]
+3. Install the Marvel agent and License plugins on the nodes in your production cluster: 
+bin/plugin install license
+bin/plugin install marvel-agent
+4. Restart Elasticsearch on the nodes in your production cluster
+5. Install the Marvel app into Kibana. 
+bin/kibana plugin --install elasticsearch/marvel/{version}
+6. Configure Kibana to connect to your monitoring cluster by setting the elasticsearch_url property in the kibana.yml configuration file.
+elasticsearch_url: "http://es-mon-1:9200"
+7. Start Kibana by running bin/kibana. 
+8. To verify your Marvel installation, point your web browser at your Kibana host, click the App Switcher icon in the Kibana menu bar, and select Marvel. 
+
+
 Configuring Marvel (可选)
 =============================
 --If you have disabled automatic index creation in Elasticsearch:
