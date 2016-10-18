@@ -1,0 +1,36 @@
+
+APK包修改
+=============================
+--反编译
+$ apktool d CrystalBall.apk
+
+--打包
+$ apktool b CrystalBall
+
+
+APK包替换文件
+=============================
+用winrar打开apk包，替换相应文件。
+替换后需要重新签名。
+
+
+APK签名方法(推荐使用APKSign工具)
+=============================
+打开工具，选择APK文件，点击"制作签名"即可。
+
+
+APK签名方法(不推荐使用JDK自带的工具)
+=============================
+$ java -version
+java version "1.8.0_65"
+
+1. 生成签名证书
+$ keytool -genkey -alias androidauto.keystore -keyalg RSA -validity 20000 -keystore android.keystore
+
+2. 删除之前APK文件的签名
+删除apk文件中的META-INF目录
+
+3. 为APK重新生成签名
+将证书复制到与需要重新签名的apk文件相同的目录下
+$ jarsigner -verbose -keystore android.keystore -signedjar test.apk test_unsigned.apk androidauto.keystore
+
