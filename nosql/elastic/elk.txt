@@ -7,3 +7,21 @@ elasticsearch-2.4.0.tar.gz
 logstash-2.4.0.tar.gz
 kibana-4.6.1-linux-x86_64.tar.gz
 
+--管理命令
+$ cd /data1/apps/elasticsearch-2.4.0/
+$ bin/elasticsearch -d
+$ tail -100f logs/elasticsearch.log
+$ ps aux |grep Elasticsearch|grep -v grep|awk '{print $2}'|xargs kill -9
+
+$ cd /data1/apps/kibana-4.6.1-linux-x86_64/
+$ nohup bin/kibana serve >> kibana.log 2>&1 &
+$ tail -100f kibana.log
+$ ps aux |grep node|grep serve|awk '{print $2}'|xargs kill -9
+
+$ cd /data1/apps/logstash-2.4.0
+$ bin/logstash -f conf/logstash-log4j.conf
+$ ps aux |grep logstash|grep -v grep|awk '{print $2}'|xargs kill -9
+
+--Web
+Kibana		http://cdh5:5601/
+ES			http://cdh5:9200/_plugin/kopf

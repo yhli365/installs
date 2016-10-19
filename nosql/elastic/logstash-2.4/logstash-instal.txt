@@ -18,19 +18,24 @@ $ cd /data1/apps/logstash-2.4.0
 $ bin/logstash version
 $ bin/logstash help
 
+$ mkdir logs
+$ ps aux |grep logstash|grep -v grep|awk '{print $2}'|xargs kill -9
+
 
 Log4j配置
 =============================
 --log4j应用配置文件
 $ vi log4j.properties
-log4j.rootLogger=INFO,stdout,file,logstash
+log4j.rootLogger=INFO,stdout,logstash
 #logstash
 log4j.appender.logstash=org.apache.log4j.net.SocketAppender
-log4j.appender.logstash.remoteHost=127.0.0.1
+log4j.appender.logstash.remoteHost=192.168.5.5
 log4j.appender.logstash.port=4560
-log4j.appender.logstash.Threshold=INFO
+log4j.appender.logstash.Threshold=WARN
 log4j.appender.logstash.ReconnectionDelay=60000
 log4j.appender.logstash.LocationInfo=true
+log4j.appender.logstash.application=HelloApp
+#log4j.appender.logstash.application=${hadoop.log.file}
 
 --logstash配置文件
 $ vi conf/logstash-log4j.conf
@@ -38,3 +43,5 @@ $ vi conf/logstash-log4j.conf
 --启动logstash
 $ bin/logstash -f conf/logstash-log4j.conf --configtest
 $ bin/logstash -f conf/logstash-log4j.conf
+$ bin/logstash -f conf/logstash-log4j.conf --log logs/stdout &
+
