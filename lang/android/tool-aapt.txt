@@ -1,0 +1,11 @@
+aapt
+=============================
+aapt即Android Asset Packaging Tool，我们可以在SDK的build-tools目录下找到该工具。aapt可以查看、 创建、 更新ZIP格式的文档附件(zip, jar, apk)，也可将资源文件编译成二进制文件。
+
+--查看包信息
+$ set PATH=D:/yadt/android-sdk-windows/build-tools/24.0.3;%PATH%
+$ aapt dump badging CrystalBall.apk
+package: name='com.yhli.crystalball' versionCode='1' versionName='1.0' platformBuildVersionName='6.0-2704002'
+sdkVersion:'16'
+targetSdkVersion:'23'
+

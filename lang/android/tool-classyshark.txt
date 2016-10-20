@@ -1,0 +1,25 @@
+ClassyShark
+=============================
+http://classyshark.com/
+https://github.com/google/android-classyshark
+
+A handy Android and Java executables viewer.
+Free and open source.
+
+--Browse Android executables
+ClassyShark is an Android executables browser. It can reliably open any Android executable and analyse its content. ClassyShark supports multiple formats including jar, class, apk, dex, so, aar and Android XML.
+
+--Understand the structure and dependencies of your APK
+As soon as you see the binary you can see what your Android system is seeing. This can potentially save a lot of time if you need to solve application's misbehavior related to multidex, dependencies or native code.
+
+--Navigation and search
+Use incremental and camel searches from toolbar to get the right info as you type. Long time Android developers will feel at home working with ClassyShark as it helps them in identifying and analysing their app runtime misbehaviour.
+
+--Automatic updates
+Get notified as soon as a new version of ClassyShark is available and use it right away, thanks to the automatic fetch and pull approach.
+
+
+Downloads
+=============================
+https://github.com/google/android-classyshark/releases
+
