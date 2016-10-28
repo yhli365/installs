@@ -1,0 +1,56 @@
+Hadoop
+@site http://hadoop.apache.org/
+@site http://www.cloudera.com/
+@version hadoop-2.6.0-cdh5.7.0.tar.gz
+
+
+ECLIPSE调试配置
+=============================
+1. 增加服务端调试参数配置
+2. 重启相应服务
+3. 配置ECLIPSE调试参数，远程连接后进行跟踪调试
+选择有相关源代码的项目，右键"Debug As => Debug Configurations...", 选择"Remote Java Application"后右键点击"New"
+Connection Type: Socket Attach
+Host: cdh5
+Port: 19872
+
+
+服务端调试参数配置
+=============================
+--HDFS
+$ vi ~/hadoop/etc/hadoop/hadoop-env.sh
+# Hadoop debug options
+export HADOOP_NAMENODE_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=19871 $HADOOP_NAMENODE_OPTS"
+export HADOOP_DATANODE_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=19872 $HADOOP_DATANODE_OPTS"
+export HADOOP_SECONDARYNAMENODE_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=19872 $HADOOP_SECONDARYNAMENODE_OPTS"
+
+
+Hadoop集群单机伪分布式独立启动
+=============================
+--HDFS(方式1)
+hdfs namenode
+hdfs datanode
+hdfs secondarynamenode
+
+--HDFS(方式2)
+hadoop-daemon.sh start namenode
+hadoop-daemon.sh start datanode
+hadoop-daemon.sh start secondarynamenode
+
+>>>>>ERROR: Cannot load this JVM TI agent twice
+<<<<<Fix: 防止hadoop-env.sh重复加载
+$ vi ~/hadoop/etc/hadoop/hadoop-env.sh
+# Set Hadoop-specific environment variables here.
+# Avoid repeated load
+if [ "$LOAD_SCRIPT" != "loaded-hadoop-env" ]; then
+    export LOAD_SCRIPT="loaded-hadoop-env"
+    #echo "Load script: hadoop-env.sh"
+...//原有语句
+fi
+
+Hadoop集群单机伪分布式独立关闭
+=============================
+--HDFS
+hadoop-daemon.sh stop namenode
+hadoop-daemon.sh stop datanode
+hadoop-daemon.sh stop secondarynamenode
