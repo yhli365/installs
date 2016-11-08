@@ -1,71 +1,86 @@
 #虚拟磁盘VDI文件管理
 @version VirtualBox_4.2.8
 
---)compact:压缩虚拟机VDI文件大小
+Compact:压缩虚拟机VDI文件大小
+=============================
+--测试环境
 宿主机: windows 7
 虚拟机: CentOS 6.5
 虚拟磁盘: cdh5.vdi(/dev/sdc LSM)
 
-#)查看占用空间大小
+--在宿主机中查看虚拟磁盘占用空间大小
 cmd.exe
 cmd> cd C:\Program Files\Oracle\VirtualBox
-cmd> VBoxManage showhdinfo D:\yvms\vbox\cdh5.vdi
-UUID:           b579c293-16fd-4f72-8ee0-4c46be327382
-Parent UUID:    base
-State:          locked write
-Type:           normal (base)
-Location:       D:\yvms\vbox\cdh5.vdi
-Storage format: VDI
-Format variant: dynamic default
-Capacity:       5120 MBytes
-Size on disk:   621 MBytes
-In use by VMs:  ys0_ct65x (UUID: 5ce6e5b1-1804-47f3-b22d-3766ec44f2f8)
-
-#)查看虚拟磁盘VDI实际使用大小(/dev/sdb1)
-[root@ys0 ~]# df -h
-Filesystem                  Size  Used Avail Use% Mounted on
-/dev/mapper/vg_ys0-lv_root   47G  2.2G   43G   5% /
-tmpfs                       939M     0  939M   0% /dev/shm
-/dev/sda1                   485M   39M  421M   9% /boot
-/dev/mapper/vg_cdh5-lv_cdh5  5.0G  159M  4.6G   4% /disk/cdh5
-
-#)在Guest系统上，把所有没用的数据写零
-[root@ys0 ~]# dd if=/dev/zero of=/disk/cdh5/bigemptyfile
-[root@ys0 ~]# df -h
-Filesystem                   Size  Used Avail Use% Mounted on
-/dev/mapper/vg_ys0-lv_root    47G  2.0G   43G   5% /
-tmpfs                        939M     0  939M   0% /dev/shm
-/dev/sda1                    485M   39M  421M   9% /boot
-/dev/mapper/vg_cdh5-lv_cdh5  5.0G  5.0G     0 100% /disk/cdh5
-[root@ys0 ~]# rm /disk/cdh5/bigemptyfile
-[root@ys0 ~]# df -h
-Filesystem                   Size  Used Avail Use% Mounted on
-/dev/mapper/vg_ys0-lv_root    47G  2.0G   43G   5% /
-tmpfs                        939M     0  939M   0% /dev/shm
-/dev/sda1                    485M   39M  421M   9% /boot
-/dev/mapper/vg_cdh5-lv_cdh5  5.0G  159M  4.6G   4% /disk/cdh5
-[root@ys0 ~]# poweroff
-
-#)压缩磁盘
-cmd> VBoxManage modifyhd D:\yvms\vbox\cdh5.vdi --compact
-0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
-
-cmd> VBoxManage showhdinfo D:\yvms\vbox\cdh5.vdi
-UUID:           b579c293-16fd-4f72-8ee0-4c46be327382
+cmd> VBoxManage showhdinfo E:\yvbox\cdh5\disk2.vdi
+UUID:           a52e2e97-1a2b-48df-93ef-c00c2bc2004f
 Parent UUID:    base
 State:          created
 Type:           normal (base)
-Location:       D:\yvms\vbox\cdh5.vdi
-Storage format: VDI
+Location:       E:\yvbox\cdh5\disk2.vdi
+Storage format: vdi
 Format variant: dynamic default
-Capacity:       5120 MBytes
-Size on disk:   78 MBytes
-In use by VMs:  ys0_ct65x (UUID: 5ce6e5b1-1804-47f3-b22d-3766ec44f2f8)
+Capacity:       30000 MBytes
+Size on disk:   7408 MBytes
+Encryption:     disabled
+In use by VMs:  cdh5 (UUID: abd602f1-0dbc-447c-bd64-7484ed050789)
 
-#)重启虚拟机，正常使用
+--在虚拟机Guest系统中查看虚拟磁盘VDI实际使用大小(/dev/sdb1)
+[root@ys0 ~]# df -h
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/vg_vagrant-lv_root
+                       50G  3.2G   44G   7% /
+tmpfs                 1.9G     0  1.9G   0% /dev/shm
+/dev/sda1             485M   38M  423M   9% /boot
+/dev/mapper/vg_vagrant-lv_home
+                      195G  188M  185G   1% /home
+/dev/sdb1              29G  3.2G   25G  12% /data1
 
---)resize:扩展虚拟机VDI文件大小
-#)扩展虚拟介质大小到8G
+--在虚拟机Guest系统中把所有没用的数据写零(linux)
+[root@ys0 ~]# dd if=/dev/zero of=/data1/bigemptyfile
+[root@ys0 ~]# df -h
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/vg_vagrant-lv_root
+                       50G  3.2G   44G   7% /
+tmpfs                 1.9G     0  1.9G   0% /dev/shm
+/dev/sda1             485M   38M  423M   9% /boot
+/dev/mapper/vg_vagrant-lv_home
+                      195G  188M  185G   1% /home
+/dev/sdb1              29G   29G     0 100% /data1
+[root@ys0 ~]# rm /data1/bigemptyfile
+[root@ys0 ~]# df -h
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/vg_vagrant-lv_root
+                       50G  3.2G   44G   7% /
+tmpfs                 1.9G     0  1.9G   0% /dev/shm
+/dev/sda1             485M   38M  423M   9% /boot
+/dev/mapper/vg_vagrant-lv_home
+                      195G  188M  185G   1% /home
+/dev/sdb1              29G  3.2G   25G  12% /data1
+[root@ys0 ~]# poweroff
+
+--在宿主机中压缩磁盘
+cmd> VBoxManage modifyhd E:\yvbox\cdh5\disk2.vdi --compact
+0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+
+cmd> VBoxManage showhdinfo E:\yvbox\cdh5\disk2.vdi
+UUID:           a52e2e97-1a2b-48df-93ef-c00c2bc2004f
+Parent UUID:    base
+State:          created
+Type:           normal (base)
+Location:       E:\yvbox\cdh5\disk2.vdi
+Storage format: vdi
+Format variant: dynamic default
+Capacity:       30000 MBytes
+Size on disk:   3032 MBytes
+Encryption:     disabled
+In use by VMs:  cdh5 (UUID: abd602f1-0dbc-447c-bd64-7484ed050789)
+
+--重启虚拟机，正常使用
+
+
+Resize:扩展虚拟机VDI文件大小
+=============================
+--在宿主机中扩展虚拟介质大小到8G
 cmd> VBoxManage modifyhd D:\yvms\vbox\cdh5.vdi --resize 8000
 0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
 
@@ -81,7 +96,7 @@ Capacity:       8000 MBytes
 Size on disk:   78 MBytes
 In use by VMs:  ys0_ct65x (UUID: 5ce6e5b1-1804-47f3-b22d-3766ec44f2f8)
 
-#)重启虚拟机
+--重启虚拟机
 [root@ys0 ~]# pvdisplay /dev/sdc
   --- Physical volume ---
   PV Name               /dev/sdc
@@ -94,7 +109,7 @@ In use by VMs:  ys0_ct65x (UUID: 5ce6e5b1-1804-47f3-b22d-3766ec44f2f8)
   Allocated PE          1279
   PV UUID               4PyElm-s17m-KsY2-peZ3-Cs9p-2KIY-XNpfdi
 
-#)虚拟盘VDI扩容: 调整PV,LV的大小
+--虚拟盘VDI扩容: 调整PV,LV的大小
 [root@ys0 ~]# pvresize /dev/sdc
   Physical volume "/dev/sdc" changed
   1 physical volume(s) resized / 0 physical volume(s) not resized
