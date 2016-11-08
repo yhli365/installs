@@ -1,0 +1,169 @@
+Pinpoint
+=============================
+https://github.com/naver/pinpoint
+
+Pinpoint is an APM (Application Performance Management) tool for large-scale distributed systems written in Java. Modelled after Dapper, Pinpoint provides a solution to help analyze the overall structure of the system and how components within them are interconnected by tracing transactions across distributed applications.
+
+
+Download
+=============================
+https://github.com/naver/pinpoint/releases/tag/1.5.2
+pinpoint-agent-1.5.2.tar.gz
+pinpoint-collector-1.5.2.war
+pinpoint-web-1.5.2.war
+pinpoint-1.5.2.zip (Source code)
+
+
+Install
+=============================
+HBase(1.2.0-cdh5.7.0)
+Tomcat(apache-tomcat-7.0.65)
+
+--安装目录
+$ mkdir -p /data1/apps/pinpoint-1.5.2
+$ ln -s /data1/apps/pinpoint-1.5.2 ~/pinpoint
+
+--HBase (for storage)
+#Set up HBase cluster
+$ start-dfs.sh
+$ start-hbase.sh
+
+解压HBase脚本pinpoint-1.5.2.zip\hbase\scripts到~/pinpoint/scripts/hbase_prod/
+#Creating Schemas
+$ hbase shell hbase-create.hbase
+
+#Creating Schemas (snappy)
+$ hbase shell hbase-create-snappy.hbase
+
+#Droping Schemas
+$ hbase shell hbase-drop.hbase
+
+--Pinpoint Collector (deployed on a web container)
+#Create tomcat instance
+$ mkdir -p ~/pinpoint/collector
+$ cp -r ~/tomcat/tomcat7/* ~/pinpoint/collector
+$ cd ~/pinpoint/collector
+$ chmod +x bin/*.sh
+$ vi bin/setenv.sh
+export TOMCAT_HTTP_PORT=28082
+$ bin/tomcat.sh init
+$ unzip pinpoint-collector-1.5.2.war -d ~/pinpoint/collector/rootapp
+
+#Config collector
+$ cd ~/pinpoint/collector/rootapp/WEB-INF/classes
+$ vi hbase.properties
+hbase.client.host=localhost
+hbase.client.port=2181
+$ vi pinpoint-collector.properties
+
+#Tomcat Service
+$ cd ~/pinpoint/collector
+$ bin/tomcat.sh start
+$ bin/tomcat.sh stop
+
+
+--Pinpoint Web (deployed on a web container)
+#Create tomcat instance
+$ mkdir -p ~/pinpoint/web
+$ cp -r ~/tomcat/tomcat7/* ~/pinpoint/web
+$ cd ~/pinpoint/web
+$ chmod +x bin/*.sh
+$ vi bin/setenv.sh
+export TOMCAT_HTTP_PORT=28080
+$ bin/tomcat.sh init
+$ unzip pinpoint-web-1.5.2.war -d ~/pinpoint/web/rootapp
+
+#Config collector
+$ cd ~/pinpoint/web/rootapp/WEB-INF/classes
+$ vi hbase.properties
+hbase.client.host=localhost
+hbase.client.port=2181
+$ vi pinpoint-web.properties
+
+#Tomcat Service
+$ cd ~/pinpoint/web
+$ bin/tomcat.sh start
+$ bin/tomcat.sh stop
+
+--Pinpoint Agent (attached to a java application for profiling)
+$ tar xzf pinpoint-agent-1.5.2.tar.gz -C ~/pinpoint
+$ cd ~/pinpoint/pinpoint-agent-1.5.2
+$ vi pinpoint.config
+profiler.collector.ip=127.0.0.1
+
+--Quickstart Sample TestApp (deployed on a web container)
+#Create tomcat instance
+$ mkdir -p ~/pinpoint/testapp
+$ cp -r ~/tomcat/tomcat7/* ~/pinpoint/testapp
+$ cd ~/pinpoint/testapp
+$ chmod +x bin/*.sh
+$ vi bin/setenv.sh
+export TOMCAT_HTTP_PORT=28081
+$ bin/tomcat.sh init
+$ unzip pinpoint-quickstart-testapp-1.5.2.war -d ~/pinpoint/testapp/rootapp
+
+#Config pinpoint-agent
+$ vi bin/setenv.sh
+export APPLICATION_NAME="TESTAPP"
+export AGENT_ID="test-agent"
+export AGENT_VERSION="1.5.2"
+export AGENT_PATH="/home/hadoop/pinpoint/pinpoint-agent-$AGENT_VERSION"
+CATALINA_OPTS="$CATALINA_OPTS -javaagent:$AGENT_PATH/pinpoint-bootstrap-$AGENT_VERSION.jar"
+CATALINA_OPTS="$CATALINA_OPTS -Dpinpoint.agentId=$AGENT_ID"
+CATALINA_OPTS="$CATALINA_OPTS -Dpinpoint.applicationName=$APPLICATION_NAME"
+
+#Tomcat Service
+$ cd ~/pinpoint/testapp
+$ bin/tomcat.sh start
+$ bin/tomcat.sh stop
+
+--Web
+Collector UI - http://cdh5:28082/monitor/l7check.html
+Web UI - http://cdh5:28080/
+TestApp - http://cdh5:28081/
+
+
+
+Quickstart Sample TestApp(WinCMD)
+=============================
+https://github.com/naver/pinpoint/tree/1.5.2/quickstart
+
+--准备测试HBase(可选)
+$ start-dfs.sh
+$ start-hbase.sh
+解压HBase脚本pinpoint-1.5.2.zip\quickstart\hbase到~/pinpoint/scripts/hbase_test/
+#Creating Schemas
+$ hbase shell init-hbase.txt
+#Droping Schemas
+$ hbase shell drop-hbase.txt
+
+--准备Pinpoint Collector
+参见Install
+
+--准备Pinpoint Web
+参见Install
+
+--准备Pinpoint Agent
+$ set AGENT_PATH=d:/yopen/nosql/pinpoint-agent-1.5.2
+$ set VERSION=1.5.2
+$ set MAVEN_OPTS=-Dpinpoint.agentId=test-agent -Dpinpoint.applicationName=TESTAPP -javaagent:%AGENT_PATH%/pinpoint-bootstrap-%VERSION%.jar
+$ vi pinpoint.config
+profiler.collector.ip=192.168.5.5
+
+--准备源码TestApp
+假设本地目录为pinpoint-quickstart-testapp-1.5.2
+解压pinpoint-1.5.2.zip/quickstart/testapp到本地目录
+解压pinpoint-1.5.2.zip/quickstart/conf/quickstart.properties到本地目录/conf/quickstart
+
+--编译运行TestApp(CMD)
+$ cd pinpoint-quickstart-testapp-1.5.2
+$ 修改文件pom.xml
+<version>1.5.2</version>
+<file>${basedir}/conf/quickstart.properties</file>
+$ mvn eclipse:clean eclipse:eclipse
+$ mvn clean package -Dmaven.pinpoint.version=1.5.2
+$ mvn package tomcat7:run -Dmaven.pinpoint.version=1.5.2
+
+--测试Web
+TestApp - http://localhost:28081
+

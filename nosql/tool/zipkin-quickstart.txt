@@ -1,0 +1,33 @@
+Zipkin
+=============================
+http://zipkin.io/
+
+Zipkin is a distributed tracing system. It helps gather timing data needed to troubleshoot latency problems in microservice architectures. It manages both the collection and lookup of this data. Zipkin’s design is based on the Google Dapper paper.
+
+
+Install: Java
+=============================
+$ wget -O zipkin.jar 'https://search.maven.org/remote_content?g=io.zipkin.java&a=zipkin-server&v=LATEST&c=exec'
+$ java -jar zipkin.jar
+
+
+Install: Running from Source
+=============================
+# get the latest source
+$ git clone https://github.com/openzipkin/zipkin
+$ cd zipkin
+$ git tag
+$ git checkout -b yy-1.13.1 1.13.1
+
+# Build the server and also make its dependencies
+$ ./mvnw -DskipTests --also-make -pl zipkin-server clean install
+
+# Run the server
+java -jar ./zipkin-server/target/zipkin-server-*exec.jar
+
+
+Test
+=============================
+--Web
+http://localhost:9411
+
