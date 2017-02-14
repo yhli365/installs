@@ -1,0 +1,149 @@
+Spark
+@version spark-2.0.2-bin-without-hadoop.tgz
+
+
+虚拟机设置
+=============================
+--CPU: 2 cores
+--MEM: 4G
+
+
+准备Spark环境(所有节点)
+=============================
+$ python -V
+Python 2.6.6
+
+$ java -version
+java version "1.7.0_79"
+
+
+安装Spark包
+=============================
+$ tar -xzf spark-2.0.2-bin-without-hadoop.tgz -C /data1/apps
+$ ln -s /data1/apps/spark-2.0.2-bin-without-hadoop ~/spark
+$ cd ~/spark
+
+Local
+Standalone
+Apache Mesos
+Hadoop YARN
+
+Spark Web UI: http://cdh5:4040
+
+
+运行模式Local
+=============================
+--配置
+$ vi conf/spark-env.sh
+export JAVA_HOME=/home/hadoop/jdk
+export SPARK_DIST_CLASSPATH=$(/home/hadoop/hadoop/bin/hadoop classpath)
+
+--Running the Examples and Shell
+$ bin/run-example SparkPi 10
+
+--Scala API
+$ bin/spark-shell -h
+$ bin/spark-shell --master local[2]
+scala> :help
+scala> :quit
+
+--Python API
+$ bin/pyspark --master local[2]
+>>> help()
+>>> quit()
+
+$ bin/spark-submit examples/src/main/python/pi.py 10
+
+--R API
+$ bin/sparkR --master local[2]
+$ bin/spark-submit examples/src/main/r/dataframe.R
+
+
+运行模式Standalone
+=============================
+--配置(所有节点)
+$ cp conf/slaves.template conf/slaves
+$ vi conf/slaves
+cdh5
+
+$ cp conf/spark-env.sh.template conf/spark-env.sh
+$ vi conf/spark-env.sh
+export JAVA_HOME=/home/hadoop/jdk
+export SPARK_DIST_CLASSPATH=$(/home/hadoop/hadoop/bin/hadoop classpath)
+
+# Options read when launching programs locally with
+HADOOP_CONF_DIR=/home/hadoop/hadoop/etc/hadoop
+
+# Options for the daemons used in the standalone deploy mode
+SPARK_MASTER_HOST=cdh5
+SPARK_MASTER_PORT=7077
+SPARK_MASTER_WEBUI_PORT=8080
+SPARK_WORKER_CORES=1
+SPARK_WORKER_MEMORY=256m
+SPARK_WORKER_INSTANCES=2
+SPARK_DAEMON_MEMORY=256m
+
+$ cp conf/spark-defaults.conf.template conf/spark-defaults.conf
+$ vi conf/spark-defaults.conf
+spark.master                     spark://cdh5:7077
+
+--启动
+$ sbin/start-all.sh
+$ sbin/stop-all.sh
+
+Master WebUI at http://cdh5:8080
+
+--Scala Shell
+$ bin/spark-shell
+
+$ bin/spark-shell \
+  --driver-memory 512m \
+  --executor-memory 512m \
+  --total-executor-cores 2 \
+  --executor-cores 1 \
+  --master spark://cdh5:7077
+
+ 
+
+  
+$ bin/spark-shell \
+  --driver-memory 512m \
+  --executor-memory 512m \
+  --total-executor-cores 2 \
+  --executor-cores 1 \
+  --master spark://cdh5:7077 \
+  --supervise \
+  --deploy-mode cluster
+
+
+scala> exit
+val textFile = sc.textFile("README.md")
+textFile.count()
+textFile.first()
+textFile.filter(line => line.contains("Spark")).count()
+
+textFile.map(line => line.split(" ").size).reduce((a, b) => if (a > b) a else b)
+val wordCounts = textFile.flatMap(line => line.split(" ")).map(word => (word, 1)).reduceByKey((a, b) => a + b)
+wordCounts.collect()
+
+val linesWithSpark = textFile.filter(line => line.contains("Spark"))
+linesWithSpark.count()
+linesWithSpark.cache()
+linesWithSpark.count()
+
+$ bin/pyspark --driver-memory 512m --executor-memory 512m --master spark://devs1:7077
+>>> exit();
+textFile = sc.textFile("README.md")
+textFile.count()
+textFile.first()
+textFile.filter(lambda line: "Spark" in line).count()
+
+textFile.map(lambda line: len(line.split())).reduce(lambda a, b: a if (a > b) else b)
+wordCounts = textFile.flatMap(lambda line: line.split()).map(lambda word: (word, 1)).reduceByKey(lambda a, b: a+b)
+wordCounts.collect()
+
+linesWithSpark = textFile.filter(lambda line: "Spark" in line)
+linesWithSpark.count()
+linesWithSpark.cache()
+linesWithSpark.count()
+

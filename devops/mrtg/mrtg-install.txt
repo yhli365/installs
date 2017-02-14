@@ -112,3 +112,6 @@ http://cdh5/mrtg
 */5 * * * *  LANG=C LC_ALL=C /usr/bin/mrtg /etc/mrtg/mrtg.cfg --logging /var/log/mrtg.log
 [root@cdh5 ~]# tail -100f /var/log/cron
 
+[root@cdh5 ~]# vi /etc/cron.d/mrtg
+*/5 * * * * root LANG=C LC_ALL=C /usr/bin/mrtg /etc/mrtg/mrtg.cfg --lock-file /var/lock/mrtg/mrtg_l --confcache-file /var/lib/mrtg/mrtg.ok
+[root@cdh5 ~]# rm -rf /etc/cron.d/mrtg

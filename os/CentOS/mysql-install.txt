@@ -41,6 +41,7 @@ mysql> select version(),current_date;
 1 row in set (0.00 sec)
 mysql> select user,host,password from mysql.user;
 mysql> set password for root@localhost=password('root');
+mysql> update mysql.user set password=password('qwerty123456') where user='root';
 mysql> flush privileges;
 mysql> exit;
 
@@ -83,3 +84,26 @@ http://www.heidisql.com/
 HeidiSQL is a useful and reliable tool designed for web developers using 
 the popular MySQL server, Microsoft SQL databases and PostgreSQL. 
 
+
+修改root密码
+=============================
+--修改密码(Windows XAMPP)
+1. 如果MySQL服务器正在运行，停止它。
+2. 创建1个文本文件d:/xmapp/mysql-init.txt，并将下述命令置于单一行中：
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD('root');
+3. 进入DOS命令提示，执行命令：
+  mysqld --init-file=D:\xampp\mysql-init.txt --console
+4. 停止MySQL服务器，然后在正常模式下重启它。
+5. 应能使用新密码进行连接。
+  mysql -uroot -proot
+
+--修改密码(CentOS)
+$ service mysqld stop (/etc/init.d/mysql stop)
+$ mysqld_safe --user=mysql --skip-grant-tables --skip-networking &
+$ mysql -u root mysql
+mysql> UPDATE user SET Password=PASSWORD('root') where USER='root';
+mysql> FLUSH PRIVILEGES;
+mysql> quit
+$ service mysqld restart (/etc/init.d/mysql restart)
+# mysql -uroot -p
+Enter password: <输入新设的密码>
